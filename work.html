@@ -29,10 +29,10 @@
       text-transform: uppercase;
       color: var(--text-muted);
       margin-bottom: 48px;
-      transition: color 0.25s;
+      transition: color 0.2s;
     }
-    .back-btn svg { transition: transform 0.25s; }
-    .back-btn:hover { color: var(--accent); }
+    .back-btn svg { transition: transform 0.2s; }
+    .back-btn:hover { color: var(--text); }
     .back-btn:hover svg { transform: translateX(-4px); }
 
     /* ─── Meta header ────────────────────────────── */
@@ -46,11 +46,13 @@
     }
 
     .work-category {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 500;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: var(--text-muted);
+      background: var(--surface2);
+      padding: 3px 10px;
     }
 
     .work-date {
@@ -94,14 +96,15 @@
       font-weight: 400;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--accent);
-      border: 1px solid var(--accent);
+      color: var(--text);
+      border: 1px solid var(--border);
       padding: 10px 20px;
       margin-bottom: 48px;
-      transition: background 0.25s, color 0.25s;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
     }
     .work-link-btn:hover {
-      background: var(--accent-dim);
+      border-color: #aaaaaa;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     }
 
     /* ─── Markdown body ──────────────────────────── */
@@ -147,9 +150,14 @@
     }
 
     .work-body a {
-      color: var(--accent);
+      color: var(--text);
       text-decoration: underline;
       text-underline-offset: 3px;
+      text-decoration-color: var(--border);
+      transition: text-decoration-color 0.2s;
+    }
+    .work-body a:hover {
+      text-decoration-color: var(--text-muted);
     }
 
     .work-body ul, .work-body ol {
@@ -172,7 +180,7 @@
       font-size: 0.9rem;
       letter-spacing: 0.08em;
     }
-    .work-error { color: #a05050; }
+    .work-error { color: #b05555; }
 
     @media (max-width: 640px) {
       #work-page { padding: calc(var(--nav-h) + 32px) 20px 72px; }

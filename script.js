@@ -6,39 +6,37 @@ window.addEventListener('scroll', () => {
   nav.classList.toggle('scrolled', window.scrollY > 40);
 }, { passive: true });
 
-// ─── Gallery fade-in on scroll ────────────────────────
-const items = document.querySelectorAll('.gallery-item');
+// ─── Post card fade-in on scroll ─────────────────────
+const cards = document.querySelectorAll('.post-card');
 
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
-      const item = entry.target;
-      const delay = item.dataset.delay || 0;
-      setTimeout(() => item.classList.add('visible'), delay);
-      observer.unobserve(item);
+      const card = entry.target;
+      const delay = card.dataset.delay || 0;
+      setTimeout(() => card.classList.add('visible'), delay);
+      observer.unobserve(card);
     }
   });
 }, { threshold: 0.1 });
 
-items.forEach((item, i) => {
-  item.dataset.delay = i * 80;
-  observer.observe(item);
+cards.forEach((card, i) => {
+  card.dataset.delay = i * 100;
+  observer.observe(card);
 });
 
 // ─── Placeholder on image load error ─────────────────
-items.forEach((item) => {
-  const img = item.querySelector('img');
+cards.forEach((card) => {
+  const thumb = card.querySelector('.post-thumb');
+  const img = thumb ? thumb.querySelector('img') : null;
   if (!img) return;
 
-  img.addEventListener('error', () => {
-    img.classList.add('no-image');
-    item.classList.add('placeholder-bg');
-  });
+  const setPlaceholder = () => {
+    thumb.classList.add('placeholder');
+    thumb.dataset.title = img.alt;
+  };
 
-  // If already broken (cached)
-  if (img.complete && !img.naturalWidth) {
-    img.classList.add('no-image');
-    item.classList.add('placeholder-bg');
-  }
+  img.addEventListener('error', setPlaceholder);
+
+  if (img.complete && !img.naturalWidth) setPlaceholder();
 });
-
