@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work | Jeonghyeok Song</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ─── Work page layout ───────────────────────── */
+    body { overflow-x: hidden; }
+
+    #work-page {
+      min-height: 100vh;
+      padding: calc(var(--nav-h) + 60px) 48px 100px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      transition: color 0.25s;
+    }
+    .back-btn svg { transition: transform 0.25s; }
+    .back-btn:hover { color: var(--accent); }
+    .back-btn:hover svg { transform: translateX(-4px); }
+
+    /* ─── Meta header ────────────────────────────── */
+    .work-header { margin-bottom: 40px; }
+
+    .work-meta-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .work-category {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .work-date {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .work-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    /* ─── Tools ──────────────────────────────────── */
+    .work-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .tool-badge {
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+    }
+
+    /* ─── External link button ───────────────────── */
+    .work-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 10px 20px;
+      margin-bottom: 48px;
+      transition: background 0.25s, color 0.25s;
+    }
+    .work-link-btn:hover {
+      background: var(--accent-dim);
+    }
+
+    /* ─── Markdown body ──────────────────────────── */
+    .work-body {
+      border-top: 1px solid var(--border);
+      padding-top: 48px;
+    }
+
+    .work-body h2 {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 48px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .work-body h3 {
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 32px 0 10px;
+    }
+
+    .work-body p {
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.85;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .work-body img {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 32px 0;
+      background: var(--surface);
+    }
+
+    .work-body a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .work-body ul, .work-body ol {
+      padding-left: 1.5em;
+      margin-bottom: 20px;
+    }
+
+    .work-body li {
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    /* ─── Loading / Error states ─────────────────── */
+    .work-loading, .work-error {
+      padding: 80px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+    }
+    .work-error { color: #a05050; }
+
+    @media (max-width: 640px) {
+      #work-page { padding: calc(var(--nav-h) + 32px) 20px 72px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav id="nav">
+    <a href="index.html" class="nav-name">Jeonghyeok Song</a>
+    <div class="nav-links">
+      <a href="index.html#gallery">Gallery</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+  </nav>
+
+  <main id="work-page">
+    <a href="index.html#gallery" class="back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Gallery
+    </a>
+
+    <div id="work-content">
+      <p class="work-loading">Loading&hellip;</p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    'use strict';
+
+    // Nav scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    // ─── Frontmatter parser ───────────────────────
+    function parseFrontmatter(text) {
+      const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
+      if (!m) return { meta: {}, body: text };
+      const meta = {};
+      m[1].split('\n').forEach(line => {
+        const idx = line.indexOf(':');
+        if (idx > 0) meta[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+      });
+      return { meta, body: m[2] };
+    }
+
+    // ─── Render page ──────────────────────────────
+    function render({ meta, body }) {
+      const title    = meta.title    || 'Untitled';
+      const category = meta.category || '';
+      const date     = meta.date     || '';
+      const tools    = meta.tools    ? meta.tools.split(',').map(t => t.trim()) : [];
+      const link     = meta.link     || '';
+
+      document.title = title + ' | Jeonghyeok Song';
+
+      const toolBadges = tools.map(t =>
+        `<span class="tool-badge">${t}</span>`
+      ).join('');
+
+      const linkBtn = link
+        ? `<a href="${link}" target="_blank" rel="noopener" class="work-link-btn">
+             View on ArtStation
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+               <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+             </svg>
+           </a>`
+        : '';
+
+      document.getElementById('work-content').innerHTML = `
+        <div class="work-header">
+          <div class="work-meta-top">
+            <span class="work-category">${category}</span>
+            ${date ? `<span class="work-date">${date}</span>` : ''}
+          </div>
+          <h1 class="work-title">${title}</h1>
+          ${tools.length ? `<div class="work-tools">${toolBadges}</div>` : ''}
+          ${linkBtn}
+        </div>
+        <div class="work-body">${marked.parse(body)}</div>
+      `;
+    }
+
+    // ─── Load markdown ────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const id     = params.get('id');
+
+    if (!id) {
+      window.location.replace('index.html#gallery');
+    } else {
+      fetch(`works/${id}.md`)
+        .then(res => {
+          if (!res.ok) throw new Error(res.status);
+          return res.text();
+        })
+        .then(text => render(parseFrontmatter(text)))
+        .catch(() => {
+          document.getElementById('work-content').innerHTML =
+            '<p class="work-error">작품 파일을 찾을 수 없습니다 (works/' + id + '.md)</p>';
+        });
+    }
+  </script>
+</body>
+</html>
