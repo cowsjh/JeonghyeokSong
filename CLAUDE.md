@@ -9,6 +9,11 @@ Static HTML/CSS/JavaScript portfolio website for Jeonghyeok Song, a 3D artist (G
 **Repository:** https://github.com/cowsjh/JeonghyeokSong
 **Deployed:** https://cowsjh.github.io/JeonghyeokSong (GitHub Pages, `main` branch)
 
+## CRITICAL RULES
+
+**NEVER run `git push` without explicit confirmation from the user first.**
+Always commit locally, show the result, then ask "푸시할까요?" before pushing.
+
 ## Development
 
 No build step. To preview locally, open `index.html` in a browser or serve with any static file server:
@@ -40,7 +45,7 @@ The user writes the `.md` file and asks Claude to sync. Claude handles the rest.
    ---
    title: Project Title
    category: Game Art
-   thumbnail: ../assets/images/filename.jpg
+   thumbnail: assets/images/filename.jpg
    date: 2024.06
    tools: Houdini 21.0, Unreal Engine 5.6
    link: https://www.artstation.com/...
