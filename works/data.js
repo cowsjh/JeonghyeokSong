@@ -27,7 +27,7 @@ link: https://www.artstation.com/artwork/x3k13R
 L-System 기반의 알고리즘을 직접 구현하고, Houdini VOP 네트워크로
 텍스처 마스킹과 버텍스 컬러를 자동화했습니다.
 
-![작업 노드 네트워크](../assets/images/TreeGenHDA01.jpg)
+![작업 노드 네트워크](assets/images/TreeGenHDA01.jpg)
 
 최종적으로 Substance Painter에서 바크(bark) 텍스처를 제작하고
 언리얼 엔진에서 Wind 셰이더와 연동했습니다.
