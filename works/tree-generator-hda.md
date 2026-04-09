@@ -1,7 +1,7 @@
 ---
 title: Tree Generator HDA
 category: Game Art
-thumbnail: ../assets/images/TreeGenHDA01.jpg
+thumbnail: assets/images/TreeGenHDA01.jpg
 date: 2026.01
 tools: Houdini21.0, Unreal Engine5.6, test
 link: https://www.artstation.com/artwork/x3k13R
