@@ -32,6 +32,9 @@ No linting, testing, or compilation configured.
 
 ### Adding a New Work
 
+The user writes the `.md` file and asks Claude to sync. Claude handles the rest.
+
+**User workflow:**
 1. Create `works/<slug>.md` with YAML frontmatter:
    ```yaml
    ---
@@ -44,8 +47,15 @@ No linting, testing, or compilation configured.
    ---
    Body content in Markdown...
    ```
-2. Add a post card in `index.html` (`.post-card`) inside `.posts-grid`, linking to `work.html?id=<slug>`.
-3. Add the thumbnail to `assets/images/`.
+2. Add the thumbnail to `assets/images/`.
+3. Tell Claude to sync — Claude will handle steps below.
+
+**Claude sync tasks (on request):**
+1. Add the new work entry to `works/data.js` (`window.WORKS` object).
+2. Add a `.post-card` in `index.html` inside `.posts-grid`, linking to `work.html?id=<slug>`.
+3. Commit and push to GitHub.
+
+> `works/data.js` is the runtime data source loaded via `<script>` tag. It must stay in sync with the `.md` files. The `.md` files are the human-readable source of truth; `data.js` is derived from them.
 
 ### Key Design Tokens (CSS variables in `style.css`)
 
