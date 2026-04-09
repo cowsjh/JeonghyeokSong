@@ -193,13 +193,13 @@
   <nav id="nav">
     <a href="index.html" class="nav-name">Jeonghyeok Song</a>
     <div class="nav-links">
-      <a href="index.html#gallery">Gallery</a>
+      <a href="index.html#works">Works</a>
       <a href="index.html#contact">Contact</a>
     </div>
   </nav>
 
   <main id="work-page">
-    <a href="index.html#gallery" class="back-btn">
+    <a href="index.html#works" class="back-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
@@ -270,23 +270,28 @@
       `;
     }
 
-    // ─── Load markdown ────────────────────────────
+    // ─── Load work data ───────────────────────────
     const params = new URLSearchParams(window.location.search);
     const id     = params.get('id');
 
     if (!id) {
-      window.location.replace('index.html#gallery');
+      window.location.replace('index.html#works');
     } else {
-      fetch(`works/${id}.md`)
-        .then(res => {
-          if (!res.ok) throw new Error(res.status);
-          return res.text();
-        })
-        .then(text => render(parseFrontmatter(text)))
-        .catch(() => {
+      const script = document.createElement('script');
+      script.src = 'works/data.js';
+      script.onload = () => {
+        if (window.WORKS && window.WORKS[id]) {
+          render(parseFrontmatter(window.WORKS[id]));
+        } else {
           document.getElementById('work-content').innerHTML =
-            '<p class="work-error">작품 파일을 찾을 수 없습니다 (works/' + id + '.md)</p>';
-        });
+            '<p class="work-error">작품 파일을 찾을 수 없습니다 (' + id + ')</p>';
+        }
+      };
+      script.onerror = () => {
+        document.getElementById('work-content').innerHTML =
+          '<p class="work-error">데이터 파일을 불러올 수 없습니다 (works/data.js)</p>';
+      };
+      document.head.appendChild(script);
     }
   </script>
 </body>
