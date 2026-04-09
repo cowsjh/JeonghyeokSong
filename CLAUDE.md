@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Static HTML/CSS/JavaScript portfolio website for Jeonghyeok Song, a 3D artist (Game Art / Film VFX). No build system or package manager — open `index.html` directly in a browser to develop.
 
-**Repository:** https://github.com/cowsjh/JeonghyeokSong.github.io
-**Deployed:** https://cowsjh.github.io/JeonghyeokSong.github.io (GitHub Pages, `main` branch)
+**Repository:** https://github.com/cowsjh/JeonghyeokSong
+**Deployed:** https://cowsjh.github.io/JeonghyeokSong (GitHub Pages, `main` branch)
 
 ## Development
 
