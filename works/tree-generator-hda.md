@@ -8,7 +8,7 @@ link: https://www.artstation.com/artwork/x3k13R
 ---
 
 ## Overview
-
+https://www.youtube.com/embed/v=IOFI6T4mfyU
 나무를 생성 하는 모듈형 HDA. 총 5개의 노드로 구성 되어 있다. 후디니 내부의 노드 방식의 워크플로우는 Speed Tree와 유사 하여 제작에 있어 참고가 많이 되었다. 
 
 ---
