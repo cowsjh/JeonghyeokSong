@@ -4,26 +4,76 @@ window.WORKS = {
   'tree-generator-hda': `---
 title: Tree Generator HDA
 category: Game Art
-thumbnail: assets/images/TreeGenHDA01.jpg
+thumbnail: assets/images/tree-generator-hda/TreeGenHDA01.jpg
 date: 2026.01
 tools: Houdini 21.0, Unreal Engine 5.6
 link: https://www.artstation.com/artwork/x3k13R
 ---
 
-## Overview
+# Overview
 
-하나의 아틀라스 텍스처로 나무와 관목을 모두 찍어내는 Houdini Digital Asset입니다.
+https://www.youtube.com/watch?v=IOFI6T4mfyU
 
-기존에는 **SpeedTree**로 나무를 제작했지만, 툴 전환 비용이 파이프라인 효율을 낮춘다고 판단했습니다.
-Houdini 안에서 완결되는 나무 생성 시스템을 직접 구축한 결과물입니다.
 
-- 5개 노드 모듈 구성
-- 나무(Tree) / 관목(Bush) 모두 지원
-- 한/영 혼용 파라미터 UI
+모듈식 프로시쥬얼 에셋에 대한 이해를 위해 구현 해본 작업물. Houdini 와 비슷한 SpeedTreed의 노드식 워크플로우에 기인하여 만들어졌다. 실제로 구현이나 파라미터 디자인에 참고를 많이 했다 확장성에 최대한 집중하며, 최대한 많은 것들을 구현 할 수 있는 툴을 지향 했다.
+
+HDA 는 **Trunk, Branch, Convert Card, Scattering, Card Layout** 총 5개의 노드로 구성 되어 있다.
+
+기본적인 에셋의 구조는 아래의 어트리뷰트의 조합을 통해 다루어진다.
+\`\`\`
+@part : trunk, branch, leaf
+@type : skin, card, curve
+\`\`\`
+Leaf card 는 beanch
+
+![wallpaper](assets/images/tree-generator-hda/TreeGenHDA01.jpg)
 
 ---
 
-## Gallery
+# Workflow
+
+## Trunk, branch
+기본적으로 하위 노드의 아웃풋을 받아 오며 레벨을 쌓아가는 구조이다. 다양한 그룹핑 과 조건으로 랜덤한 생성이 가능하고 여러 파라미터를 조합 하여 많은 패턴을 생성 가능하다. 또한 노드 구조를 응용 한다면 만들어놓은 가지 셋업을 a,b,c, 나무에 붙여 재사용 한다던지, for 노드 안에서 가지를 반복 시킬 수도 있다.
+
+![](assets/images/tree-generator-hda/branchnode.png)
+---
+
+## Convert Card, Scattering
+Card convert 와 Scattering 노드는 이 HDA 의 핵심 기능이다. 어떻게 조합 하느냐에 따라서 다양한 디테일을 추가 하고, 폴리곤 비용을 줄일 수 있다. Card convert 노드는 외부에서 가져오거나 모듈에서 자체 제작한 3D 지오 메트리 를 에셋에서 사용할 수 있는 card 형태의 지오메트리로 변환 된다. 이때 UV 를 저장하여 마지막 Layout 노드에서 아틀라스로 변환 된다.
+Scattering 노드는 이렇게 만들어진 카드들을 기존에 있는 skin 또는 card에 인스턴싱 시켜준다.
+
+### Convert Card
+convert card 에서는 texture 모드를 지원하여 아틀라스가 있다면 해당 잎의 폴리지 카드를 쉽게 뽑아낼 수 있다.
+![](assets/images/tree-generator-hda/convertcard01.png)
+### Scattering
+Scattering 노드는 Convert Card 에서 만들어진 card들을 skin 이나 card 에 인스턴싱 하는 방식이다. 이때 인스턴싱 되는 card가 leaf 타입을 가진 다면 @age 를 통해 계절감을 나타낼 수 있다.
+
+
+### Card Layout - COPs
+
+
+
+
+**Layout**
+UV를 정리하고 아틀라스 배치와 Vertex Color를 설정합니다.
+Convert Card + Layout을 재사용하면 수종이 달라도 동일한 텍스처를 공유할 수 있어 메모리 비용을 줄일 수 있습니다.
+
+**Export**
+완성된 메시를 FBX 또는 USD로 익스포트합니다.
+
+**UE5 Import**
+익스포트된 메시를 UE5 Foliage Tool에 임포트합니다.
+Vertex Color 채널을 활용해 바람 애니메이션 등 셰이더 파라미터를 제어합니다.
+
+---
+
+## Parameters & Controls
+
+<!-- 파라미터 목록 확인 후 작성 -->
+
+---
+
+## Results Gallery
 
 <!-- TreeGenHDA_Variation01.jpg -->
 <!-- TreeGenHDA_Variation02.jpg -->
@@ -31,29 +81,20 @@ Houdini 안에서 완결되는 나무 생성 시스템을 직접 구축한 결�
 
 ---
 
-## 핵심 강점
+## Engine Integration
 
-**1. 아틀라스 재사용 — 텍스처 메모리 절감**
+UE5 Foliage System에 직접 임포트해 레벨 배치까지 연결되는 워크플로우입니다.
 
-Convert Card + Layout 노드를 재사용하면 하나의 아틀라스 텍스처로 수종이 다른 나무를 여러 개 생성할 수 있습니다.
-텍스처를 추가로 제작하지 않아도 되므로 메모리 비용을 크게 줄일 수 있습니다.
+**Vertex Color 활용**
+Layout 노드에서 설정한 Vertex Color를 UE5 머티리얼에서 읽어 바람 반응 강도를 제어합니다.
+루트에 가까울수록 고정, 끝 가지로 갈수록 흔들리는 자연스러운 움직임을 표현합니다.
 
-**2. 모듈형 노드 구조 — 일관성 유지**
-
-가지 어셈블리를 독립적으로 구성해두면 다른 Trunk나 Branch에 그대로 연결할 수 있습니다.
-수종이 달라져도 동일한 셋업을 재사용하기 때문에 결과물의 일관성을 유지하면서 재작업을 최소화합니다.
-
-**3. 적용 범위 확장 — Bush까지**
-
-나무뿐 아니라 관목(Bush)까지 동일한 HDA로 제작할 수 있어, 식생 에셋 전반을 하나의 툴로 커버합니다.
+**LOD**
+카드 기반 구조 덕분에 LOD 전환 시 폴리곤 감소폭이 크고, 원거리에서도 실루엣을 유지합니다.
 
 ---
 
-## Technical Architecture
-
-<!-- TreeGenHDA_NodeNetwork.jpg -->
-
-HDA는 5개의 독립 노드로 구성됩니다. 각 노드는 이전 노드의 출력을 받아 단계적으로 형태를 완성합니다.
+## Technical Notes
 
 | 노드 | 역할 | 입력 |
 |---|---|---|
@@ -63,45 +104,26 @@ HDA는 5개의 독립 노드로 구성됩니다. 각 노드는 이전 노드의 
 | **Convert Card** | 3D 가지·잎 → 2D 카드 변환 | Branch |
 | **Layout** | UV 정리, 아틀라스 배치, Vertex Color | 전체 |
 
----
+**For Each 활용**
+For Each 노드를 사용하면 동일한 설정(분기 각도, Cutoff 등)을 복수의 Branch에 일괄 반복 적용할 수 있습니다.
+수작업 반복 없이 일관된 수형을 유지하는 핵심 패턴입니다.
 
-## Houdini 내부 워크플로우
-
-노드를 모듈처럼 조합해 다양한 수형을 만들 수 있습니다.
-
-\`\`\`
-나무 A:    Trunk → Branch
-가지 a:    Trunk → Branch → Convert Card
-                    ↓
-Scattering:  나무 A에 가지 a 분포
-                    ↓
-           Layout → Export
-\`\`\`
-
-가지 a를 독립 어셈블리로 만들어두면 나무 B, 나무 C에도 동일하게 연결할 수 있습니다.
-**For Each 노드**를 활용하면 같은 설정을 여러 가지에 일괄 반복 적용하는 것도 가능합니다.
-
-<!-- TreeGenHDA_UE5.jpg -->
+**아틀라스 재사용**
+Convert Card + Layout을 재사용 가능한 어셈블리로 구성해두면, 수종이 달라져도 동일한 아틀라스 텍스처를 공유할 수 있습니다.
+텍스처를 추가로 제작하지 않아도 되므로 메모리 비용과 제작 시간을 모두 줄일 수 있습니다.
 
 ---
 
-## L-System 가지 생성
+## Takeaways
 
-<!-- TreeGenHDA_LSys.jpg -->
+**Houdini 통합 파이프라인의 이점**
+SpeedTree처럼 외부 툴로 전환하지 않고 Houdini 안에서 모델링부터 익스포트까지 완결되어, 반복 작업 속도가 크게 향상됐습니다.
 
-**분기 각도 제어**
+**모듈형 설계의 가치**
+노드를 독립 어셈블리로 구성해두면 재사용과 변형이 쉽습니다.
+수형이 달라질 때도 전체를 다시 만드는 대신 일부 노드만 교체하거나 재연결하면 됩니다.
 
-가지마다 분기 각도를 개별로 설정할 수 있습니다. For Each 노드와 함께 사용하면 동일한 각도 설정을 모든 가지에 일괄 적용할 수도 있습니다.
-
-**길이 기반 분기 수 계산**
-
-분포 단위를 지정하면 가지 길이에 비례해 하위 분기 수가 자동으로 결정됩니다.
-예를 들어 단위를 5로 설정하면 길이 10인 가지에는 하위 분기 1개가 생성됩니다.
-이 방식으로 가지가 깊어질수록 기하급수적으로 늘어나는 문제를 방지합니다.
-
-**랜덤 Cutoff**
-
-확률적으로 가지를 제거하는 기능으로 자연스러운 불규칙성을 확보합니다.
-계산된 규칙과 랜덤 변화를 조합해 제어 가능하면서도 유기적인 결과를 만듭니다.
+**제어 가능한 랜덤성**
+규칙(L-System, 길이 기반 계산)과 랜덤(Cutoff, 분기 각도 변화)을 조합하면 자연스러우면서도 예측 가능한 결과를 만들 수 있다는 것을 확인했습니다.
 `,
 };
