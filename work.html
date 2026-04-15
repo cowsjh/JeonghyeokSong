@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
   <style>
     /* ─── Work page layout ───────────────────────── */
     body { overflow-x: hidden; }
@@ -36,7 +37,7 @@
     .back-btn:hover svg { transform: translateX(-4px); }
 
     /* ─── Meta header ────────────────────────────── */
-    .work-header { margin-bottom: 40px; }
+    .work-header { margin-bottom: 64px; }
 
     .work-meta-top {
       display: flex;
@@ -109,23 +110,32 @@
 
     /* ─── Markdown body ──────────────────────────── */
     .work-body {
-      border-top: 1px solid var(--border);
-      padding-top: 48px;
+      padding-top: 0;
+    }
+
+    .work-body h1 {
+      font-family: var(--font-sans);
+      font-size: 1.6rem;
+      font-weight: 500;
+      color: var(--text);
+      margin: 56px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
     }
 
     .work-body h2 {
-      font-family: var(--font-serif);
-      font-size: 1.5rem;
-      font-weight: 400;
+      font-family: var(--font-sans);
+      font-size: 1.2rem;
+      font-weight: 500;
       color: var(--text);
-      margin: 48px 0 16px;
+      margin: 48px 0 14px;
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
     }
 
     .work-body h3 {
       font-family: var(--font-sans);
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 500;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -200,6 +210,60 @@
     @media (max-width: 640px) {
       #work-page { padding: calc(var(--nav-h) + 32px) 20px 72px; }
     }
+
+    /* ─── TOC Sidebar ────────────────────────────── */
+    .toc-sidebar {
+      position: fixed;
+      top: 0;
+      right: 32px;
+      width: 160px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .toc-sidebar.visible { opacity: 1; }
+
+    @media (max-width: 768px) {
+      .toc-sidebar { display: none; }
+    }
+
+    .toc-label {
+      font-size: 0.63rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: right;
+      margin-bottom: 12px;
+    }
+
+    .toc-link {
+      font-size: 0.76rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--text-muted);
+      padding: 5px 12px 5px 0;
+      border-right: 1px solid var(--border);
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .toc-link:hover { color: var(--text); }
+    .toc-link.active {
+      color: var(--text);
+      border-right-color: var(--text);
+    }
+    .toc-link--h1 { font-weight: 500; color: var(--text); }
+    .toc-link--h2 { padding-right: 20px; font-size: 0.72rem; }
+
+    /* scroll offset for fixed nav */
+    .work-body h1, .work-body h2 { scroll-margin-top: calc(var(--nav-h) + 24px); }
   </style>
 </head>
 <body>
@@ -210,6 +274,9 @@
     <div class="nav-links">
       <a href="index.html#works">Works</a>
       <a href="index.html#contact">Contact</a>
+      <button id="theme-toggle" aria-label="Toggle theme">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </button>
     </div>
   </nav>
 
@@ -288,8 +355,92 @@
           ${tools.length ? `<div class="work-tools">${toolBadges}</div>` : ''}
           ${linkBtn}
         </div>
-        <div class="work-body">${marked.parse(body)}</div>
+        <div class="work-body">${marked.parse(body).replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, `$1works/${id}/`)}</div>
       `;
+
+      buildTOC();
+    }
+
+    // ─── TOC Sidebar ──────────────────────────────
+    function buildTOC() {
+      const headings = Array.from(document.querySelectorAll('.work-body h1, .work-body h2'));
+      if (headings.length < 2) return;
+
+      // Assign IDs
+      headings.forEach((h, i) => {
+        if (!h.id) {
+          const slug = h.textContent.trim()
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-') || `section-${i}`;
+          h.id = slug;
+        }
+      });
+
+      // Build DOM
+      const toc = document.createElement('nav');
+      toc.className = 'toc-sidebar';
+      toc.setAttribute('aria-label', 'Table of contents');
+
+      const label = document.createElement('div');
+      label.className = 'toc-label';
+      label.textContent = 'Contents';
+      toc.appendChild(label);
+
+      const links = headings.map(h => {
+        const a = document.createElement('a');
+        a.className = h.tagName === 'H1' ? 'toc-link toc-link--h1' : 'toc-link toc-link--h2';
+        a.href = `#${h.id}`;
+        a.textContent = h.textContent.trim();
+        a.title = h.textContent.trim();
+        toc.appendChild(a);
+        return a;
+      });
+
+      document.body.appendChild(toc);
+      requestAnimationFrame(() => toc.classList.add('visible'));
+
+      // Dynamic top: never above .work-body border line
+      const workBody = document.querySelector('.work-body');
+      const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 64;
+      const minTop = navH + 32;
+
+      function updateTocTop() {
+        if (!workBody) return;
+        const bodyTop = workBody.getBoundingClientRect().top;
+        const centerTop = window.innerHeight / 2 - toc.offsetHeight / 2;
+        toc.style.top = Math.max(centerTop, bodyTop) + 'px';
+      }
+
+      updateTocTop();
+      window.addEventListener('scroll', updateTocTop, { passive: true });
+      window.addEventListener('resize', updateTocTop, { passive: true });
+
+      // Smooth scroll
+      toc.addEventListener('click', e => {
+        const link = e.target.closest('.toc-link');
+        if (!link) return;
+        e.preventDefault();
+        const target = document.getElementById(link.getAttribute('href').slice(1));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      // Active state via IntersectionObserver
+      const linkMap = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+      let activeId = null;
+
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            if (activeId) linkMap[activeId]?.classList.remove('active');
+            activeId = entry.target.id;
+            linkMap[activeId]?.classList.add('active');
+          }
+        });
+      }, { rootMargin: '-8% 0px -80% 0px', threshold: 0 });
+
+      headings.forEach(h => observer.observe(h));
     }
 
     // ─── Load work data ───────────────────────────
@@ -316,5 +467,6 @@
       document.head.appendChild(script);
     }
   </script>
+  <script src="theme.js"></script>
 </body>
 </html>

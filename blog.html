@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes | Jeonghyeok Song</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+  <style>
+    body { overflow-x: hidden; }
+
+    #blog-page {
+      min-height: 100vh;
+      padding: calc(var(--nav-h) + 60px) 48px 100px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      transition: color 0.2s;
+    }
+    .back-btn svg { transition: transform 0.2s; }
+    .back-btn:hover { color: var(--text); }
+    .back-btn:hover svg { transform: translateX(-4px); }
+
+    .blog-post-header { margin-bottom: 64px; }
+
+    .blog-post-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .blog-post-tag {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+      cursor: pointer;
+    }
+    .blog-post-tag:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+    .blog-post-tag--parent {
+      color: var(--text);
+      border-color: var(--text-muted);
+      background: transparent;
+    }
+    .blog-post-tag--parent:hover {
+      border-color: var(--text);
+    }
+    .blog-post-tag-sep {
+      align-self: center;
+      width: 1px;
+      height: 12px;
+      background: var(--border);
+      margin: 0 4px;
+    }
+
+    .blog-post-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 400;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .blog-post-date {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .blog-post-body {
+      padding-top: 0;
+    }
+
+    .blog-post-body h1, .blog-post-body h2 {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 48px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .blog-post-body h3 {
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 32px 0 10px;
+    }
+
+    .blog-post-body p {
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.85;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .blog-post-body a {
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: var(--border);
+      transition: text-decoration-color 0.2s;
+    }
+    .blog-post-body a:hover { text-decoration-color: var(--text-muted); }
+
+    .blog-post-body ul, .blog-post-body ol {
+      padding-left: 1.5em;
+      margin-bottom: 20px;
+    }
+    .blog-post-body li {
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .blog-post-body pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+    .blog-post-body code {
+      font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+      font-size: 0.85rem;
+      background: var(--surface2);
+      padding: 2px 6px;
+    }
+    .blog-post-body pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .blog-post-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 40px 0;
+    }
+
+    .blog-post-body strong { font-weight: 500; }
+
+    /* ─── Alerts ─────────────────────────────────── */
+    .md-alert {
+      border-left: 3px solid;
+      padding: 14px 18px;
+      margin: 28px 0;
+      background: var(--surface);
+    }
+    .md-alert p:last-child { margin-bottom: 0; }
+
+    .md-alert-title {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .md-alert-note    { border-color: #4493f8; }
+    .md-alert-tip     { border-color: #3fb950; }
+    .md-alert-important { border-color: #ab7df8; }
+    .md-alert-warning { border-color: #d29922; }
+    .md-alert-caution { border-color: #f85149; }
+
+    .md-alert-note     .md-alert-title { color: #4493f8; }
+    .md-alert-tip      .md-alert-title { color: #3fb950; }
+    .md-alert-important .md-alert-title { color: #ab7df8; }
+    .md-alert-warning  .md-alert-title { color: #d29922; }
+    .md-alert-caution  .md-alert-title { color: #f85149; }
+
+    .post-loading, .post-error {
+      padding: 80px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+    }
+    .post-error { color: #b05555; }
+
+    @media (max-width: 640px) {
+      #blog-page { padding: calc(var(--nav-h) + 32px) 20px 72px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="nav">
+    <a href="index.html" class="nav-name">Jeonghyeok Song</a>
+    <div class="nav-links">
+      <a href="index.html#works">Works</a>
+      <a href="index.html#notes">Notes</a>
+      <a href="index.html#contact">Contact</a>
+      <button id="theme-toggle" aria-label="Toggle theme">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main id="blog-page">
+    <a href="index.html#portfolio" class="back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Notes
+    </a>
+
+    <div id="post-content">
+      <p class="post-loading">Loading&hellip;</p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    'use strict';
+
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    function parseFrontmatter(text) {
+      const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+      if (!m) return { meta: {}, body: text };
+      const meta = {};
+      m[1].split('\n').forEach(line => {
+        const idx = line.indexOf(':');
+        if (idx > 0) meta[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+      });
+      return { meta, body: m[2] };
+    }
+
+    // ─── Alert 변환 ───────────────────────────────
+    const ALERT_TYPES = { NOTE: 'Note', TIP: 'Tip', IMPORTANT: 'Important', WARNING: 'Warning', CAUTION: 'Caution' };
+    function convertAlerts(html) {
+      return html.replace(
+        /<blockquote>\s*<p>\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\n?([\s\S]*?)<\/blockquote>/gi,
+        (_, type, inner) => {
+          const key = type.toUpperCase();
+          const content = '<p>' + inner.trimStart();
+          return `<div class="md-alert md-alert-${key.toLowerCase()}"><div class="md-alert-title">${ALERT_TYPES[key]}</div>${content}</div>`;
+        }
+      );
+    }
+
+    function render({ meta, body }, id) {
+      const title   = meta.title || 'Untitled';
+      const date    = meta.date  || '';
+      const parent  = id ? id.split('/')[0] : ''; // 폴더명 = 상위 태그
+      const tags    = meta.tags ? meta.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+      document.title = title + ' | Jeonghyeok Song';
+
+      const parentPills = parent
+        ? `<a class="blog-post-tag blog-post-tag--parent" href="index.html?tab=notes&parent=${encodeURIComponent(parent)}">${parent}</a>`
+        : '';
+      const childPills = tags
+        .map(t => `<a class="blog-post-tag" href="index.html?tag=${encodeURIComponent(t)}">${t}</a>`)
+        .join('');
+      const sep = parentPills && childPills ? `<span class="blog-post-tag-sep"></span>` : '';
+      const tagPills = parentPills + sep + childPills;
+      const dateStr  = date ? date.replace(/-/g, '.') : '';
+
+      document.getElementById('post-content').innerHTML = `
+        <div class="blog-post-header">
+          ${(parent || tags.length) ? `<div class="blog-post-tags">${tagPills}</div>` : ''}
+          <h1 class="blog-post-title">${title}</h1>
+          ${dateStr ? `<span class="blog-post-date">${dateStr}</span>` : ''}
+        </div>
+        <div class="blog-post-body">${convertAlerts(marked.parse(body))}</div>
+      `;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const id     = params.get('id');
+
+    if (!id) {
+      window.location.replace('index.html#notes');
+    } else {
+      const script = document.createElement('script');
+      script.src = 'blog/data.js';
+      script.onload = () => {
+        if (window.BLOG && window.BLOG[id]) {
+          render(parseFrontmatter(window.BLOG[id]), id);
+        } else {
+          document.getElementById('post-content').innerHTML =
+            '<p class="post-error">포스트를 찾을 수 없습니다 (' + id + ')</p>';
+        }
+      };
+      script.onerror = () => {
+        document.getElementById('post-content').innerHTML =
+          '<p class="post-error">데이터 파일을 불러올 수 없습니다.</p>';
+      };
+      document.head.appendChild(script);
+    }
+  </script>
+  <script src="theme.js"></script>
+</body>
+</html>
