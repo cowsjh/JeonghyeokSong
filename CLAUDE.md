@@ -18,10 +18,11 @@ Static HTML/CSS/JS portfolio. No build system — open `index.html` in browser.
 | `blog.html` | Blog 상세 페이지 (`?id=<slug>`) |
 | `works/<slug>.md` | 각 work의 원본 소스 |
 | `works-sync.js` | `works/*.md` → `index.html` 포스트 카드 동기화 스크립트 |
-| `blog/<parent>/<slug>.md` | 각 blog 포스트의 원본 소스 (상위 태그별 폴더) |
-| `blog/data.js` | 런타임 데이터 (`window.BLOG`) — `blog-sync.js`로 생성 |
-| `blog-sync.js` | `blog/**/*.md` → `blog/data.js` 동기화 스크립트 |
-| `assets/images/` | 이미지 (Git LFS) |
+| `notes/<parent>/<slug>.md` | 이미지 없는 포스트 (플랫 구조) |
+| `notes/<parent>/<slug>/<slug>.md` | 이미지 있는 포스트 (서브폴더 구조) |
+| `notes/<parent>/<slug>/<image>` | 포스트 이미지 — `.md`와 같은 서브폴더에 저장 |
+| `notes/data.js` | 런타임 데이터 (`window.BLOG`) — `blog-sync.js`로 생성 |
+| `blog-sync.js` | `notes/**/*.md` → `notes/data.js` 동기화 스크립트 |
 
 ---
 
@@ -63,7 +64,7 @@ node works-sync.js
 
 ---
 
-## Blog (Notes)
+## Notes
 
 ### Frontmatter
 
@@ -73,8 +74,27 @@ date:  2024-06-15
 tags:  VEX, TIP, code
 ```
 
-- `parent`: **폴더명으로 자동 결정** — `blog/Houdini/` 폴더 → `Houdini` 상위 태그 (frontmatter 불필요)
+- `parent`: **폴더명으로 자동 결정** — `notes/Houdini/` 폴더 → `Houdini` 상위 태그 (frontmatter 불필요)
 - `tags`: 하위 태그 (parent 선택 시 나타나는 서브 필터)
+
+### 이미지
+
+이미지는 `.md` 파일과 **같은 서브폴더**에 저장. 마크다운에서 상대 경로로 참조:
+
+```md
+![alt text](image-1.png)
+```
+
+포스트 구조:
+```
+notes/Game/game-optimization-01/
+  game-optimization-01.md   ← 슬러그: Game/game-optimization-01
+  image-1.png
+  image-2.png
+```
+
+`blog.html`의 `makeRenderer(id)`가 런타임에 `notes/<id>/image-1.png`로 변환.  
+`blog-sync.js`는 `parent/slug/slug.md` 패턴을 자동으로 `parent/slug` 슬러그로 압축.
 
 ### 동기화
 
@@ -82,13 +102,13 @@ Blog 추가/삭제 후:
 ```
 node blog-sync.js
 ```
-- `blog/**/*.md` 전체를 재귀로 읽어 `blog/data.js`를 재생성
-- 새 상위 태그 추가 시 `blog/<parent>/` 폴더를 만들고 그 안에 `.md` 작성
+- `notes/**/*.md` 전체를 재귀로 읽어 `notes/data.js`를 재생성
+- 새 상위 태그 추가 시 `notes/<parent>/` 폴더를 만들고 그 안에 `.md` 작성
 - 백틱(`` ` ``)과 `${` 자동 이스케이프
 
 ### Blog 필터 태그 로직
 
-`blog/data.js`의 frontmatter에서 동적으로 버튼 생성.
+`notes/data.js`의 frontmatter에서 동적으로 버튼 생성.
 
 ```
 [ 2024 ] [ 2023 ] [ 2022 ] [ 2021 ]  |  [ Houdini ]

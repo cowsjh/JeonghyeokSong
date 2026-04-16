@@ -142,7 +142,8 @@ function makeFilterBtn(label, onClick) {
   const modeBar      = document.getElementById('notes-mode-bar');
   if (!grid) return;
 
-  let tagMode = 'OR'; // 'OR' | 'AND'
+  let tagMode   = 'OR'; // 'OR' | 'AND'
+  let seriesMap = {};
 
   function parseFrontmatter(text) {
     const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
@@ -153,9 +154,10 @@ function makeFilterBtn(label, onClick) {
       if (idx > 0) meta[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
     });
     return {
-      title: meta.title || '',
-      date:  meta.date  || '',
-      tags:  meta.tags  ? meta.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+      title:  meta.title  || '',
+      date:   meta.date   || '',
+      tags:   meta.tags   ? meta.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+      series: meta.series || '',
     };
   }
 
@@ -181,14 +183,23 @@ function makeFilterBtn(label, onClick) {
     const pageEntries = filtered.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
 
     let i = 0;
-    pageEntries.forEach(({ slug, title, date, tags }) => {
+    pageEntries.forEach(({ slug, title, date, tags, series }) => {
       const tagPills = tags.map(t => `<span class="note-tag">${t}</span>`).join('');
+      const seriesBadge = series
+        ? (() => {
+            const slugs = seriesMap[series] || [];
+            const part  = slugs.indexOf(slug) + 1;
+            const total = slugs.length;
+            return `<span class="note-series-badge">&#9679; ${series} ${part} / ${total}</span>`;
+          })()
+        : '';
       const card = document.createElement('a');
       card.className = 'note-card';
       card.href = `blog.html?id=${slug}`;
       card.dataset.tags = tags.join(',');
       card.innerHTML = `
         ${tags.length ? `<div class="note-tags">${tagPills}</div>` : ''}
+        ${seriesBadge}
         <h3 class="note-title">${title}</h3>
         ${date ? `<span class="note-date">${date.replace(/-/g, '.')}</span>` : ''}
       `;
@@ -359,19 +370,28 @@ function makeFilterBtn(label, onClick) {
       if (activeChildren.size) p.set('child', [...activeChildren].join(','));
       if (activeYears.size)    p.set('year',  [...activeYears].join(','));
       history.replaceState(null, '', location.pathname + '?' + p.toString());
+      sessionStorage.setItem('notesFilterState', '?' + p.toString());
     }
   }
 
   const script = document.createElement('script');
-  script.src = 'blog/data.js';
+  script.src = 'notes/data.js';
   script.onload = () => {
     if (!window.BLOG) { grid.innerHTML = ''; return; }
 
     const entries = Object.entries(window.BLOG).map(([slug, raw]) => {
-      const { title, date, tags } = parseFrontmatter(raw);
+      const { title, date, tags, series } = parseFrontmatter(raw);
       const parent = [slug.split('/')[0]]; // 폴더명 = 상위 태그
-      return { slug, title, date, parent, tags };
+      return { slug, title, date, parent, tags, series };
     }).sort((a, b) => b.date.localeCompare(a.date));
+
+    // 시리즈 맵 빌드 (slug 알파벳순)
+    entries.forEach(e => {
+      if (!e.series) return;
+      if (!seriesMap[e.series]) seriesMap[e.series] = [];
+      seriesMap[e.series].push(e.slug);
+    });
+    Object.values(seriesMap).forEach(slugs => slugs.sort());
 
     const params    = new URLSearchParams(location.search);
     const urlTag    = params.get('tag')    || null;

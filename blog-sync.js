@@ -1,11 +1,11 @@
 // blog-sync.js
-// blog/<parent>/*.md 파일을 읽어 blog/data.js를 재생성합니다.
+// blog/<parent>/*.md 파일을 읽어 notes/data.js를 재생성합니다.
 // 사용법: node blog-sync.js
 
 const fs   = require('fs');
 const path = require('path');
 
-const blogDir  = path.join(__dirname, 'blog');
+const blogDir  = path.join(__dirname, 'notes');
 const dataFile = path.join(blogDir, 'data.js');
 
 // 서브디렉터리 안의 .md 파일을 재귀로 수집
@@ -30,7 +30,12 @@ if (mdFiles.length === 0) {
 }
 
 const entries = mdFiles.map(filePath => {
-  const slug    = path.relative(blogDir, filePath).replace(/\.md$/, '').replace(/\\/g, '/');
+  let slug = path.relative(blogDir, filePath).replace(/\.md$/, '').replace(/\\/g, '/');
+  // Collapse "parent/slug/slug" → "parent/slug" when filename == parent dir name
+  const parts = slug.split('/');
+  if (parts.length >= 2 && parts[parts.length - 1] === parts[parts.length - 2]) {
+    slug = parts.slice(0, -1).join('/');
+  }
   const content = fs.readFileSync(filePath, 'utf8');
   const escaped = content.replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
   return `  '${slug}': \`${escaped}\``;
@@ -46,5 +51,5 @@ const output = [
 ].join('\n');
 
 fs.writeFileSync(dataFile, output, 'utf8');
-console.log(`✓ blog/data.js updated (${mdFiles.length} posts)`);
+console.log(`✓ notes/data.js updated (${mdFiles.length} posts)`);
 mdFiles.forEach(f => console.log(`  - ${path.relative(blogDir, f)}`));

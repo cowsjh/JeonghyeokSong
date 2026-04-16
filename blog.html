@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Notes | Jeonghyeok Song</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
   <style>
@@ -23,7 +20,7 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      font-size: 0.78rem;
+      font-size: 0.91rem;
       font-weight: 400;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -46,7 +43,7 @@
 
     .blog-post-tag {
       display: inline-block;
-      font-size: 0.68rem;
+      font-size: 0.81rem;
       font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -89,122 +86,60 @@
     }
 
     .blog-post-date {
-      font-size: 0.8rem;
+      font-size: 0.93rem;
       color: var(--text-muted);
     }
 
-    .blog-post-body {
-      padding-top: 0;
-    }
-
-    .blog-post-body h1, .blog-post-body h2 {
-      font-family: var(--font-serif);
-      font-size: 1.5rem;
-      font-weight: 400;
-      color: var(--text);
-      margin: 48px 0 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .blog-post-body h3 {
-      font-family: var(--font-sans);
-      font-size: 0.9rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin: 32px 0 10px;
-    }
-
-    .blog-post-body p {
-      font-size: 1rem;
-      font-weight: 300;
-      line-height: 1.85;
-      color: var(--text);
-      margin-bottom: 20px;
-    }
-
-    .blog-post-body a {
-      color: var(--text);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      text-decoration-color: var(--border);
-      transition: text-decoration-color 0.2s;
-    }
-    .blog-post-body a:hover { text-decoration-color: var(--text-muted); }
-
-    .blog-post-body ul, .blog-post-body ol {
-      padding-left: 1.5em;
-      margin-bottom: 20px;
-    }
-    .blog-post-body li {
-      font-size: 1rem;
-      font-weight: 300;
-      line-height: 1.8;
-      color: var(--text);
-    }
-
-    .blog-post-body pre {
-      background: var(--surface2);
+    /* ─── Series Nav ─────────────────────────────── */
+    .series-nav {
       border: 1px solid var(--border);
-      padding: 20px 24px;
-      overflow-x: auto;
-      margin-bottom: 24px;
-    }
-    .blog-post-body code {
-      font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
-      font-size: 0.85rem;
-      background: var(--surface2);
-      padding: 2px 6px;
-    }
-    .blog-post-body pre code {
-      background: none;
-      padding: 0;
-    }
-
-    .blog-post-body hr {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 40px 0;
-    }
-
-    .blog-post-body strong { font-weight: 500; }
-
-    /* ─── Alerts ─────────────────────────────────── */
-    .md-alert {
-      border-left: 3px solid;
       padding: 14px 18px;
-      margin: 28px 0;
-      background: var(--surface);
+      margin-bottom: 48px;
     }
-    .md-alert p:last-child { margin-bottom: 0; }
-
-    .md-alert-title {
-      font-size: 0.72rem;
+    .series-nav-label {
+      display: block;
+      font-size: 0.83rem;
       font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
     }
+    .series-nav-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .series-nav-pill {
+      font-size: 0.88rem;
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .series-nav-pill:hover { border-color: var(--text-muted); color: var(--text); }
+    .series-nav-pill--active { border-color: var(--text); color: var(--text); }
 
-    .md-alert-note    { border-color: #4493f8; }
-    .md-alert-tip     { border-color: #3fb950; }
-    .md-alert-important { border-color: #ab7df8; }
-    .md-alert-warning { border-color: #d29922; }
-    .md-alert-caution { border-color: #f85149; }
-
-    .md-alert-note     .md-alert-title { color: #4493f8; }
-    .md-alert-tip      .md-alert-title { color: #3fb950; }
-    .md-alert-important .md-alert-title { color: #ab7df8; }
-    .md-alert-warning  .md-alert-title { color: #d29922; }
-    .md-alert-caution  .md-alert-title { color: #f85149; }
+    .series-prevnext {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      gap: 16px;
+    }
+    .series-prev, .series-next {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+      max-width: 48%;
+    }
+    .series-prev:hover, .series-next:hover { color: var(--text); }
+    .series-next { text-align: right; margin-left: auto; }
 
     .post-loading, .post-error {
       padding: 80px 0;
       text-align: center;
       color: var(--text-muted);
-      font-size: 0.9rem;
+      font-size: 1.03rem;
       letter-spacing: 0.08em;
     }
     .post-error { color: #b05555; }
@@ -212,6 +147,7 @@
     @media (max-width: 640px) {
       #blog-page { padding: calc(var(--nav-h) + 32px) 20px 72px; }
     }
+
   </style>
 </head>
 <body>
@@ -229,12 +165,20 @@
   </nav>
 
   <main id="blog-page">
-    <a href="index.html#portfolio" class="back-btn">
+    <a id="back-btn" href="index.html?tab=notes#portfolio" class="back-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
       Notes
     </a>
+    <script>
+      (function () {
+        const saved = sessionStorage.getItem('notesFilterState');
+        if (saved) {
+          document.getElementById('back-btn').href = 'index.html' + saved + '#portfolio';
+        }
+      })();
+    </script>
 
     <div id="post-content">
       <p class="post-loading">Loading&hellip;</p>
@@ -261,6 +205,25 @@
       return { meta, body: m[2] };
     }
 
+    function buildSeriesData(id, series) {
+      if (!series || !window.BLOG) return null;
+      const slugs = Object.keys(window.BLOG)
+        .filter(slug => {
+          const { meta } = parseFrontmatter(window.BLOG[slug]);
+          return meta.series === series;
+        })
+        .sort();
+      if (slugs.length < 2) return null;
+      const idx = slugs.indexOf(id);
+      return {
+        name:  series,
+        slugs,
+        idx,
+        prev: idx > 0 ? slugs[idx - 1] : null,
+        next: idx < slugs.length - 1 ? slugs[idx + 1] : null,
+      };
+    }
+
     // ─── Alert 변환 ───────────────────────────────
     const ALERT_TYPES = { NOTE: 'Note', TIP: 'Tip', IMPORTANT: 'Important', WARNING: 'Warning', CAUTION: 'Caution' };
     function convertAlerts(html) {
@@ -274,9 +237,25 @@
       );
     }
 
+    function makeRenderer(id) {
+      const r = new marked.Renderer();
+      r.image = function(hrefOrToken, title, text) {
+        let href, t, tx;
+        if (hrefOrToken && typeof hrefOrToken === 'object') {
+          href = hrefOrToken.href; t = hrefOrToken.title; tx = hrefOrToken.text;
+        } else {
+          href = hrefOrToken; t = title; tx = text;
+        }
+        const src = /^https?:\/\/|^\//.test(href) ? href : `notes/${id}/${href}`;
+        return `<img src="${src}" alt="${tx || ''}"${t ? ` title="${t}"` : ''} loading="lazy">`;
+      };
+      return r;
+    }
+
     function render({ meta, body }, id) {
-      const title   = meta.title || 'Untitled';
-      const date    = meta.date  || '';
+      const title   = meta.title  || 'Untitled';
+      const date    = meta.date   || '';
+      const series  = meta.series || '';
       const parent  = id ? id.split('/')[0] : ''; // 폴더명 = 상위 태그
       const tags    = meta.tags ? meta.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
 
@@ -292,15 +271,56 @@
       const tagPills = parentPills + sep + childPills;
       const dateStr  = date ? date.replace(/-/g, '.') : '';
 
+      // 시리즈 네비게이션
+      const sd = buildSeriesData(id, series);
+      const seriesNavHtml = sd ? (() => {
+        const pills = sd.slugs.map((slug, i) => {
+          const num = String(i + 1).padStart(2, '0');
+          const active = slug === id ? ' series-nav-pill--active' : '';
+          return `<a href="blog.html?id=${slug}" class="series-nav-pill${active}">${num}</a>`;
+        }).join('');
+        return `<div class="series-nav">
+          <span class="series-nav-label">Series &middot; ${sd.name}</span>
+          <div class="series-nav-pills">${pills}</div>
+        </div>`;
+      })() : '';
+
+      const prevNextHtml = sd ? (() => {
+        const prevTitle = sd.prev ? parseFrontmatter(window.BLOG[sd.prev]).meta.title || sd.prev : null;
+        const nextTitle = sd.next ? parseFrontmatter(window.BLOG[sd.next]).meta.title || sd.next : null;
+        const prevLink  = prevTitle ? `<a href="blog.html?id=${sd.prev}" class="series-prev">&#9664; ${prevTitle}</a>` : '<span></span>';
+        const nextLink  = nextTitle ? `<a href="blog.html?id=${sd.next}" class="series-next">${nextTitle} &#9654;</a>` : '';
+        return `<div class="series-prevnext">${prevLink}${nextLink}</div>`;
+      })() : '';
+
       document.getElementById('post-content').innerHTML = `
         <div class="blog-post-header">
           ${(parent || tags.length) ? `<div class="blog-post-tags">${tagPills}</div>` : ''}
           <h1 class="blog-post-title">${title}</h1>
           ${dateStr ? `<span class="blog-post-date">${dateStr}</span>` : ''}
         </div>
-        <div class="blog-post-body">${convertAlerts(marked.parse(body))}</div>
+        ${seriesNavHtml}
+        <div class="md-body">${convertAlerts(marked.parse(body, { renderer: makeRenderer(id) }))}</div>
+        ${prevNextHtml}
       `;
+      postProcessTables(document.getElementById('post-content'));
+      buildTOC();
     }
+
+    function postProcessTables(container) {
+      container.querySelectorAll('tr').forEach(tr => {
+        const cells = Array.from(tr.querySelectorAll('td'));
+        if (cells.length === 0) return;
+        const allImgCells = cells.every(td => {
+          const nonEmpty = Array.from(td.childNodes).filter(
+            n => !(n.nodeType === 3 && n.textContent.trim() === '')
+          );
+          return nonEmpty.length > 0 && nonEmpty[0].tagName === 'IMG';
+        });
+        if (allImgCells) tr.classList.add('img-row');
+      });
+    }
+
 
     const params = new URLSearchParams(window.location.search);
     const id     = params.get('id');
@@ -309,7 +329,7 @@
       window.location.replace('index.html#notes');
     } else {
       const script = document.createElement('script');
-      script.src = 'blog/data.js';
+      script.src = 'notes/data.js';
       script.onload = () => {
         if (window.BLOG && window.BLOG[id]) {
           render(parseFrontmatter(window.BLOG[id]), id);
@@ -325,6 +345,7 @@
       document.head.appendChild(script);
     }
   </script>
+  <script src="toc.js"></script>
   <script src="theme.js"></script>
 </body>
 </html>
