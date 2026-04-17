@@ -321,17 +321,102 @@ series: Game Optimization
 ---
 
 [What to do if you're CPU Bound - Game Optimization - Episode 5](https://www.youtube.com/watch?v=SwWW36mbDhU&list=PL78XDi0TS4lG4wvgfyGECmB8XiJLCgfFD&index=5)
+[Visibility and Occlusion Culling](https://dev.epicgames.com/documentation/unreal-engine/visibility-and-occlusion-culling-in-unreal-engine)
 
 ---
 
-High Draw Calls
+## High Draw Calls
 - [Instancing](../../ComputerGraphics/Instancing/Instancing.md) / [Batching](../../ComputerGraphics/Batching/Batching.md)
-- 
+- Occlusion Culling
+- Level Layout
+- Early Distance Culling
+- HLODS
+
+
+## Unreal 에서 Occlusion Culling 확인하기
+
+[Occlusion Culling](../occlusionculling/occlusionculling.md)
+\`\`\`
+콘솔 -> r.VisualizeOccludedPrimitives 1 
+\`\`\`
+![alt text](image.png)
+
+
+## Level Layout
+
+레벨 단계에서 특정 위치에선 특정 레이아웃만 보이게 계획 한다면, 컬링 시 큰 도움이 될것이다. 큰 맵에선 단일 트리거로 한번에 컬링 할 수 있다.
+![alt text](image-1.png)
+
+## Early Distance Culling
+
+화면에 비치는 오브젝트가 얼마나 작은지 또는 카메라와의 거리에 따라 컬링 해주는 기법. 한 화면상의 2픽셀 정도의 오브젝트가 있다면 그것도 1의 드로우콜을 발생 시키기 때문에 필터링을 시켜주는 것이다.
+
+\`\`\`
+Volume -> Cull Distance Volume
+\`\`\`
+
+## Hierarchical Level of Detail (HLODS)`,
+
+  'Game/occlusionculling': `---
+title: Culling Method
+date: 2026-04-17
+tags: optimization
+---
+[Visibility and Occlusion Culling](https://dev.epicgames.com/documentation/unreal-engine/visibility-and-occlusion-culling-in-unreal-engine#cullingmethods)
+
+---
+
+보이지 않는 메쉬들을 제외 시켜 드로우콜을 낮추는 방법
+
+## Culling Methods
+
+1. Distance Culling
+2. Frustum Culling
+3. Precomputed
+4. Nanite
+5. Occlusion
 
 
 
 
-`,
+## Frunstum, Occlusion
+
+![alt text](image.png) | ![alt text](image-1.png) |
+--- | --- |
+Frustum | Frustum + Occlusion
+
+### 컬링 확인 하는법
+
+\`\`\`
+콘솔 -> r.VisualizeOccludedPrimitives 1 
+\`\`\`
+
+
+## Distance Culling
+
+화면에 1px 정도 차지하는 아주 작은 메쉬라도 엔진은 한번의 드로우 콜을 생성한다. 사실상 육안으로 보이지 않는 부분에서 CPU 비용을 사용 하는 것. Distance Culling 은 이런 것들을 강제적으로 Culling 해주는 기법이다.
+
+### 사용법
+
+\`\`\`
+Volume -> Cull Distance Volume
+\`\`\`
+
+여러 Cull Distance Pair 를 만들어 다양한 크기의 오브 젝트를 컬링한다.
+![alt text](examplescenecdvvalues.png)
+
+- 약 200 유닛 오브젝트 + 카메라 거리 1000 유닛 이상 컬링됩니다.
+- 약 500 유닛 오브젝트 + 카메라 거리 2000 유닛 이상 컬링됩니다.
+- 약 1000 유닛 오브젝트 컬링 X
+
+>[!info]
+> 더 많은 내용은 [여기](https://dev.epicgames.com/documentation/unreal-engine/cull-distance-volumes-in-unreal-engine)
+
+
+## Precomputed
+
+[!info]
+> 더 많은 내용은 [여기](https://dev.epicgames.com/documentation/unreal-engine/precomputed-visibility-volumes-in-unreal-engine)`,
 
   'Houdini/camera-ndc': `---
 title: Camera NDC
