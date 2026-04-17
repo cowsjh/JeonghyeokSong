@@ -15,6 +15,7 @@
     <div class="nav-links">
       <a href="#portfolio" data-tab="works">Works</a>
       <a href="#portfolio" data-tab="notes">Notes</a>
+      <a href="#portfolio" data-tab="gallery">Gallery</a>
       <a href="#contact">Contact</a>
       <button id="theme-toggle" aria-label="Toggle theme">
         <span class="toggle-track"><span class="toggle-thumb"></span></span>
@@ -27,6 +28,7 @@
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="works">Works</button>
       <button class="tab-btn" data-tab="notes">Notes</button>
+      <button class="tab-btn" data-tab="gallery">Gallery</button>
     </div>
 
     <!-- Works panel -->
@@ -68,7 +70,24 @@
         <p class="notes-loading">Loading&hellip;</p>
       </div>
     </div>
+    <!-- Gallery panel -->
+    <div id="tab-gallery" class="tab-panel">
+      <div class="filter-bar" id="gallery-filters"></div>
+      <div class="gallery-grid" id="gallery-grid">
+        <p class="notes-loading">Loading&hellip;</p>
+      </div>
+    </div>
   </section>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true">
+    <button class="lightbox-close" aria-label="Close">&times;</button>
+    <button class="lightbox-prev" aria-label="Previous">&#8592;</button>
+    <button class="lightbox-next" aria-label="Next">&#8594;</button>
+    <div class="lightbox-backdrop"></div>
+    <img class="lightbox-img" src="" alt="">
+    <span class="lightbox-caption"></span>
+  </div>
 
   <!-- Contact -->
   <section id="contact">

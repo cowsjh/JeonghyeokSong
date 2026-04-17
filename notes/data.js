@@ -1,10 +1,54 @@
 // Auto-synced from blog/**/*.md — do not edit directly.
 // Edit the corresponding .md file, then run: node blog-sync.js
 window.BLOG = {
+  'ComputerGraphics/Batching': `---
+title: Batching
+date: 2026-04-17
+tags: optimization
+---
+
+CPU의 병목 현상을 해결하는 방법 중 하나.
+
+동일한 재질의 메쉬를 병합하여 한 번의 드로우 콜로 렌더링 하는 최적화 기법
+
+### 원리
+1. 동일한 재질의 메쉬 병합
+2. 병합된 메쉬 한번에 드로우콜
+
+### 결과
+드로우콜 감소
+
+### 단점
+**렌더링은 빠르지만 VRAM 사용량 급증 합쳐진 메쉬가 한번에 메모리에 저장 되기 때문.** 일반 적인 드로우콜은 1번에 메쉬 한 개 이기때문에 차이가 난다.
+
+`,
+
+  'ComputerGraphics/Instancing': `---
+title: Instancing
+date: 2026-04-17
+tags: optimization
+---
+
+CPU와 GPU간의 병목 현상을 해결 하는 방법중 하나
+
+### 기존 렝더링
+1,000 개를 그릴때 CPU는 GPU에게 1,000 번 명령
+
+### 원리
+1. mesh (공통 데이터) / instance buffer (인스턴스 데이터 - trans, rot, scale ...) **데이터 분리**
+2. 무거운 공통 메시 데이터는 GPU 메모리(VRAM)에 **한 번만 업로드**.
+3. instance buffer 전달.
+4. **GPU의 병렬 처리** (공통 메시 데이터를 instance buffer 와 조합)
+
+### 결과
+CPU의 작업 부하를 줄임 1,000 >>>> mesh,instance buffer
+
+`,
+
   'Game/DitherTemporalAA': `---
 title: DitherTemporalAA
 date: 2026-04-16
-tags: Unreal Engine, Material, Optimization
+tags: Unreal Engine, Material, optimization
 ---
 
 DitherTemporalAA 노드는 픽셀 점묘 패턴을 생성하는 procedural meterial function 이다. **Opaque 나 Masked 같은 불투명 메테리얼을 블렌딩할때 주로 사용 된다.**
@@ -54,8 +98,9 @@ Pixel Depth Offset (PDO) 는 depth buffer 에 적용 되는 픽셀의 Depth 값�
 
 ## Use Case
 
-통상적으로 DitherTemporalAA 노드와 함께 사용하며 겹쳐있는 메쉬를 블렌딩 할때 쓴다.
+통상적으로 [DitherTemporalAA](../DitherTemporalAA/DitherTemporalAA.md) 노드와 함께 사용하며 겹쳐있는 메쉬를 블렌딩 할때 쓴다.
 ![alt text](UnrealEditor_mY40lC1jo5.png)
+
 
 
 
@@ -266,6 +311,26 @@ View mode -> Nanite Visulization -> Pixel Programmable
 쉐이더 단계 에서 최적화를 했는데 Draw 콜이 왜 낮아지나 싶지만,
 WPO 는 CPU 가 Draw 를 준비 하는 과정에서 프레임마다 변하는 vertex의 위치를 계산하여 최신화 해야하기 때문
 PDO 는 [여기로](../Pixel-Depth-Offset-(PDO)/Pixel-Depth-Offset-(PDO).md)
+`,
+
+  'Game/game-optimization-05': `---
+title: "Game Optimization 05 - What to do if you're CPU Bound"
+date: 2026-04-17
+tags: optimization
+series: Game Optimization
+---
+
+[What to do if you're CPU Bound - Game Optimization - Episode 5](https://www.youtube.com/watch?v=SwWW36mbDhU&list=PL78XDi0TS4lG4wvgfyGECmB8XiJLCgfFD&index=5)
+
+---
+
+High Draw Calls
+- [Instancing](../../ComputerGraphics/Instancing/Instancing.md) / [Batching](../../ComputerGraphics/Batching/Batching.md)
+- 
+
+
+
+
 `,
 
   'Houdini/camera-ndc': `---

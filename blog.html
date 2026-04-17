@@ -237,6 +237,32 @@
       );
     }
 
+    function resolvePath(base, rel) {
+      const parts = base.split('/');
+      parts.pop();
+      rel.split('/').forEach(seg => {
+        if (seg === '..') parts.pop();
+        else if (seg !== '.') parts.push(seg);
+      });
+      return parts.join('/');
+    }
+
+    function mdPathToSlug(href, id) {
+      let path;
+      if (/^https?:\/\//.test(href)) return null;
+      if (href.startsWith('notes/') || href.startsWith('/notes/')) {
+        path = href.replace(/^\//, '');
+      } else {
+        path = resolvePath('notes/' + id + '/', href);
+      }
+      let slug = path.replace(/^notes\//, '').replace(/\.md$/, '');
+      const parts = slug.split('/');
+      if (parts.length >= 2 && parts[parts.length - 1] === parts[parts.length - 2]) {
+        slug = parts.slice(0, -1).join('/');
+      }
+      return slug;
+    }
+
     function makeRenderer(id) {
       const r = new marked.Renderer();
       r.image = function(hrefOrToken, title, text) {
@@ -249,6 +275,22 @@
         const src = /^https?:\/\/|^\//.test(href) ? href : `notes/${id}/${href}`;
         return `<img src="${src}" alt="${tx || ''}"${t ? ` title="${t}"` : ''} loading="lazy">`;
       };
+      r.link = function(hrefOrToken, title, text) {
+        let href, t, tx;
+        if (hrefOrToken && typeof hrefOrToken === 'object') {
+          href = hrefOrToken.href; t = hrefOrToken.title; tx = hrefOrToken.text;
+        } else {
+          href = hrefOrToken; t = title; tx = text;
+        }
+        if (href && href.endsWith('.md')) {
+          const slug = mdPathToSlug(href, id);
+          if (slug) {
+            return `<a href="blog.html?id=${encodeURIComponent(slug)}"${t ? ` title="${t}"` : ''}>${tx}</a>`;
+          }
+        }
+        const external = /^https?:\/\//.test(href);
+        return `<a href="${href}"${t ? ` title="${t}"` : ''}${external ? ' target="_blank" rel="noopener"' : ''}>${tx}</a>`;
+      };
       return r;
     }
 
@@ -257,7 +299,7 @@
       const date    = meta.date   || '';
       const series  = meta.series || '';
       const parent  = id ? id.split('/')[0] : ''; // 폴더명 = 상위 태그
-      const tags    = meta.tags ? meta.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+      const tags    = meta.tags ? meta.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
 
       document.title = title + ' | Jeonghyeok Song';
 
@@ -265,7 +307,7 @@
         ? `<a class="blog-post-tag blog-post-tag--parent" href="index.html?tab=notes&parent=${encodeURIComponent(parent)}">${parent}</a>`
         : '';
       const childPills = tags
-        .map(t => `<a class="blog-post-tag" href="index.html?tag=${encodeURIComponent(t)}">${t}</a>`)
+        .map(t => `<a class="blog-post-tag" href="index.html?parent=${encodeURIComponent(parent)}&child=${encodeURIComponent(t)}">${t}</a>`)
         .join('');
       const sep = parentPills && childPills ? `<span class="blog-post-tag-sep"></span>` : '';
       const tagPills = parentPills + sep + childPills;

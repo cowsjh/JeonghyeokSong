@@ -460,25 +460,26 @@ function makeFilterBtn(label, onClick) {
     });
 
     if (animate) {
-      // rAF 후 실제 x 좌표로 열 판별 (CSS columns 불균등 분배 대응)
-      // getBoundingClientRect는 transform(-12px) 포함이므로 +12 보정
-      void grid.offsetHeight; // 최초 1회: 패널이 display:block으로 바뀐 직후 강제 레이아웃 확정
+      // rAF 후 실제 x/y 좌표로 열·행 판별 (CSS columns 불균등 분배 대응)
+      // getBoundingClientRect는 transform(-12px, -12px) 포함이므로 +12 보정
+      void grid.offsetHeight;
       requestAnimationFrame(() => {
-        const gridLeft = grid.getBoundingClientRect().left;
+        const gridRect = grid.getBoundingClientRect();
+        const gridLeft = gridRect.left;
         const colCount = parseInt(getComputedStyle(grid).columnCount) || 4;
-        const colW     = grid.getBoundingClientRect().width / colCount;
-        const byCol    = {};
-        const colOf    = new Map();
+        const colW     = gridRect.width / colCount;
+        const byCol    = Array.from({ length: colCount }, () => []);
         els.forEach(el => {
+          const r   = el.getBoundingClientRect();
           const col = Math.max(0, Math.min(colCount - 1,
-            Math.floor((el.getBoundingClientRect().left - gridLeft + 12) / colW)));
-          colOf.set(el, col);
-          (byCol[col] = byCol[col] || []).push(el);
+            Math.floor((r.left - gridLeft + 12) / colW)));
+          byCol[col].push({ el, top: r.top + 12 });
         });
-        els.forEach(el => {
-          const col = colOf.get(el);
-          const row = byCol[col].indexOf(el);
-          setTimeout(() => el.classList.add('visible'), (col + row) * 55);
+        byCol.forEach((colItems, col) => {
+          colItems.sort((a, b) => a.top - b.top);
+          colItems.forEach(({ el }, row) => {
+            setTimeout(() => el.classList.add('visible'), (col + row) * 55);
+          });
         });
       });
     } else {

@@ -13,7 +13,7 @@ Static HTML/CSS/JS portfolio. No build system — open `index.html` in browser.
 
 | File | Role |
 |---|---|
-| `index.html` | Landing page, Works 카드 그리드 + Notes 탭 |
+| `index.html` | Landing page, Works 카드 그리드 + Notes + Gallery 탭 |
 | `work.html` | Work 상세 페이지 (`?id=<slug>`) |
 | `blog.html` | Blog 상세 페이지 (`?id=<slug>`) |
 | `works/<slug>.md` | 각 work의 원본 소스 |
@@ -23,6 +23,9 @@ Static HTML/CSS/JS portfolio. No build system — open `index.html` in browser.
 | `notes/<parent>/<slug>/<image>` | 포스트 이미지 — `.md`와 같은 서브폴더에 저장 |
 | `notes/data.js` | 런타임 데이터 (`window.BLOG`) — `blog-sync.js`로 생성 |
 | `blog-sync.js` | `notes/**/*.md` → `notes/data.js` 동기화 스크립트 |
+| `gallery/<category>/<image>` | 갤러리 이미지 — 카테고리별 서브폴더에 저장 |
+| `gallery/data.js` | 런타임 데이터 (`window.GALLERY`) — `gallery-sync.js`로 생성 |
+| `gallery-sync.js` | `gallery/**/*` → `gallery/data.js` 동기화 스크립트 |
 
 ---
 
@@ -136,3 +139,35 @@ node blog-sync.js
 - `parent` 태그: 진한 테두리, 흰 텍스트 (`.blog-post-tag--parent`)
 - `tags` 하위 태그: 기본 muted 스타일
 - 사이에 세로 구분선으로 시각적 분리
+
+---
+
+## Gallery
+
+이미지 레퍼런스를 카테고리별로 보여주는 마소너리 그리드 섹션.
+
+### 폴더 구조
+
+```
+gallery/
+  <category>/
+    image1.jpg
+    image2.png
+  data.js          ← gallery-sync.js가 생성 (직접 편집 금지)
+```
+
+### 동기화
+
+이미지 추가/삭제 후:
+```
+node gallery-sync.js
+```
+- `gallery/<category>/` 서브폴더를 스캔하여 `gallery/data.js` 재생성
+- 지원 확장자: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.avif`
+- 카테고리 = 폴더명 (자동 추출)
+
+### 기능
+
+- 카테고리 필터 버튼 (단일 선택, 재클릭 해제)
+- 이미지 클릭 → 전체화면 라이트박스
+- 라이트박스: 좌우 화살표 키 / 버튼으로 이전·다음, ESC 닫기

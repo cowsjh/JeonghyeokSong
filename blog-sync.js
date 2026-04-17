@@ -22,6 +22,25 @@ function collectMdFiles(dir) {
   return results;
 }
 
+// 플랫 구조(notes/<parent>/<slug>.md)를 서브폴더 구조로 이동
+function migrateFlatFiles(dir) {
+  for (const parent of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (!parent.isDirectory()) continue;
+    const parentDir = path.join(dir, parent.name);
+    for (const entry of fs.readdirSync(parentDir, { withFileTypes: true })) {
+      if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+      const slug = entry.name.replace(/\.md$/, '');
+      const targetDir = path.join(parentDir, slug);
+      const targetFile = path.join(targetDir, entry.name);
+      fs.mkdirSync(targetDir, { recursive: true });
+      fs.renameSync(path.join(parentDir, entry.name), targetFile);
+      console.log(`  → 이동: ${parent.name}/${entry.name} → ${parent.name}/${slug}/${entry.name}`);
+    }
+  }
+}
+
+migrateFlatFiles(blogDir);
+
 const mdFiles = collectMdFiles(blogDir).sort();
 
 if (mdFiles.length === 0) {
