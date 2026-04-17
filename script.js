@@ -42,6 +42,9 @@ function activateTab(name, animate = false) {
   if (animate && name === 'notes' && typeof window._reanimateNotes === 'function') {
     window._reanimateNotes();
   }
+  if (animate && name === 'gallery' && typeof window._reanimateGallery === 'function') {
+    window._reanimateGallery();
+  }
   if (animate && name === 'works') {
     document.querySelectorAll('.post-card').forEach((c, i) => {
       c.classList.remove('visible');
@@ -64,13 +67,13 @@ document.querySelectorAll('[data-tab]').forEach(link => {
   });
 });
 
-// hash on load (#works or #notes) — or ?tab= / ?tag= / ?parent= from URL state
+// hash on load (#works or #notes or #gallery) — or ?tab= / ?tag= / ?parent= from URL state
 (function () {
   const params = new URLSearchParams(location.search);
   const tab  = params.get('tab');
   const hash = location.hash.replace('#', '');
-  if      (tab === 'works' || tab === 'notes') activateTab(tab);
-  else if (hash === 'works' || hash === 'notes') activateTab(hash);
+  if      (tab === 'works' || tab === 'notes' || tab === 'gallery') activateTab(tab);
+  else if (hash === 'works' || hash === 'notes' || hash === 'gallery') activateTab(hash);
   else if (params.get('tag') || params.get('parent')) activateTab('notes');
 })();
 
@@ -156,7 +159,7 @@ function makeFilterBtn(label, onClick) {
     return {
       title:  meta.title  || '',
       date:   meta.date   || '',
-      tags:   meta.tags   ? meta.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+      tags:   meta.tags   ? meta.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [],
       series: meta.series || '',
     };
   }
@@ -344,7 +347,7 @@ function makeFilterBtn(label, onClick) {
 
     // 초기 상태가 있으면 서브 바 열고 버튼 active 상태 적용 (애니메이션 없이)
     if (activeParent || activeChildren.size || activeYears.size) {
-      if (activeParent) {
+      if (activeParent || activeChildren.size) {
         subFilterBar.classList.add('no-transition', 'open');
         subFilterBar.getBoundingClientRect(); // force reflow → open 상태 확정
         subFilterBar.classList.remove('no-transition');
@@ -394,9 +397,9 @@ function makeFilterBtn(label, onClick) {
     Object.values(seriesMap).forEach(slugs => slugs.sort());
 
     const params    = new URLSearchParams(location.search);
-    const urlTag    = params.get('tag')    || null;
+    const urlTag    = params.get('tag')    ? params.get('tag').toLowerCase()    : null;
     const urlParent = params.get('parent') || null;
-    const urlChild  = params.get('child')  ? params.get('child').split(',').map(s => s.trim()).filter(Boolean) : [];
+    const urlChild  = params.get('child')  ? params.get('child').split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
     const urlYear   = params.get('year')   ? params.get('year').split(',').map(s => s.trim()).filter(Boolean)  : [];
 
     const hasState = urlTag || urlParent || urlChild.length || urlYear.length;
@@ -422,6 +425,145 @@ function makeFilterBtn(label, onClick) {
       setTimeout(() => c.classList.add('visible'), delay);
     });
   };
+})();
+
+// ─── Gallery ──────────────────────────────────────────
+(function () {
+  const grid      = document.getElementById('gallery-grid');
+  const filterBar = document.getElementById('gallery-filters');
+  if (!grid) return;
+
+  let allItems     = [];
+  let filtered     = [];
+  let activeCategory = null;
+
+  function renderItems(items, animate = true) {
+    grid.innerHTML = '';
+    if (!items.length) {
+      grid.innerHTML = '<p class="notes-loading">이미지가 없습니다.</p>';
+      return;
+    }
+    const els = items.map((item, i) => {
+      const el  = document.createElement('div');
+      el.className    = 'gallery-item';
+      el.dataset.index = String(i);
+      const img = document.createElement('img');
+      img.src     = item.src;
+      img.alt     = item.title || item.category;
+      img.loading = 'lazy';
+      el.appendChild(img);
+      el.addEventListener('click', () => openLightbox(i));
+      grid.appendChild(el);
+      return el;
+    });
+
+    if (animate) {
+      // rAF 후 실제 x 좌표로 열 판별 (CSS columns 불균등 분배 대응)
+      // getBoundingClientRect는 transform(-12px) 포함이므로 +12 보정
+      requestAnimationFrame(() => {
+        const gridLeft = grid.getBoundingClientRect().left;
+        const colCount = parseInt(getComputedStyle(grid).columnCount) || 4;
+        const colW     = grid.getBoundingClientRect().width / colCount;
+        const byCol    = {};
+        const colOf    = new Map();
+        els.forEach(el => {
+          const col = Math.max(0, Math.min(colCount - 1,
+            Math.floor((el.getBoundingClientRect().left - gridLeft + 12) / colW)));
+          colOf.set(el, col);
+          (byCol[col] = byCol[col] || []).push(el);
+        });
+        els.forEach(el => {
+          const col = colOf.get(el);
+          const row = byCol[col].indexOf(el);
+          setTimeout(() => el.classList.add('visible'), (col + row) * 55);
+        });
+      });
+    } else {
+      els.forEach(el => el.classList.add('visible'));
+    }
+  }
+
+  function applyFilter(animate = true) {
+    filtered = activeCategory
+      ? allItems.filter(it => it.category === activeCategory)
+      : allItems;
+    renderItems(filtered, animate);
+  }
+
+  function buildFilters(items) {
+    const cats = [...new Set(items.map(it => it.category).filter(Boolean))].sort();
+    filterBar.innerHTML = '';
+    cats.forEach(cat => {
+      filterBar.appendChild(makeFilterBtn(cat, () => {
+        activeCategory = activeCategory === cat ? null : cat;
+        filterBar.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.filter === activeCategory);
+        });
+        applyFilter();
+      }));
+    });
+  }
+
+  const script = document.createElement('script');
+  script.src = 'gallery/data.js';
+  script.onload = () => {
+    if (!window.GALLERY || !window.GALLERY.length) { grid.innerHTML = ''; return; }
+    allItems = window.GALLERY;
+    buildFilters(allItems);
+    applyFilter(false);
+  };
+  script.onerror = () => { grid.innerHTML = ''; };
+  document.head.appendChild(script);
+
+  window._reanimateGallery = function () {
+    renderItems(filtered, true);
+  };
+
+  // ─── Lightbox ───────────────────────────────────────
+  const lb         = document.getElementById('lightbox');
+  const lbImg      = lb.querySelector('.lightbox-img');
+  const lbCaption  = lb.querySelector('.lightbox-caption');
+  const lbClose    = lb.querySelector('.lightbox-close');
+  const lbPrev     = lb.querySelector('.lightbox-prev');
+  const lbNext     = lb.querySelector('.lightbox-next');
+  const lbBackdrop = lb.querySelector('.lightbox-backdrop');
+  let   lbIndex    = 0;
+
+  function openLightbox(idx) {
+    lbIndex = idx;
+    showLbImage();
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function showLbImage() {
+    const item = filtered[lbIndex];
+    if (!item) return;
+    lbImg.classList.add('loading');
+    lbImg.onload = () => lbImg.classList.remove('loading');
+    lbImg.src = item.src;
+    lbImg.alt = item.title || item.category;
+    lbCaption.textContent = item.title || '';
+    lbPrev.style.visibility = lbIndex > 0 ? '' : 'hidden';
+    lbNext.style.visibility = lbIndex < filtered.length - 1 ? '' : 'hidden';
+  }
+
+  lbClose.addEventListener('click', closeLightbox);
+  lbBackdrop.addEventListener('click', closeLightbox);
+  lbPrev.addEventListener('click', () => { if (lbIndex > 0) { lbIndex--; showLbImage(); } });
+  lbNext.addEventListener('click', () => { if (lbIndex < filtered.length - 1) { lbIndex++; showLbImage(); } });
+
+  document.addEventListener('keydown', (e) => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft'  && lbIndex > 0)                  { lbIndex--; showLbImage(); }
+    if (e.key === 'ArrowRight' && lbIndex < filtered.length - 1) { lbIndex++; showLbImage(); }
+  });
 })();
 
 // ─── Placeholder on image load error ─────────────────
