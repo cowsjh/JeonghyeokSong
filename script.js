@@ -145,8 +145,9 @@ function makeFilterBtn(label, onClick) {
   const modeBar      = document.getElementById('notes-mode-bar');
   if (!grid) return;
 
-  let tagMode   = 'OR'; // 'OR' | 'AND'
-  let seriesMap = {};
+  let tagMode     = 'OR'; // 'OR' | 'AND'
+  let seriesMap   = {};
+  let noteObserver = null;
 
   function parseFrontmatter(text) {
     const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
@@ -237,8 +238,9 @@ function makeFilterBtn(label, onClick) {
     }
 
     // fade-in (유저 액션일 때만, 복원/새로고침은 즉시 표시)
+    if (noteObserver) { noteObserver.disconnect(); noteObserver = null; }
     if (animate) {
-      const noteObserver = new IntersectionObserver((obs) => {
+      noteObserver = new IntersectionObserver((obs) => {
         obs.forEach(e => {
           if (e.isIntersecting) {
             const c = e.target;
@@ -460,6 +462,7 @@ function makeFilterBtn(label, onClick) {
     if (animate) {
       // rAF 후 실제 x 좌표로 열 판별 (CSS columns 불균등 분배 대응)
       // getBoundingClientRect는 transform(-12px) 포함이므로 +12 보정
+      void grid.offsetHeight; // 최초 1회: 패널이 display:block으로 바뀐 직후 강제 레이아웃 확정
       requestAnimationFrame(() => {
         const gridLeft = grid.getBoundingClientRect().left;
         const colCount = parseInt(getComputedStyle(grid).columnCount) || 4;
