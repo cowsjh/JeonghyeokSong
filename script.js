@@ -585,3 +585,60 @@ cards.forEach((card) => {
 
   if (img.complete && !img.naturalWidth) setPlaceholder();
 });
+
+// ─── Mobile nav hamburger ─────────────────────────────
+(function () {
+  const btn = document.querySelector('.nav-hamburger');
+  const links = document.querySelector('.nav-links');
+  if (!btn || !links) return;
+
+  function closeNav() {
+    btn.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+    links.classList.remove('open');
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = links.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
+    btn.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  links.querySelectorAll('a').forEach(a => a.addEventListener('click', closeNav));
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#nav')) closeNav();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeNav();
+  });
+})();
+
+// ─── Mobile filter toggle ─────────────────────────────
+(function () {
+  const toggles = document.querySelectorAll('.filter-mobile-toggle');
+  if (!toggles.length) return;
+
+  toggles.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const panel = btn.closest('.tab-panel');
+      const isOpen = panel.classList.toggle('filters-open');
+      btn.classList.toggle('open', isOpen);
+    });
+  });
+
+  function updateBadges() {
+    toggles.forEach(btn => {
+      const panel = btn.closest('.tab-panel');
+      const count = panel.querySelectorAll('.filter-btn.active').length;
+      const badge = btn.querySelector('.fmt-badge');
+      if (badge) badge.textContent = count || '';
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (e.target.matches('.filter-btn')) setTimeout(updateBadges, 50);
+  });
+})();

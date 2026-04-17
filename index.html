@@ -21,6 +21,9 @@
         <span class="toggle-track"><span class="toggle-thumb"></span></span>
       </button>
     </div>
+    <button class="nav-hamburger" aria-label="메뉴 열기" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
 
   <!-- Portfolio (Works + Notes) -->
@@ -33,6 +36,7 @@
 
     <!-- Works panel -->
     <div id="tab-works" class="tab-panel active">
+      <button class="filter-mobile-toggle" data-panel="works">필터 <span class="fmt-arrow">▼</span><span class="fmt-badge"></span></button>
       <div class="filter-bar" id="works-filters"></div>
       <div class="posts-grid">
 <!-- WORKS-SYNC-START -->
@@ -63,6 +67,7 @@
 
     <!-- Notes panel -->
     <div id="tab-notes" class="tab-panel">
+      <button class="filter-mobile-toggle" data-panel="notes">필터 <span class="fmt-arrow">▼</span><span class="fmt-badge"></span></button>
       <div class="filter-bar" id="notes-filters"></div>
       <div class="filter-bar filter-bar--sub" id="notes-subfilters"></div>
       <div id="notes-mode-bar"></div>
@@ -72,6 +77,7 @@
     </div>
     <!-- Gallery panel -->
     <div id="tab-gallery" class="tab-panel">
+      <button class="filter-mobile-toggle" data-panel="gallery">필터 <span class="fmt-arrow">▼</span><span class="fmt-badge"></span></button>
       <div class="filter-bar" id="gallery-filters"></div>
       <div class="gallery-grid" id="gallery-grid">
         <p class="notes-loading">Loading&hellip;</p>
