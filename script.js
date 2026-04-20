@@ -87,13 +87,69 @@ function makeFilterBtn(label, onClick) {
   return btn;
 }
 
+// ─── Featured ─────────────────────────────────────────
+(function () {
+  const worksGrid = document.getElementById('featured-works-grid');
+  const notesGrid = document.getElementById('featured-notes-grid');
+  if (!worksGrid || !notesGrid) return;
+
+  // Featured works: 썸네일만, 호버 시 타이틀 오버레이
+  [...document.querySelectorAll('#tab-works .post-card[data-featured="true"]')]
+    .forEach((card, i) => {
+      const img   = card.querySelector('.post-thumb img');
+      const title = card.querySelector('.post-title')?.textContent || '';
+      const tools = (card.dataset.tools || '').split(',').map(t => t.trim()).filter(Boolean);
+      const toolPills = tools.map(t => `<span class="featured-tool-tag">${t}</span>`).join('');
+      const a = document.createElement('a');
+      a.className = 'post-card post-card--featured';
+      a.href = card.href;
+      a.dataset.delay = i * 60;
+      a.innerHTML = `
+        <div class="post-thumb">
+          <img src="${img?.src || ''}" alt="${title}" loading="lazy">
+          <div class="post-thumb-overlay">
+            <h3 class="post-title">${title}</h3>
+            ${toolPills ? `<div class="featured-tool-tags">${toolPills}</div>` : ''}
+          </div>
+        </div>
+      `;
+      worksGrid.appendChild(a);
+    });
+  worksGrid.querySelectorAll('.post-card').forEach(c => {
+    setTimeout(() => c.classList.add('visible'), Number(c.dataset.delay) || 0);
+  });
+
+  // Recent notes: notes IIFE data.js onload 후 호출
+  window._onNotesReady = function (entries) {
+    entries.slice(0, 5).forEach(({ slug, title, date, tags, parent }) => {
+      const card = document.createElement('a');
+      card.className = 'note-card';
+      card.href = `blog.html?id=${slug}`;
+      const parentPill = parent && parent[0]
+        ? `<span class="note-tag note-tag--parent">${parent[0]}</span>` : '';
+      const childPills = tags.map(t => `<span class="note-tag">${t}</span>`).join('');
+      const allPills = parentPill + childPills;
+      card.innerHTML = `
+        ${allPills ? `<div class="note-tags">${allPills}</div>` : ''}
+        <h3 class="note-title">${title}</h3>
+        ${date ? `<span class="note-date">${date.replace(/-/g, '.')}</span>` : ''}
+      `;
+      notesGrid.appendChild(card);
+    });
+    notesGrid.querySelectorAll('.note-card').forEach((c, i) => {
+      setTimeout(() => c.classList.add('visible'), i * 40);
+    });
+  };
+})();
+
 // ─── Works: 플랫 필터 (category | tools) ─────────────
 (function () {
   const filterBar = document.getElementById('works-filters');
   if (!filterBar) return;
 
   const postCards = [...document.querySelectorAll('.post-card')];
-  const activeFilters = new Set();
+  let activeCategory = null;
+  const activeTools  = new Set();
 
   // 카테고리/툴 수집
   const categories = [...new Set(postCards.map(c => c.dataset.category).filter(Boolean))].sort();
@@ -104,26 +160,57 @@ function makeFilterBtn(label, onClick) {
   const tools = [...toolSet].sort();
 
   function applyFilter() {
+    let i = 0;
     postCards.forEach(card => {
-      if (!activeFilters.size) { card.style.display = ''; return; }
       const cardTools = (card.dataset.tools || '').split(',').map(t => t.trim());
-      const match = [...activeFilters].some(f =>
-        card.dataset.category === f || cardTools.includes(f)
-      );
-      card.style.display = match ? '' : 'none';
+      const catMatch  = !activeCategory || card.dataset.category === activeCategory;
+      const toolMatch = !activeTools.size || [...activeTools].some(f => cardTools.includes(f));
+      const visible   = !activeCategory && !activeTools.size || (catMatch && toolMatch);
+      if (visible) {
+        card.style.display = '';
+        card.classList.remove('visible');
+        setTimeout(() => card.classList.add('visible'), i * 60);
+        i++;
+      } else {
+        card.style.display = 'none';
+      }
     });
   }
 
-  function onBtnClick(label) {
-    activeFilters.has(label) ? activeFilters.delete(label) : activeFilters.add(label);
-    filterBar.querySelectorAll('.filter-btn').forEach(b => {
-      b.classList.toggle('active', activeFilters.has(b.dataset.filter));
+  function syncBtns() {
+    const availableTools = new Set();
+    postCards.forEach(card => {
+      if (!activeCategory || card.dataset.category === activeCategory) {
+        (card.dataset.tools || '').split(',').map(t => t.trim()).filter(Boolean)
+          .forEach(t => availableTools.add(t));
+      }
     });
+    [...activeTools].forEach(t => { if (!availableTools.has(t)) activeTools.delete(t); });
+    filterBar.querySelectorAll('.filter-btn').forEach(b => {
+      const f = b.dataset.filter;
+      if (categories.includes(f)) {
+        b.classList.toggle('active', f === activeCategory);
+      } else {
+        b.style.display = availableTools.has(f) ? '' : 'none';
+        b.classList.toggle('active', activeTools.has(f));
+      }
+    });
+  }
+
+  function onCatClick(cat) {
+    activeCategory = activeCategory === cat ? null : cat;
+    syncBtns();
     applyFilter();
   }
 
-  // 카테고리 버튼
-  categories.forEach(cat => filterBar.appendChild(makeFilterBtn(cat, () => onBtnClick(cat))));
+  function onToolClick(tool) {
+    activeTools.has(tool) ? activeTools.delete(tool) : activeTools.add(tool);
+    syncBtns();
+    applyFilter();
+  }
+
+  // 카테고리 버튼 (단일 선택)
+  categories.forEach(cat => filterBar.appendChild(makeFilterBtn(cat, () => onCatClick(cat))));
 
   // 구분선
   if (categories.length && tools.length) {
@@ -133,8 +220,8 @@ function makeFilterBtn(label, onClick) {
     filterBar.appendChild(sep);
   }
 
-  // 툴 버튼
-  tools.forEach(tool => filterBar.appendChild(makeFilterBtn(tool, () => onBtnClick(tool))));
+  // 툴 버튼 (복수 선택)
+  tools.forEach(tool => filterBar.appendChild(makeFilterBtn(tool, () => onToolClick(tool))));
 })();
 
 // ─── Notes: load blog/data.js and render cards ────────
@@ -303,21 +390,24 @@ function makeFilterBtn(label, onClick) {
         } else {
           activeParent = parent;
           activeChildren.clear();
-          updateSubBar();
           subFilterBar.classList.add('open');
         }
         refresh();
       }));
     });
 
-    // 서브 바: activeParent에 속한 하위 태그만 수집 (빈도순)
+    // 서브 바: activeParent + activeYears에 속한 하위 태그만 수집 (빈도순)
     function updateSubBar() {
       const tagCount = {};
       entries
-        .filter(e => !activeParent || e.parent.includes(activeParent))
+        .filter(e =>
+          (!activeParent || e.parent.includes(activeParent)) &&
+          (!activeYears.size || activeYears.has(e.date.slice(0, 4)))
+        )
         .forEach(({ tags }) => tags.forEach(t => {
           tagCount[t] = (tagCount[t] || 0) + 1;
         }));
+      [...activeChildren].forEach(t => { if (!tagCount[t]) activeChildren.delete(t); });
       subFilterBar.innerHTML = '';
       Object.entries(tagCount)
         .sort((a, b) => b[1] - a[1])
@@ -327,6 +417,22 @@ function makeFilterBtn(label, onClick) {
             refresh();
           }));
         });
+    }
+
+    function updateParentBtns() {
+      const available = new Set(entries
+        .filter(e => !activeYears.size || activeYears.has(e.date.slice(0, 4)))
+        .flatMap(e => e.parent));
+      if (activeParent && !available.has(activeParent)) {
+        activeParent = null;
+        activeChildren.clear();
+        subFilterBar.classList.remove('open');
+      }
+      filterBar.querySelectorAll('.filter-btn').forEach(b => {
+        if (allParents.includes(b.dataset.filter)) {
+          b.style.display = available.has(b.dataset.filter) ? '' : 'none';
+        }
+      });
     }
 
     updateSubBar();
@@ -358,6 +464,8 @@ function makeFilterBtn(label, onClick) {
     }
 
     function refresh(animate = true) {
+      updateParentBtns();
+      updateSubBar();
       filterBar.querySelectorAll('.filter-btn').forEach(b => {
         b.classList.toggle('active',
           activeYears.has(b.dataset.filter) || b.dataset.filter === activeParent
@@ -389,6 +497,8 @@ function makeFilterBtn(label, onClick) {
       const parent = [slug.split('/')[0]]; // 폴더명 = 상위 태그
       return { slug, title, date, parent, tags, series };
     }).sort((a, b) => b.date.localeCompare(a.date));
+
+    if (typeof window._onNotesReady === 'function') window._onNotesReady(entries);
 
     // 시리즈 맵 빌드 (slug 알파벳순)
     entries.forEach(e => {

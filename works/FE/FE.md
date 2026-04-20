@@ -1,10 +1,11 @@
 ---
 title: Fire Extinguisher
 category: Game Art
-thumbnail: works/FE/houdini_BpQETuD3EX.png
+thumbnail: works/FE/houdini_Nghg5RPDjt.png
 date: 2021.07
 tools: Houdini 18.5
-
+featured: true
+description: Houdini HDA로 제작한 프로시쥬얼 소화기 에셋. 파라미터 조합으로 다양한 형태의 에셋을 생성할 수 있도록 설계.
 ---
 # Overview
 Procedural 소화기 HDA

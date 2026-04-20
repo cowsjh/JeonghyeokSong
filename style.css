@@ -69,6 +69,8 @@ body {
   font-weight: 500;
   line-height: 1.7;
   overflow-x: hidden;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -77,7 +79,10 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
 /* ─── Navigation ─────────────────────────────────────── */
 #nav {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1200px;
   z-index: 100;
   display: flex;
   align-items: center;
@@ -253,11 +258,65 @@ section { padding: 80px 48px; }
   display: block;
 }
 
+/* ─── Featured section ───────────────────────────────── */
+.featured-section {
+  margin-bottom: 40px;
+}
+
+/* Featured works: 2-column (카드 더 크게) */
+#featured-works-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Featured notes: 리스트 형식 */
+#featured-notes-grid {
+  display: flex;
+  flex-direction: column;
+}
+#featured-notes-grid .note-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  transform: translateX(-8px);
+  opacity: 0;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+#featured-notes-grid .note-card:first-child {
+  border-top: 1px solid var(--border);
+}
+#featured-notes-grid .note-card.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+#featured-notes-grid .note-card:hover {
+  box-shadow: none;
+  border-color: var(--border);
+}
+#featured-notes-grid .note-card .note-title {
+  flex: 1;
+  font-size: 1rem;
+  order: 0;
+}
+#featured-notes-grid .note-card .note-tags {
+  order: 1;
+  flex-shrink: 0;
+}
+#featured-notes-grid .note-card .note-date {
+  flex-shrink: 0;
+  order: 2;
+}
+
 /* ─── Posts grid (blog cards) ────────────────────────── */
 
 .posts-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 5px;
   max-width: 1400px;
 }
@@ -299,6 +358,46 @@ section { padding: 80px 48px; }
 }
 
 .post-card:hover .post-thumb img {
+  transform: scale(1.04);
+}
+
+.post-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 22px;
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.post-card--featured .post-thumb-overlay .post-title,
+.post-card--featured:hover .post-thumb-overlay .post-title {
+  color: #fff;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.post-card--featured:hover .post-thumb-overlay {
+  opacity: 1;
+}
+
+.featured-tool-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.featured-tool-tag {
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.65);
+  font-weight: 300;
+}
+
+.post-card--featured:hover .post-thumb img {
   transform: scale(1.04);
 }
 
@@ -353,6 +452,18 @@ section { padding: 80px 48px; }
   font-weight: 300;
 }
 
+.post-desc {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  font-weight: 300;
+}
+
+.post-desc-ellipsis {
+  opacity: 0.45;
+}
+
 /* ─── Notes grid ─────────────────────────────────────── */
 .notes-grid {
   display: grid;
@@ -399,6 +510,12 @@ section { padding: 80px 48px; }
   border: 1px solid var(--border);
   padding: 2px 8px;
   border-radius: 999px;
+}
+
+.note-tag--parent {
+  color: var(--text-muted);
+  background: transparent;
+  border-color: var(--text-muted);
 }
 
 .note-series-badge {

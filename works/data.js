@@ -1,6 +1,37 @@
 // Auto-synced from works/<slug>/<slug>.md — do not edit directly.
 // Edit the corresponding .md file, then run: node works-sync.js
 window.WORKS = {
+  'ezcut': `---
+title: ezcut
+category: Tool
+thumbnail: works/ezcut/image.png
+date: 2026.04
+tools: AI, python
+
+---
+
+## Overview
+레퍼런스나 클립 으로 제작한 mp4, mkv, mov 등 상호 컨버팅 하는 툴이다. gif 를 지원하며 trim 기능이 있어 영상을 간단하게 잘라서 보관할 수 있다.
+
+![alt text](image.png)
+
+### 구조
+
+####  Input
+파일을 드래그 하거나 파란 박스를 선택 해서 파일을 찾는다. 첨부된 파일 확장자를 자동으로 인식 한다. 출력 아웃풋을 설정할 수 있다.
+![alt text](image-2.png)
+
+#### Trim
+간단한 핸들로 영상을 자르는 기능을 제공한다.
+스크롤 - 타임라인 확대
+드래그 - 클립 영역 이동     
+![alt text](<2026-04-20 14-51-12_trimmed.gif>)
+
+
+### 설정
+간단한 아웃풋 설정이 가능하다.
+![alt text](image-1.png)`,
+
   'tree-generator-hda': `---
 title: Tree Generator HDA
 category: Game Art
@@ -8,6 +39,8 @@ thumbnail: works/tree-generator-hda/TreeGenHDA01.jpg
 date: 2026.01
 tools: Houdini 21.0, Unreal Engine 5.6
 link: https://www.artstation.com/artwork/x3k13R
+featured: true
+description: 모듈식 프로시쥬얼 나무 에셋 제작을 위한 Houdini HDA. SpeedTree의 노드 워크플로우에서 영감받아 확장성에 집중하여 구현.
 ---
 
 # Overview
@@ -23,7 +56,7 @@ https://www.youtube.com/watch?v=IOFI6T4mfyU
 4. 아트
 5. 개인 작업이라고 대충 만들기 않기
 
----
+
 
 # Workflow
 
@@ -120,7 +153,7 @@ B = Curvature
 \`\`\`
 ![alt text](layout03.png)
 
----
+
 
 # Result
 ![](jh-render02-0001.png)
@@ -132,16 +165,98 @@ B = Curvature
 ![](jh-render02-0007.png)
 `,
 
+  'parmstore': `---
+title: Hip Manager
+category: Tool
+thumbnail: works/parmstore/image.png
+date: 2023.11
+tools: python
+featured : false
+---
+## Overview
+
+많은 지오메트리나 작은 복셀의 시뮬레이션에 대한 뷰포트 연산 속도나 노드 네트워크 cook 시간에 영향을 주게 되면서, 작업시 버퍼링을 대기하는 시간이 길어진다. 이를 조금이나마 해결하고자 고안한 툴. 렌더팜과 사용하면 효과가 좋다. 셋업을 마무리하고 복셀 사이즈나 포인트를 살짝만 더 높은 값으로 저장 해 놓으면 로우 셋업에서 작업을 쉽게 진행한 후 결과만 저장된 값으로 볼 수 있다. 
+>[!important]
+>PDG 와 유사한 메커니즘이지만 파라미터만 저장 하기때문에 훨씬 단순하고 쉽게 사용 할 수 있다.
+
+## How to use
+1. 원하는 파라미터 첨부 (드래그 드랍)
+2. build 버튼 클릭
+3. 원하는 값 기입
+4. 캐시
+![alt text](<2026-04-20 16-54-44_trimmed.gif>)
+
+셋업을 수정할때 최적화 셋업을 꺼놓고 확인 해 보는 경우가 많은데, 이 경우 스위치 파라미터를 저장함으로서 최종 결과에 반영되는 최적화를 쉽게 보존 시킬 수 있다.
+![alt text](image-2.png)
+
+Advanced -> Script 섹션에 render script 에서 경로의 python 파일을 받아와 작동 한다. HDA 가 아니기 때문에 houdini module 을 사용할 수 없었고, 코드를 따로 관리 하고 싶어서 이 방식을 따랐다.
+![alt text](image-1.png)`,
+
+  'hip-manager': `---
+title: Hip Manager
+category: Tool
+thumbnail: works/hip-manager/image.png
+date: 2023.09
+tools: python
+featured : false
+---
+
+
+## Overview
+
+프로젝트가 진행 되다가 이전의 셋업이 필요 하거나 할때 찾기가 힘든 경우가 있어 hip파일의 버전 관리를 조금 더 세분화 하기 위한 Houdini python panel 이다. 1차적으로 색상을 통해 시각적으로 분류 하고 메모로 세분화 한다. 날짜나 시간도 기입이 가능하고, preset 버튼으로 pub,render,submit 등 체크해 놓을 수 있다. 메모 내용 검색을 통해 파일을 찾을 수도 있다.
+
+왼쪽 상단 부터 - \`색상\`, \`버전 추가\`, \`새로고침\`, \`검색\`, \`파일 삭제\`
+![alt text](image.png)
+
+\`새창에서 파일 열기\`, \`메모 창\`, \`preset 버튼\`
+![alt text](image-2.png)
+
+#### Color
+텍스트의 색상을 통해 먼저 선별 하는 것이 흐름을 알기 좋다.
+![alt text](image-1.png)
+
+#### Note, Search
+노트의 내용을 통해 버전을 검색 할 수 있다.
+![alt text](<2026-04-20 12-08-49_trimmed.gif>)
+
+#### JSON
+노트와 색상 같은 정보는 전부 hip 경로에 있는 backup 폴더에 저장된다. 그렇기 때문에 새로운 프로젝트 씬이라면 저장을 한번 해주어야 한다.
+경로 : \`./backup/HipManagerInfos.json\`
+![alt text](image-5.png)
+
+### 설치
+
+#### PySide 모듈 설치
+\`\`\`
+pip install pyside6
+\`\`\`
+#### Houdini python panel
+\`\`\`
+import sys, imp
+sys.path.append('경로')
+import VersionManager_v02
+
+imp.reload(VersionManager_v02)
+
+def onCreateInterface():
+    widget = VersionManager_v02.VersionManager()
+    return widget
+
+\`\`\`
+`,
+
   'FE': `---
-title: Procedural Modeling - Fire Extinguisher
+title: Fire Extinguisher
 category: Game Art
-thumbnail: works/FE/houdini_BpQETuD3EX.png
+thumbnail: works/FE/houdini_Nghg5RPDjt.png
 date: 2021.07
 tools: Houdini 18.5
-
+featured: true
+description: Houdini HDA로 제작한 프로시쥬얼 소화기 에셋. 파라미터 조합으로 다양한 형태의 에셋을 생성할 수 있도록 설계.
 ---
 # Overview
-다양한 바리에이션으로 배치 가능한 소화기 에셋 이다. 주변에 쉽게 보일 수 있는 개체로 선정하였다. Houdini 에서 만들어 졌고, \`VEX Material Builder\` 로 텍스쳐링.
+Procedural 소화기 HDA
 ## Planning
 대략적인 노드 구조를 짜보았다. HDA에서 다양한 종류의 에셋을 만들 수 있는것은 중요하지만, 너무 많은 파라미터들은 오히려 독이 될수 있어 계획 단계에서 만들어질 요소들과 상관관계를 정리하고 시작했다.
 ![alt text](<image (3).png>)
@@ -153,9 +268,9 @@ tools: Houdini 18.5
 
 - Hose
     - 타입 A/B
-- Nozzle
-    - 크기
-    - 길이
+    - Nozzle
+        - 크기
+        - 길이
 - Trolly
     - 타입 A/B
     - 바퀴
@@ -167,6 +282,10 @@ tools: Houdini 18.5
 # Workflow
 
 ## Modeling
+### Body
+
+실린더의 두께, 길이 핸들의 높이 등 파라미터의 조합으로 여러가지의 형태를 만들 수 있게 설계 했다. 요소들이 실린더를 베이스로 한 포인트에서 제작 되었기 때문에 위치나 각도가 즉시 반영 된다.
+![alt text](<2026-04-15 19-03-27_trimmed.gif>)
 
 ### Hose
 호스 모델링, 호스가 시작 되는 부분과 끝부분의 노말 벡터를 이용해 부드럽게 이어지는 커브를 만드로 sweep 으로 두께를 만들었다. 
@@ -175,7 +294,7 @@ tools: Houdini 18.5
 
 ### Trolly
 
-트롤리는 A 타입 B 타입이 있으며 바퀴, 프레임등 세부 요소도 조절 할 수 있다. 
+트롤리는 A 타입 B 타입이 있으며 바퀴, 프레임등 세부 요소도 조절 할 수 있다. 실린더를 베이스로 하기 때문에 크기나 변형이 있어도 적용 된다.
 ![alt text](houdini_mujUK7Byar.png) |![alt text](houdini_vPkfEBOE5u.png)|
 --- | --- |
 \`type A\` | \`type B\`
@@ -185,13 +304,17 @@ tools: Houdini 18.5
 
 
 ## Texturing
-도금 실린더 레퍼런스
+worldposition, objectposition, normal, curvature, ao 등을 활용 해서 개연성 있는 텍스쳐를 만들고자 했다.
+
+텍스쳐 레퍼런스
 ![alt text](chrome_K3OERJFM1F.png) |![alt text](chrome_KeYIWmdffM.png) |![alt text](chrome_q6e7ljdTX8.png) |![alt text](chrome_vIUu2jPtVT.png)|
 --- | --- | --- | --- |
 
-\`VEX Material Builder\` 에서 VOP 을 이용해 프로 시쥬얼 텍스쳐 생성. worldposition, normal, curvature 을 이용해 먼지가 쌓인 부분, 스크래치 를 생성 하고 노이즈로 녹슨 부분을 표현 했다.
+\`VEX Material Builder\` 에서 VOP 을 이용해 프로 시쥬얼 텍스쳐 생성. worldposition, normal, curvature 을 이용해 먼지가 쌓인 부분, 스크래치 를 생성 하고 노이즈로 도금이 벗겨져 녹슨 부분을
 ![alt text](<image (1).png>) |![alt text](<image (2).png>)| ![alt text](image.png)|
 --- | --- | --- |
 
-`
+![alt text](houdini_vJHVFKLP8m.png) |![alt text](houdini_0N89gLKUaG.png)|
+--- | --- |
+![alt text](houdini_576HIfqRfz.png) |![alt text](houdini_GX3eHoMIin.png) | ![alt text](houdini_hftveQ7fAL.png)|`
 };

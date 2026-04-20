@@ -29,18 +29,40 @@
   <!-- Portfolio (Works + Notes) -->
   <section id="portfolio">
     <div class="tab-bar">
-      <button class="tab-btn active" data-tab="works">Works</button>
+      <button class="tab-btn active" data-tab="featured">Featured</button>
+      <button class="tab-btn" data-tab="works">Works</button>
       <button class="tab-btn" data-tab="notes">Notes</button>
       <button class="tab-btn" data-tab="gallery">Gallery</button>
     </div>
 
+    <!-- Featured panel -->
+    <div id="tab-featured" class="tab-panel active">
+      <div class="featured-section">
+        <div class="posts-grid" id="featured-works-grid"></div>
+      </div>
+      <div class="featured-section">
+        <div id="featured-notes-grid"></div>
+      </div>
+    </div>
+
     <!-- Works panel -->
-    <div id="tab-works" class="tab-panel active">
+    <div id="tab-works" class="tab-panel">
       <button class="filter-mobile-toggle" data-panel="works">필터 <span class="fmt-arrow">▼</span><span class="fmt-badge"></span></button>
       <div class="filter-bar" id="works-filters"></div>
       <div class="posts-grid">
 <!-- WORKS-SYNC-START -->
-        <a class="post-card" href="work.html?id=tree-generator-hda" data-category="Game Art" data-tools="Houdini,Unreal Engine" data-date="2026.01">
+        <a class="post-card" href="work.html?id=ezcut" data-category="Tool" data-tools="AI,python" data-date="2026.04" data-featured="false">
+          <div class="post-thumb">
+            <img src="works/ezcut/image.png" alt="ezcut" loading="lazy">
+          </div>
+          <div class="post-info">
+            <span class="post-category">Tool</span>
+            <h3 class="post-title">ezcut</h3>
+            <span class="post-date">2026.04</span>
+          </div>
+        </a>
+
+        <a class="post-card" href="work.html?id=tree-generator-hda" data-category="Game Art" data-tools="Houdini,Unreal Engine" data-date="2026.01" data-featured="true" data-desc="모듈식 프로시쥬얼 나무 에셋 제작을 위한 Houdini HDA. SpeedTree의 노드 워크플로우에서 영감받아 확장성에 집중하여 구현.">
           <div class="post-thumb">
             <img src="works/tree-generator-hda/TreeGenHDA01.jpg" alt="Tree Generator HDA" loading="lazy">
           </div>
@@ -51,13 +73,35 @@
           </div>
         </a>
 
-        <a class="post-card" href="work.html?id=FE" data-category="Game Art" data-tools="Houdini" data-date="2021.07">
+        <a class="post-card" href="work.html?id=parmstore" data-category="Tool" data-tools="python" data-date="2023.11" data-featured="false">
           <div class="post-thumb">
-            <img src="works/FE/houdini_BpQETuD3EX.png" alt="Procedural Modeling - Fire Extinguisher" loading="lazy">
+            <img src="works/parmstore/image.png" alt="Hip Manager" loading="lazy">
+          </div>
+          <div class="post-info">
+            <span class="post-category">Tool</span>
+            <h3 class="post-title">Hip Manager</h3>
+            <span class="post-date">2023.11</span>
+          </div>
+        </a>
+
+        <a class="post-card" href="work.html?id=hip-manager" data-category="Tool" data-tools="python" data-date="2023.09" data-featured="false">
+          <div class="post-thumb">
+            <img src="works/hip-manager/image.png" alt="Hip Manager" loading="lazy">
+          </div>
+          <div class="post-info">
+            <span class="post-category">Tool</span>
+            <h3 class="post-title">Hip Manager</h3>
+            <span class="post-date">2023.09</span>
+          </div>
+        </a>
+
+        <a class="post-card" href="work.html?id=FE" data-category="Game Art" data-tools="Houdini" data-date="2021.07" data-featured="true" data-desc="Houdini HDA로 제작한 프로시쥬얼 소화기 에셋. 파라미터 조합으로 다양한 형태의 에셋을 생성할 수 있도록 설계.">
+          <div class="post-thumb">
+            <img src="works/FE/houdini_Nghg5RPDjt.png" alt="Fire Extinguisher" loading="lazy">
           </div>
           <div class="post-info">
             <span class="post-category">Game Art</span>
-            <h3 class="post-title">Procedural Modeling - Fire Extinguisher</h3>
+            <h3 class="post-title">Fire Extinguisher</h3>
             <span class="post-date">2021.07</span>
           </div>
         </a>

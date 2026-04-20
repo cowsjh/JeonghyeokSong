@@ -53,13 +53,15 @@ const works = slugs
 
 // ─── index.html 카드 생성 ───────────────────────
 function generateCard(work) {
-  const tools = (work.tools || '')
+  const tools = [...new Set((work.tools || '')
     .split(',')
     .map(t => stripVersion(t.trim()))
-    .filter(Boolean);
+    .filter(Boolean))];
 
+  const featured = work.featured === 'true';
+  const desc = (work.description || '').trim();
   return [
-    `        <a class="post-card" href="work.html?id=${work.slug}" data-category="${work.category || ''}" data-tools="${tools.join(',')}" data-date="${work.date || ''}">`,
+    `        <a class="post-card" href="work.html?id=${work.slug}" data-category="${work.category || ''}" data-tools="${tools.join(',')}" data-date="${work.date || ''}" data-featured="${featured}"${desc ? ` data-desc="${desc}"` : ''}>`,
     `          <div class="post-thumb">`,
     `            <img src="${work.thumbnail}" alt="${work.title}" loading="lazy">`,
     `          </div>`,
