@@ -1,0 +1,30 @@
+---
+title: ezcut
+category: Tool
+thumbnail: works/ezcut/image.png
+date: 2026.04
+tools: AI, python
+
+---
+
+## Overview
+레퍼런스나 클립 으로 제작한 mp4, mkv, mov 등 상호 컨버팅 하는 툴이다. gif 를 지원하며 trim 기능이 있어 영상을 간단하게 잘라서 보관할 수 있다.
+
+![alt text](image.png)
+
+### 구조
+
+####  Input
+파일을 드래그 하거나 파란 박스를 선택 해서 파일을 찾는다. 첨부된 파일 확장자를 자동으로 인식 한다. 출력 아웃풋을 설정할 수 있다.
+![alt text](image-2.png)
+
+#### Trim
+간단한 핸들로 영상을 자르는 기능을 제공한다.
+스크롤 - 타임라인 확대
+드래그 - 클립 영역 이동     
+![alt text](<2026-04-20 14-51-12_trimmed.gif>)
+
+
+### 설정
+간단한 아웃풋 설정이 가능하다.
+![alt text](image-1.png)
