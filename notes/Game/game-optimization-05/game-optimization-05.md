@@ -41,3 +41,16 @@ Volume -> Cull Distance Volume
 ```
 
 ## Hierarchical Level of Detail (HLODS)
+
+1. 오브젝트를 그룹으로 묶는다.
+2. 오브젝트들을 단일 메쉬로 베이크 한다.
+3. 거리에 따라서 각 그룹의 오브젝트들은 단일 메쉬로 치환된다.
+- 많은 양의 드로우콜을 세이브할 수 있다.
+
+## CPU Bound with Low Draw Calls
+드로우콜이 낮음에도 높은 cpu 연산 시간을 가진다면 확인해야할 것 들이 있다.
+- Pathfinding
+- NPC AI logic
+- Complex collision or physics
+- Game logic
+- Other CPU-intensive task

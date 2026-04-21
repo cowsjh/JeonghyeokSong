@@ -1,7 +1,7 @@
 ---
 title: Batching
 date: 2026-04-17
-tags: optimization
+tags: optimization, Rendering
 ---
 
 CPU의 병목 현상을 해결하는 방법 중 하나.

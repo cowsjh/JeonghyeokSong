@@ -1,11 +1,15 @@
 ---
-title: Culling Method
+title: Culling
 date: 2026-04-17
 tags: optimization
 ---
-[Visibility and Occlusion Culling](https://dev.epicgames.com/documentation/unreal-engine/visibility-and-occlusion-culling-in-unreal-engine#cullingmethods)
+[Unreal Doc - Visibility and Occlusion Culling](https://dev.epicgames.com/documentation/unreal-engine/visibility-and-occlusion-culling-in-unreal-engine#cullingmethods)
+[Unreal Doc - Cull Distance](https://dev.epicgames.com/documentation/unreal-engine/cull-distance-volumes-in-unreal-engine)
 
 ---
+
+>[!important]
+>Culling은 Rendering 이전에 작동 한다.
 
 보이지 않는 메쉬들을 제외 시켜 드로우콜을 낮추는 방법
 
@@ -29,7 +33,8 @@ Frustum | Frustum + Occlusion
 ### 컬링 확인 하는법
 
 ```
-콘솔 -> r.VisualizeOccludedPrimitives 1 
+r.VisualizeOccludedPrimitives 1 
+stat initviews
 ```
 
 

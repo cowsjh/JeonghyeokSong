@@ -45,6 +45,134 @@ CPU의 작업 부하를 줄임 1,000 >>>> mesh,instance buffer
 
 `,
 
+  'ComputerGraphics/aboutDraw/draw': `---
+title: Draw Call
+date: 2026-04-21
+tags: optimization, Rendering
+---
+[Unreal Course - An In-Depth look at Real-Time Rendering](https://dev.epicgames.com/community/learning/courses/EGR/unreal-engine-an-in-depth-look-at-real-time-rendering/JEJ/geometry-rendering-part-1)
+
+---
+
+## Draw ?
+
+Draw 는 CPU 가 GPU 에게 특정한 오브젝트를 화면에 렌더 하는것을 명령하고 그리는 것 언리얼은 기본적으로 수많은 렌더 패스를 수행한다. 지오메트리가 아니더라도 하늘, 대기 산란, post-processing, 에디터 UI 등 화면상 렌더되는 것은 전부 포함 된다.
+![alt text](image.png)
+
+## Draw call ?
+CPU가 CPU API 에게 무엇을 어떻게 그릴지 알려주는 것. 각 드로 콜에넌 텍스쳐, 셰이더 및 버퍼 에대 한 정보가 있음.
+같은 속성을 공유하는 폴리곤 그룹이 하나의 드로우콜로 정의 된다. (단일 메쉬에 여러개의 메테리얼이 존재하는 액터는 드로우콜에 영향을 미친다.)
+
+ **대부분 draw call 자체 보다는 준비하는 과정에서 리소스가 더 많이 든다.**
+또한 드로우콜은 렌더하고 마치면 완료했다고 말하고 다음 명령을 받아야하는 통신 과정이 이루어지기 때문에 단순 크기 보다 그 양이 많을 때 병목 현상이 일어나기 쉽다.
+\`\`\`
+1GB 파일 1개
+vs
+1KB 파일 100만개
+\`\`\`
+- 폴리곤 많을 때 : GPU 바쁨
+- draw call 많을 때 : CPU bound, GPU 낭비
+- 폴리곤이 많다고 Draw 시간이 비례하는 것은 아니다.
+- 적은 큰 모델을 쓰는 것 < 작고 많은 모델을 쓰는 것
+
+큰 모델을 쓸때는 아래 사항을 주의
+- occlusion
+- lightmapping
+- collision calculation
+- memory
+
+## Merge Mesh
+환경 배치 작업이 끝났다면 조건에 맞는 메쉬들 끼리 병합 하여 드로우콜을 줄일 수 있다.
+
+**메시 병합 최적화 규칙**
+\`\`\`
+1. 사용 빈도가 높고 폴리곤수가 적을때
+2. 동일한 구역 내에 있는 메시들
+3. 동일한 메테리얼 을 공유하는 메시
+4. 출돌 판정이 없거나 단순한 메시
+5. 크기가 작은 메시, 다이내믹 라이틸만 받는 메시
+6. 멀리있는 지형
+\`\`\`
+
+>[!important]
+>모든 환경에서 병합이 최고의 방법은 아니다 물론 효율을 높일 순 있겠으나 충분히 잘 돌아간다면 다른 곳에 시간을 투자하는 것이 좋다.
+
+## Instance Static Mesh Rendering
+동일한 static mesh 그룹을 포함한 컴포넌트
+
+크고 적은 메쉬를 인스턴스 하는것 보다 foliage 같은 작고 양이 많을 때 더 효과 적이다.
+
+## LOD, HLOD
+
+- 조건(거리)에 따라 로우 폴리로 교체되는 것.
+- HLOD는 여러개의 메쉬가 조건에 따라 그룹핑 되어 하나의 메쉬로 교체 되는 것.
+`,
+
+  'ComputerGraphics/rasterizingandovershading': `---
+title: Rasterizing and Overshading
+date: 2026-04-21
+tags: Rendering
+---
+[Rasterization, Overshading, and the GBuffer](https://dev.epicgames.com/community/learning/courses/EGR/unreal-engine-an-in-depth-look-at-real-time-rendering/aPo/rasterization-overshading-and-the-gbuffer)
+
+---
+
+## Overshading
+### Rasterizing
+
+- 픽셀 그리드로 버텍스 정보를 렌더링 하는것
+- 1개의 픽셀에는 **무조건 1개의 polygon만 존재 한다.**
+- 100,000개의 폴리곤이 아주 멀리 있어 1픽셀 만큼의 크기로 보인다면 그 1픽셀엔 1개의 폴리곤만 렌더된다.
+
+하드웨어는 렌더할때 항상 2x2 픽셀 쿼드 가 사용 된다. 아주 작은 1픽셀 짜리 오브젝트를 렌더링 한다고 해도 4개의 픽셀이 그룹으로 연산된다.
+초록색 - 폴리곤 영역
+주황색 - 연산되는 픽셀
+![alt text](image-1.png)
+
+이와 같은 원리로 근접한 폴리곤 에서 overshading이 발생 한다.
+![alt text](image-2.png)|![alt text](image-3.png)
+--- | --- |
+추가 폴리곤 영역 | 빨간부분 - overshading |
+
+## Visualize
+\`\`\`
+view mode - OptimizationViewMode - Quad Overdraw
+\`\`\`
+폴리곤이 작게 몰려있는 픽셀에서 overshading 이 많이 발생 한다.
+![alt text](image-4.png)
+
+1. 밀도가 높은 곳이 높은 비용을 가진다.
+2. 거리가 멀어지면 밀도가 높아진다.
+3. 아주 얇거나 작은 트라이 폴리곤은 overshading을 유발한다.
+
+3번의 이유로 이러한 폴리곤을 가진 모델링은 좋지 않다.
+![alt text](image-5.png)`,
+
+  'ComputerGraphics/renderdoc': `---
+title: RenderDoc
+date: 2026-04-21
+tags: optimization
+---
+
+[아티스트를 위한 프로파일링](https://www.youtube.com/watch?v=EF0YpKHfbAw&t=473s)
+
+---
+
+RenderDoc 은 렌더뷰를 캡쳐해 화면에 그려지기 까지의 그 과정을 볼 수 있는 profiling 툴이다.
+![alt text](image.png)
+
+렌더링 패스를 크게 나누면 이와 같다.
+![alt text](image-1.png)
+
+### 설치
+
+[RenderDoc 설치](https://renderdoc.org/builds)
+\`\`\`
+plugin setting - RenderDoc 체크
+project setting - RenderDoc - auto attached 체크
+\`\`\`
+`,
+
   'Game/DitherTemporalAA': `---
 title: DitherTemporalAA
 date: 2026-04-16
@@ -106,29 +234,71 @@ Pixel Depth Offset (PDO) 는 depth buffer 에 적용 되는 픽셀의 Depth 값�
 
 `,
 
-  'Game/aboutDraw/draw': `---
-title: Draw Call
-date: 2026-04-21
+  'Game/culling': `---
+title: Culling
+date: 2026-04-17
 tags: optimization
 ---
-https://dev.epicgames.com/community/learning/courses/EGR/unreal-engine-an-in-depth-look-at-real-time-rendering/JEJ/geometry-rendering-part-1
+[Unreal Doc - Visibility and Occlusion Culling](https://dev.epicgames.com/documentation/unreal-engine/visibility-and-occlusion-culling-in-unreal-engine#cullingmethods)
+[Unreal Doc - Cull Distance](https://dev.epicgames.com/documentation/unreal-engine/cull-distance-volumes-in-unreal-engine)
+
 ---
 
-## Draw ?
+>[!important]
+>Culling은 Rendering 이전에 작동 한다.
 
-Draw 는 CPU 가 GPU 에게 특정한 오브젝트를 화면에 렌더 하는것을 명령하고 그리는 것 언리얼은 기본적으로 수많은 렌더 패스를 수행한다. 지오메트리가 아니더라도 하늘, 대기 산란, post-processing, 에디터 UI 등 화면상 렌더되는 것은 전부 포함 된다.
-![alt text](image.png)
+보이지 않는 메쉬들을 제외 시켜 드로우콜을 낮추는 방법
 
-### Draw call ?
-CPU가 CPU API 에게 무엇을 어떻게 그릴지 알려주는 것. 각 드로 콜에넌 텍스쳐, 셰이더 및 버퍼 에대 한 정보가 있음. **대부분 draw call 자체 보다는 준비하는 과정에서 리소스가 더 많이 든다.**
-또한 드로우콜은 렌더하고 마치면 완료했다고 말하고 다음 명령을 받아야하는 통신 과정이 이루어지기 때문에 단순 크기 보다 그 양이 많을 때 병목 현상이 일어나기 쉽다.
+## Culling Methods
+
+1. Distance Culling
+2. Frustum Culling
+3. Precomputed
+4. Nanite
+5. Occlusion
+
+
+
+
+## Frunstum, Occlusion
+
+![alt text](image.png) | ![alt text](image-1.png) |
+--- | --- |
+Frustum | Frustum + Occlusion
+
+### 컬링 확인 하는법
+
 \`\`\`
-1GB 파일 1개
-vs
-1KB 파일 100만개
+r.VisualizeOccludedPrimitives 1 
+stat initviews
 \`\`\`
-- 폴리곤 많을 때 : GPU 바쁨
-- draw call 많을 때 : CPU bound, GPU 낭비`,
+
+
+## Distance Culling
+
+화면에 1px 정도 차지하는 아주 작은 메쉬라도 엔진은 한번의 드로우 콜을 생성한다. 사실상 육안으로 보이지 않는 부분에서 CPU 비용을 사용 하는 것. Distance Culling 은 이런 것들을 강제적으로 Culling 해주는 기법이다.
+
+### 사용법
+
+\`\`\`
+Volume -> Cull Distance Volume
+\`\`\`
+
+여러 Cull Distance Pair 를 만들어 다양한 크기의 오브 젝트를 컬링한다.
+![alt text](examplescenecdvvalues.png)
+
+- 약 200 유닛 오브젝트 + 카메라 거리 1000 유닛 이상 컬링됩니다.
+- 약 500 유닛 오브젝트 + 카메라 거리 2000 유닛 이상 컬링됩니다.
+- 약 1000 유닛 오브젝트 컬링 X
+
+>[!info]
+> 더 많은 내용은 [여기](https://dev.epicgames.com/documentation/unreal-engine/cull-distance-volumes-in-unreal-engine)
+
+
+## Precomputed
+
+[!info]
+> 더 많은 내용은 [여기](https://dev.epicgames.com/documentation/unreal-engine/precomputed-visibility-volumes-in-unreal-engine)`,
 
   'Game/game-optimization-01': `---
 title: "Game Optimization 01 - Introduction & General Principles"
@@ -379,7 +549,20 @@ series: Game Optimization
 Volume -> Cull Distance Volume
 \`\`\`
 
-## Hierarchical Level of Detail (HLODS)`,
+## Hierarchical Level of Detail (HLODS)
+
+1. 오브젝트를 그룹으로 묶는다.
+2. 오브젝트들을 단일 메쉬로 베이크 한다.
+3. 거리에 따라서 각 그룹의 오브젝트들은 단일 메쉬로 치환된다.
+- 많은 양의 드로우콜을 세이브할 수 있다.
+
+## CPU Bound with Low Draw Calls
+드로우콜이 낮음에도 높은 cpu 연산 시간을 가진다면 확인해야할 것 들이 있다.
+- Pathfinding
+- NPC AI logic
+- Complex collision or physics
+- Game logic
+- Other CPU-intensive task`,
 
   'Game/gpuvisualizer/gpu-visualizer': `---
 title: GPU Visualizer
@@ -398,67 +581,6 @@ GPU time
 
 
 `,
-
-  'Game/occlusionculling': `---
-title: Culling Method
-date: 2026-04-17
-tags: optimization
----
-[Visibility and Occlusion Culling](https://dev.epicgames.com/documentation/unreal-engine/visibility-and-occlusion-culling-in-unreal-engine#cullingmethods)
-
----
-
-보이지 않는 메쉬들을 제외 시켜 드로우콜을 낮추는 방법
-
-## Culling Methods
-
-1. Distance Culling
-2. Frustum Culling
-3. Precomputed
-4. Nanite
-5. Occlusion
-
-
-
-
-## Frunstum, Occlusion
-
-![alt text](image.png) | ![alt text](image-1.png) |
---- | --- |
-Frustum | Frustum + Occlusion
-
-### 컬링 확인 하는법
-
-\`\`\`
-콘솔 -> r.VisualizeOccludedPrimitives 1 
-\`\`\`
-
-
-## Distance Culling
-
-화면에 1px 정도 차지하는 아주 작은 메쉬라도 엔진은 한번의 드로우 콜을 생성한다. 사실상 육안으로 보이지 않는 부분에서 CPU 비용을 사용 하는 것. Distance Culling 은 이런 것들을 강제적으로 Culling 해주는 기법이다.
-
-### 사용법
-
-\`\`\`
-Volume -> Cull Distance Volume
-\`\`\`
-
-여러 Cull Distance Pair 를 만들어 다양한 크기의 오브 젝트를 컬링한다.
-![alt text](examplescenecdvvalues.png)
-
-- 약 200 유닛 오브젝트 + 카메라 거리 1000 유닛 이상 컬링됩니다.
-- 약 500 유닛 오브젝트 + 카메라 거리 2000 유닛 이상 컬링됩니다.
-- 약 1000 유닛 오브젝트 컬링 X
-
->[!info]
-> 더 많은 내용은 [여기](https://dev.epicgames.com/documentation/unreal-engine/cull-distance-volumes-in-unreal-engine)
-
-
-## Precomputed
-
-[!info]
-> 더 많은 내용은 [여기](https://dev.epicgames.com/documentation/unreal-engine/precomputed-visibility-volumes-in-unreal-engine)`,
 
   'Houdini/camera-ndc': `---
 title: Camera NDC
