@@ -345,7 +345,7 @@
           ${dateStr ? `<span class="blog-post-date">${dateStr}</span>` : ''}
         </div>
         ${seriesNavHtml}
-        <div class="md-body">${convertAlerts(marked.parse(body, { renderer: makeRenderer(id) }))}</div>
+        <div class="md-body">${convertAlerts(marked.parse(body, { renderer: makeRenderer(id), breaks: true }))}</div>
         ${prevNextHtml}
       `;
       postProcessTables(document.getElementById('post-content'));

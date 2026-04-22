@@ -14,6 +14,8 @@
   --border:       #e4e4e4;
   --border-hover: #c0c0c0;
   --nav-bg:       rgba(255, 255, 255, 0.95);
+  --link:         #4070c0;
+  --link-hover:   #2850a0;
 
   --font-serif: 'Playfair Display', 'Noto Sans KR', Georgia, serif;
   --font-sans:  'Roboto', 'Noto Sans KR', system-ui, sans-serif;
@@ -38,6 +40,8 @@
     --border-hover: #555555;
     --nav-bg:       rgba(25, 26, 27, 0.92);
     --code-bg:      #313233;
+    --link:         #7aaae8;
+    --link-hover:   #9dc0f0;
   }
 }
 
@@ -55,6 +59,8 @@
   --border-hover: #555555;
   --nav-bg:       rgba(25, 26, 27, 0.92);
   --code-bg:      #313233;
+  --link:         #7aaae8;
+  --link-hover:   #9dc0f0;
 }
 
 /* ─── Reset ─────────────────────────────────────────── */
@@ -794,13 +800,16 @@ footer {
 .md-body strong { font-weight: 500; }
 
 .md-body a {
-  color: var(--text);
+  color: var(--link);
   text-decoration: underline;
   text-underline-offset: 3px;
-  text-decoration-color: var(--border);
-  transition: text-decoration-color 0.2s;
+  text-decoration-color: transparent;
+  transition: color 0.2s, text-decoration-color 0.2s;
 }
-.md-body a:hover { text-decoration-color: var(--text-muted); }
+.md-body a:hover {
+  color: var(--link-hover);
+  text-decoration-color: var(--link-hover);
+}
 
 .md-body ul, .md-body ol {
   padding-left: 1.5em;

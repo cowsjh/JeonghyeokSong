@@ -4,7 +4,7 @@ window.BLOG = {
   'ComputerGraphics/Batching': `---
 title: Batching
 date: 2026-04-17
-tags: optimization
+tags: optimization, Rendering
 ---
 
 CPU의 병목 현상을 해결하는 방법 중 하나.
@@ -148,31 +148,6 @@ view mode - OptimizationViewMode - Quad Overdraw
 3번의 이유로 이러한 폴리곤을 가진 모델링은 좋지 않다.
 ![alt text](image-5.png)`,
 
-  'ComputerGraphics/renderdoc': `---
-title: RenderDoc
-date: 2026-04-21
-tags: optimization
----
-
-[아티스트를 위한 프로파일링](https://www.youtube.com/watch?v=EF0YpKHfbAw&t=473s)
-
----
-
-RenderDoc 은 렌더뷰를 캡쳐해 화면에 그려지기 까지의 그 과정을 볼 수 있는 profiling 툴이다.
-![alt text](image.png)
-
-렌더링 패스를 크게 나누면 이와 같다.
-![alt text](image-1.png)
-
-### 설치
-
-[RenderDoc 설치](https://renderdoc.org/builds)
-\`\`\`
-plugin setting - RenderDoc 체크
-project setting - RenderDoc - auto attached 체크
-\`\`\`
-`,
-
   'Game/DitherTemporalAA': `---
 title: DitherTemporalAA
 date: 2026-04-16
@@ -234,6 +209,138 @@ Pixel Depth Offset (PDO) 는 depth buffer 에 적용 되는 픽셀의 Depth 값�
 
 `,
 
+  'Game/Reflections/main': `---
+title: Reflections
+date: 2026-04-22
+tags: Unreal Engine, rendering, shading
+---
+
+[An In-Depth look at Real-Time Rendering - Reflections](https://dev.epicgames.com/community/learning/courses/EGR/unreal-engine-an-in-depth-look-at-real-time-rendering/rEl/an-in-depth-look-at-real-time-rendering-reflections)
+
+---
+
+## Reflections
+
+- Reflection 은 real-time 으로 렌더링 하기엔 비용이 크다.
+- 3가지의 방법이 있으며 장단점이있다.
+- 3가지의 방식은 순서차적으로 블렌딩된다.
+- Lumen이 켜져 있다면 꺼야 적용 된다.
+### Reflection Captures
+
+- 액터 로케이션 기준으로 정적 큐브맵을 캡쳐하여 범위내 오브젝트에 블렌딩 하는 방식
+- 여러개 배치 가능
+- 매우 빠르다
+- 살짝 부정확
+
+\`\`\`
+place actor > Visual Effect > Sphere/Box Reflection Capture
+Build > Build Reflections Capture
+\`\`\`
+
+캡쳐 Resolution 설정
+\`\`\`
+Project Setting > Reflection Capture Resolution
+\`\`\`
+
+기본적으로 큰 것들을 여러개 배치해 원하는 지역을 덮고 반사성이 높은 객체에 작은 것들을 배치한다.
+겹치는 갯수 만큼 블렌딩 연산을 하기 때문에 염두해두고 배치 한다.
+
+![alt text](image.png)
+
+### Planar Reflections
+
+- 평면에 캡쳐
+- 평면이 아니라면 제한적임
+- 무거워질 수 있음
+- 비교적 정확함
+\`\`\`
+place actor > Visual Effect > planar Reflection Capture
+\`\`\`
+
+
+### Screen Space Reflections (SSR)
+1. 기본 reflection 시스템
+2. real-time
+3. 정확함
+4. 노이즈가 끼고 조금 무겁다.
+5. 현재 화면에 렌더링되어있는 것들만 반사한다.
+
+
+reflection capture는 레벨을 로딩할 때 발생한다. 캡쳐할 것이 많다면 시간이 오래 걸릴 수 있다. - 패키징 하면 문제 해결 된다.
+
+### Skylight
+
+skylight 에도 reflection 캡쳐가 존재한다.
+![alt text](image-1.png)
+150000 유닛 을 클립 하고 캡쳐 하기때문에 스카이 큐브맵만 캡쳐한다. 오브젝트 주위에 reflection capture 액터가 없다면 skylight의 큐브맵을 reflection으로 사용 하게 된다.`,
+
+  'Game/ShadersAndMaterials': `---
+title: Shaders and Materials
+date: 2026-04-22
+tags: Unreal Engine, Rendering, shading
+---
+
+[Shaders and Materials](https://dev.epicgames.com/community/learning/courses/EGR/unreal-engine-an-in-depth-look-at-real-time-rendering/j1v/shaders-and-materials)
+
+---
+
+## Pixel Shaders
+- GPU 가 연산
+- 픽셀에서 실행 되는 프로그램
+- 모든 픽셀에서 연산
+- 렌더링의 모든 단계, 모든 부분에 사용됨.
+    - material 시스템
+    - lighting
+    - post process
+    - color correction
+    - ...
+- 쉐이더 언어로 작동됨 - 플랫폼 마다 상이
+    - \`DirectX\` > \`HLSL\`
+
+Shader Complexity 뷰에서 봤을 때 하단 바를 보면 현재 십자선 을 기준으로 PS(Pixel Shader) VS(Vertex Shader) 의 복잡도를 보여준다.
+![alt text](image-3.png)
+
+복잡한 PS는 pixel 단계에서 연산이 되기 때문에 pixel 에 적게 노출 되는, 멀리 있는 오브젝트에 있는 편이 낫다.
+
+### 작동 방식
+
+#### 기존 쉐이더 방식
+1. 쉐이더가 작성됨
+2. 짜여진 쉐이더 코드에 변수나 텍스쳐가 더 추가됨
+3. 모델링에 출력
+
+#### Unreal 에서
+1. HLSL 코드가 USF 파일로 저장됨
+    - Material Editor의 그래픽 노드 인터페이스 에서 USF 템플릿을 노드로 변한하여 사용함
+3. Editor에서 작업된 것들이 컴파일되어 새로운 셰이더로 작성됨
+    - 셰이더가 컴파일 되어 Material Instance 를 생성
+4. 모델에 적용
+
+Material Editor 에서 작성된 메테리얼 HLSL 확인
+\`\`\`
+Window > Shader Code > HLSL Code
+\`\`\`
+
+USF 템플릿 경로 : \`C:\Program Files\Epic Games\UE_5.6\Engine\Shaders\Private\`
+
+이것들이 전부 제공하는 템플릿이고 사용자가 원하는 쉐이딩 모델 템플릿을 추가 해서 늘릴 수도 있다.
+![alt text](image-1.png)
+
+## Materials
+머티리얼은 대부분 Physical Based Rendering (PBR) 기반의 통합된 쉐이딩 파이프라인을 가진다.
+
+### 쉐이딩 통합의 이점
+1. 단일화로 인한 효율
+2. 일관적이고 예측 가능한 파이프 라인 구축 가능.
+3. G-buffer 상속에 대한 제약
+PBR은 거의 모든 재질이 roughness 와 metalic으로 조절이 가능하다.
+![alt text](image-2.png)
+
+
+stats 창을 보면 shader 가 얼마나 연산하는지 알수 있다 보통 100~300
+![alt text](image-4.png)
+`,
+
   'Game/culling': `---
 title: Culling
 date: 2026-04-17
@@ -241,6 +348,7 @@ tags: optimization
 ---
 [Unreal Doc - Visibility and Occlusion Culling](https://dev.epicgames.com/documentation/unreal-engine/visibility-and-occlusion-culling-in-unreal-engine#cullingmethods)
 [Unreal Doc - Cull Distance](https://dev.epicgames.com/documentation/unreal-engine/cull-distance-volumes-in-unreal-engine)
+[Precomputed Visibility Volumes](https://dev.epicgames.com/documentation/unreal-engine/precomputed-visibility-volumes-in-unreal-engine)
 
 ---
 
@@ -251,11 +359,13 @@ tags: optimization
 
 ## Culling Methods
 
+비용이 싼 culling 부터 아래의 순서대로 작동한다.
+
 1. Distance Culling
 2. Frustum Culling
-3. Precomputed
-4. Nanite
-5. Occlusion
+3. Precomputed Visibility
+4. Nanite Culling
+5. Occlusion Culling
 
 
 
@@ -291,14 +401,26 @@ Volume -> Cull Distance Volume
 - 약 500 유닛 오브젝트 + 카메라 거리 2000 유닛 이상 컬링됩니다.
 - 약 1000 유닛 오브젝트 컬링 X
 
->[!info]
-> 더 많은 내용은 [여기](https://dev.epicgames.com/documentation/unreal-engine/cull-distance-volumes-in-unreal-engine)
+
+## Precomputed Visibility Volumes
+
+셀 단위에 가시성 데이터를 저장 하여 플레이어/카메라 의 위치에 따라 셀 안에 있는 오브젝트를 컬링 하는 기법. 매 프레임 계산하는 Occlusion Culling 보다 저렴하다.
 
 
-## Precomputed
 
-[!info]
-> 더 많은 내용은 [여기](https://dev.epicgames.com/documentation/unreal-engine/precomputed-visibility-volumes-in-unreal-engine)`,
+가시성 데이터는 **라이팅 빌드**시 저장 된다. 이미 라이팅을 빌드 했다면 따로 빌드 할 수 도 있다.
+
+\`\`\`
+World Settings > Precompute Visibility 체크
+Actor > Volume > precompute Visibility volume 배치
+build > light
+
+Show > Advanced > Precomputed Visibility 
+\`\`\`
+![alt text](image-2.png)
+>[!tip]
+>r.ShowRelevantPrecomputedVisibilityCells 을 사용하면 카메라 가까이에 있는 셀만 표시된다.
+`,
 
   'Game/game-optimization-01': `---
 title: "Game Optimization 01 - Introduction & General Principles"
@@ -564,12 +686,18 @@ Volume -> Cull Distance Volume
 - Game logic
 - Other CPU-intensive task`,
 
-  'Game/gpuvisualizer/gpu-visualizer': `---
-title: GPU Visualizer
-date: 2026-04-21
-tags: optimization
+  'Game/profiling': `---
+title: Profiling
+date: 2026-04-22
+tags: optimization, Unreal Engine
 ---
 
+\`\`\`
+stat unit gragh
+stat RHI - 드로우 콜
+\`\`\`
+
+# GPU Visiualizer
 드로우 시간중 어떤것들이 비중을 차지 하는지 시각적으로 알려줌
 
 **캡쳐**
@@ -579,8 +707,55 @@ GPU time
 ![alt text](image.png)
 
 
+# RenderDoc
 
+RenderDoc 은 렌더뷰를 캡쳐해 화면에 그려지기 까지의 그 과정을 볼 수 있는 profiling 툴이다.
+![alt text](image-copy.png)
+
+렌더링 패스를 크게 나누면 이와 같다.
+![alt text](image-1-copy.png)
+
+### 설치
+
+[RenderDoc 설치](https://renderdoc.org/builds)
+\`\`\`
+plugin setting - RenderDoc 체크
+project setting - RenderDoc - auto attached 체크
+\`\`\`
 `,
+
+  'Game/textures,pixelsshadersandmaterials/main': `---
+title: Rendering and Textures
+date: 2026-04-22
+tags: optimization, Unreal Engine
+---
+
+[Rendering and Textures](https://dev.epicgames.com/community/learning/courses/EGR/unreal-engine-an-in-depth-look-at-real-time-rendering/beV/rendering-and-textures)
+
+---
+
+## Texture
+- 텍스쳐는 임포트 될때 압축 된다. - 메모리와 대역폭 한계가 있기 때문
+- 플랫폼 마다 압축 방법이 다르며 PC 는 BC(DTXC)를 사용 한다.
+- UE5에서는 다양한 BC 압축 방법이 존재 한다.
+- 쉐이더는 조회할 수 있는 텍스쳐 제한이 있다.
+
+### Texture Streaming
+어느시점에 어느 mipmap을 로드할지 결정하는 프로세스. 엔진은  텍스트를 위해 **Streaming Pool** 이라고 하는 VRAM의 일정량을 미리 할당한다.
+
+### Mipmap
+- 원본의 1/4 크기의 사본 이미지
+- 모든 사본 이미지는 텍스쳐에 저장 된다.
+
+밉맵이 없다면 먼거리의 텍스쳐는 노이즈 처럼 보이는 현상이 일어난다. 폴리곤의 오버쉐이딩 같은 느낌. 밉맵은 블렌딩되어 적용 된다.
+![alt text](image.png) | ![alt text](msedge_5WwuiHeqQO.png) |
+--- | --- |
+mipmap 적용, 미적용 | 블렌딩 적용 방식 |
+
+>[!note]
+>streaming, mipmap 은 2제곱 크기의 해상도 를 지원한다.
+GPU는 메모리를 절약을 위해 4*4 픽셀 블록 단위로 묶어서 압축된다.
+>(직사각형)32x16도 지원한다.`,
 
   'Houdini/camera-ndc': `---
 title: Camera NDC
@@ -1946,12 +2121,13 @@ README.md 에서
 ../ = c/
 \`\`\`
 
+-  뒤에 #h 를 붙이면 헤더로 이동 가능. 단 띄어쓰기는 \`-\` 로 대체
 \`\`\`
-[참조](../Houdini/camera-ndc/camera-ndc.md)
+[참조](../../Houdini/camera-ndc/camera-ndc.md#활용-예시)
 \`\`\`
 **출력 결과**
 
-[참조](../Houdini/camera-ndc/camera-ndc.md)
+[참조](../../Houdini/camera-ndc/camera-ndc.md#활용-예시)
 
 ---
 
@@ -1978,6 +2154,8 @@ README.md 에서
 \`\`\`
 [Google][GOOGLE]
 [Naver][1]
+
+---
 
 [GOOGLE]: https://google.com
 [1]:<https://naver.com>

@@ -5,6 +5,7 @@ tags: optimization
 ---
 [Unreal Doc - Visibility and Occlusion Culling](https://dev.epicgames.com/documentation/unreal-engine/visibility-and-occlusion-culling-in-unreal-engine#cullingmethods)
 [Unreal Doc - Cull Distance](https://dev.epicgames.com/documentation/unreal-engine/cull-distance-volumes-in-unreal-engine)
+[Precomputed Visibility Volumes](https://dev.epicgames.com/documentation/unreal-engine/precomputed-visibility-volumes-in-unreal-engine)
 
 ---
 
@@ -15,11 +16,13 @@ tags: optimization
 
 ## Culling Methods
 
+비용이 싼 culling 부터 아래의 순서대로 작동한다.
+
 1. Distance Culling
 2. Frustum Culling
-3. Precomputed
-4. Nanite
-5. Occlusion
+3. Precomputed Visibility
+4. Nanite Culling
+5. Occlusion Culling
 
 
 
@@ -55,11 +58,22 @@ Volume -> Cull Distance Volume
 - 약 500 유닛 오브젝트 + 카메라 거리 2000 유닛 이상 컬링됩니다.
 - 약 1000 유닛 오브젝트 컬링 X
 
->[!info]
-> 더 많은 내용은 [여기](https://dev.epicgames.com/documentation/unreal-engine/cull-distance-volumes-in-unreal-engine)
+
+## Precomputed Visibility Volumes
+
+셀 단위에 가시성 데이터를 저장 하여 플레이어/카메라 의 위치에 따라 셀 안에 있는 오브젝트를 컬링 하는 기법. 매 프레임 계산하는 Occlusion Culling 보다 저렴하다.
 
 
-## Precomputed
 
-[!info]
-> 더 많은 내용은 [여기](https://dev.epicgames.com/documentation/unreal-engine/precomputed-visibility-volumes-in-unreal-engine)
+가시성 데이터는 **라이팅 빌드**시 저장 된다. 이미 라이팅을 빌드 했다면 따로 빌드 할 수 도 있다.
+
+```
+World Settings > Precompute Visibility 체크
+Actor > Volume > precompute Visibility volume 배치
+build > light
+
+Show > Advanced > Precomputed Visibility 
+```
+![alt text](image-2.png)
+>[!tip]
+>r.ShowRelevantPrecomputedVisibilityCells 을 사용하면 카메라 가까이에 있는 셀만 표시된다.
