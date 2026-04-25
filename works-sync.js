@@ -1,5 +1,5 @@
 // works-sync.js
-// works/<slug>/<slug>.md 파일을 읽어 index.html 카드와 works/data.js를 재생성합니다.
+// works/<slug>/main.md 파일을 읽어 index.html 카드와 works/data.js를 재생성합니다.
 // 사용법: node works-sync.js
 
 const fs   = require('fs');
@@ -42,7 +42,7 @@ if (slugs.length === 0) {
 // 파싱 + 날짜순 정렬 (최신순)
 const works = slugs
   .map(slug => {
-    const mdPath = path.join(worksDir, slug, `${slug}.md`);
+    const mdPath = path.join(worksDir, slug, 'main.md');
     if (!fs.existsSync(mdPath)) return null;
     const content = fs.readFileSync(mdPath, 'utf8');
     const meta    = parseFrontmatter(content);
@@ -60,10 +60,11 @@ function generateCard(work) {
 
   const featured = work.featured === 'true';
   const desc = (work.description || '').trim();
+  const thumb = work.thumbnail.includes('/') ? work.thumbnail : `works/${work.slug}/${work.thumbnail}`;
   return [
     `        <a class="post-card" href="work.html?id=${work.slug}" data-category="${work.category || ''}" data-tools="${tools.join(',')}" data-date="${work.date || ''}" data-featured="${featured}"${desc ? ` data-desc="${desc}"` : ''}>`,
     `          <div class="post-thumb">`,
-    `            <img src="${work.thumbnail}" alt="${work.title}" loading="lazy">`,
+    `            <img src="${thumb}" alt="${work.title}" loading="lazy">`,
     `          </div>`,
     `          <div class="post-info">`,
     `            <span class="post-category">${work.category || ''}</span>`,
@@ -99,7 +100,7 @@ const entries = works.map(({ slug, content }) => {
 });
 
 const output = [
-  '// Auto-synced from works/<slug>/<slug>.md — do not edit directly.',
+  '// Auto-synced from works/<slug>/main.md — do not edit directly.',
   '// Edit the corresponding .md file, then run: node works-sync.js',
   'window.WORKS = {',
   entries.join(',\n\n'),

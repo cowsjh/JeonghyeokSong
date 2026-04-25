@@ -1,4 +1,4 @@
-// Auto-synced from works/<slug>/<slug>.md — do not edit directly.
+// Auto-synced from works/<slug>/main.md — do not edit directly.
 // Edit the corresponding .md file, then run: node works-sync.js
 window.WORKS = {
   'ezcut': `---

@@ -45,7 +45,7 @@ CPU의 작업 부하를 줄임 1,000 >>>> mesh,instance buffer
 
 `,
 
-  'ComputerGraphics/aboutDraw/draw': `---
+  'ComputerGraphics/aboutDraw': `---
 title: Draw Call
 date: 2026-04-21
 tags: optimization, Rendering
@@ -148,7 +148,7 @@ view mode - OptimizationViewMode - Quad Overdraw
 3번의 이유로 이러한 폴리곤을 가진 모델링은 좋지 않다.
 ![alt text](image-5.png)`,
 
-  'Game/DarkRuinsoptimization/main': `---
+  'Game/DarkRuinsoptimization': `---
 title: DarkRuins Optimization
 date: 2026-04-24
 tags: Unreal Engine, optimization
@@ -236,7 +236,7 @@ Pixel Depth Offset (PDO) 는 depth buffer 에 적용 되는 픽셀의 Depth 값�
 
 `,
 
-  'Game/Reflections/main': `---
+  'Game/Reflections': `---
 title: Reflections
 date: 2026-04-22
 tags: Unreal Engine, rendering, shading
@@ -756,7 +756,7 @@ project setting - RenderDoc - auto attached 체크
 \`\`\`
 `,
 
-  'Game/textures,pixelsshadersandmaterials/main': `---
+  'Game/textures,pixelsshadersandmaterials': `---
 title: Rendering and Textures
 date: 2026-04-22
 tags: optimization, Unreal Engine

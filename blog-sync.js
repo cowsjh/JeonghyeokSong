@@ -31,10 +31,10 @@ function migrateFlatFiles(dir) {
       if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
       const slug = entry.name.replace(/\.md$/, '');
       const targetDir = path.join(parentDir, slug);
-      const targetFile = path.join(targetDir, entry.name);
+      const targetFile = path.join(targetDir, 'main.md');
       fs.mkdirSync(targetDir, { recursive: true });
       fs.renameSync(path.join(parentDir, entry.name), targetFile);
-      console.log(`  → 이동: ${parent.name}/${entry.name} → ${parent.name}/${slug}/${entry.name}`);
+      console.log(`  → 이동: ${parent.name}/${entry.name} → ${parent.name}/${slug}/main.md`);
     }
   }
 }
@@ -50,9 +50,10 @@ if (mdFiles.length === 0) {
 
 const entries = mdFiles.map(filePath => {
   let slug = path.relative(blogDir, filePath).replace(/\.md$/, '').replace(/\\/g, '/');
-  // Collapse "parent/slug/slug" → "parent/slug" when filename == parent dir name
+  // Collapse "parent/slug/slug" or "parent/slug/main" → "parent/slug"
   const parts = slug.split('/');
-  if (parts.length >= 2 && parts[parts.length - 1] === parts[parts.length - 2]) {
+  const last = parts[parts.length - 1];
+  if (parts.length >= 2 && (last === parts[parts.length - 2] || last === 'main')) {
     slug = parts.slice(0, -1).join('/');
   }
   const content = fs.readFileSync(filePath, 'utf8');
