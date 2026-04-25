@@ -4,7 +4,7 @@ category: Tool
 thumbnail: jh-rock-01.jpg
 date: 2025.10
 tools: substance designer
-featured : True
+featured: true
 ---
 
 ## Overview
