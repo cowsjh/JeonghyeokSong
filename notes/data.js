@@ -148,6 +148,33 @@ view mode - OptimizationViewMode - Quad Overdraw
 3번의 이유로 이러한 폴리곤을 가진 모델링은 좋지 않다.
 ![alt text](image-5.png)`,
 
+  'Game/DarkRuinsoptimization/main': `---
+title: DarkRuins Optimization
+date: 2026-04-24
+tags: Unreal Engine, optimization
+---
+FABs 에 무료로 제공하는 \`DarkRuinsMegascansSample\` 씬을 최적화 해보자
+![alt text](image-3.png)
+
+## Hardware
+- AMD Ryzen5 5500 6core
+- NVIDIAGTX 1660 Super
+- 16GB
+Hardware RayTracing을 지원 하지 않기 때문에 씬의 MegaLight는 off, Reflection은 none 로 진행 한다.
+
+일단 로직을 제외한 에셋 최적화를 우선적으로 진행한다.
+최적화 이전의 stat
+\`\`\`
+FPS: 16.56
+Frame: 60.25
+Draw: 60.51
+GPU Time: 59.49
+\`\`\`
+
+## Profiling
+
+`,
+
   'Game/DitherTemporalAA': `---
 title: DitherTemporalAA
 date: 2026-04-16
@@ -225,6 +252,10 @@ tags: Unreal Engine, rendering, shading
 - 3가지의 방법이 있으며 장단점이있다.
 - 3가지의 방식은 순서차적으로 블렌딩된다.
 - Lumen이 켜져 있다면 꺼야 적용 된다.
+
+>[!note]
+>PostProcessingVolume, Project Setting 에서 Lumen, SSR, none 을 선택 가능하다. Caputer 기능은 Lumen 환경에선 Lumen 이 오버 라이드 된다.
+
 ### Reflection Captures
 
 - 액터 로케이션 기준으로 정적 큐브맵을 캡쳐하여 범위내 오브젝트에 블렌딩 하는 방식
@@ -267,6 +298,7 @@ place actor > Visual Effect > planar Reflection Capture
 
 
 reflection capture는 레벨을 로딩할 때 발생한다. 캡쳐할 것이 많다면 시간이 오래 걸릴 수 있다. - 패키징 하면 문제 해결 된다.
+
 
 ### Skylight
 

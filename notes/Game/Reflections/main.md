@@ -14,6 +14,10 @@ tags: Unreal Engine, rendering, shading
 - 3가지의 방법이 있으며 장단점이있다.
 - 3가지의 방식은 순서차적으로 블렌딩된다.
 - Lumen이 켜져 있다면 꺼야 적용 된다.
+
+>[!note]
+>PostProcessingVolume, Project Setting 에서 Lumen, SSR, none 을 선택 가능하다. Caputer 기능은 Lumen 환경에선 Lumen 이 오버 라이드 된다.
+
 ### Reflection Captures
 
 - 액터 로케이션 기준으로 정적 큐브맵을 캡쳐하여 범위내 오브젝트에 블렌딩 하는 방식
@@ -56,6 +60,7 @@ place actor > Visual Effect > planar Reflection Capture
 
 
 reflection capture는 레벨을 로딩할 때 발생한다. 캡쳐할 것이 많다면 시간이 오래 걸릴 수 있다. - 패키징 하면 문제 해결 된다.
+
 
 ### Skylight
 
