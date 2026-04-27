@@ -167,10 +167,10 @@ B = Curvature
 
   'Snowrock': `---
 title: Snow Rock Texture
-category: Tool
+category: Game Art
 thumbnail: works/Snowrock/jh-rock-01.jpg
 date: 2025.10
-tools: substance designer
+tools: Substance Designer
 featured: true
 ---
 
@@ -275,7 +275,7 @@ def onCreateInterface():
   'FE': `---
 title: Fire Extinguisher
 category: Game Art
-thumbnail: works/FE/houdini_Nghg5RPDjt.png
+thumbnail: image-17.png
 date: 2021.07
 tools: Houdini 18.5
 featured: true
@@ -332,7 +332,7 @@ Procedural 소화기 HDA
 ## Texturing
 worldposition, objectposition, normal, curvature, ao 등을 활용 해서 개연성 있는 텍스쳐를 만들고자 했다.
 
-텍스쳐 레퍼런스
+**텍스쳐 레퍼런스**
 ![alt text](chrome_K3OERJFM1F.png) |![alt text](chrome_KeYIWmdffM.png) |![alt text](chrome_q6e7ljdTX8.png) |![alt text](chrome_vIUu2jPtVT.png)|
 --- | --- | --- | --- |
 
@@ -342,5 +342,62 @@ worldposition, objectposition, normal, curvature, ao 등을 활용 해서 개연
 
 ![alt text](houdini_vJHVFKLP8m.png) |![alt text](houdini_0N89gLKUaG.png)|
 --- | --- |
-![alt text](houdini_576HIfqRfz.png) |![alt text](houdini_GX3eHoMIin.png) | ![alt text](houdini_hftveQ7fAL.png)|`
+![alt text](houdini_576HIfqRfz.png) |![alt text](houdini_GX3eHoMIin.png) | ![alt text](houdini_hftveQ7fAL.png)|
+
+## Texturing #2
+\`2026.04\`
+위의 방법은 오래 됐기도 하고, 예전에 만들어 놓은 텍스쳐 워크플로우라 현재 쓰기에는 무리가 있다. 게다가 후디니 렌더러에 맞춰서 만들어진 것이기 때문에 이번에 새롭게 unreal 에서 메테리얼을 제작 했다.
+
+베이크를 하면 프로시쥬얼 모델링의 장점이 반감된다고 생각 되어 최대한 리소스를 사용하거나 메테리얼을 제작 하는 방식으로 바리에이션을 만들면 좋을 것 같다.
+
+\`\`\`
+1. 대량 인스턴싱을 전제함
+2. 베이크 X
+\`\`\`
+소화기에는 다양한 재질이 있다. 도금속, 플라스틱, 고무(호스) ... 일단 게이지의 유리 부분은 어쩔수 없지만 다른 부분들은 마스킹으로 분리할 수 있을거라 생각 했다.
+
+### Attribute
+#### ID mask
+ID 맵을 만드려고 했으나 이것 또한 위와 같은 이유로 다량으로 사용시 텍스쳐도 늘어나기 때문에 vertex color 로 ID 맵을 대체 하기로 했다.
+\`1.0/재질의 수\` 값을 @Cd.r 로 저장하고 Unreal 에서 step으로 필터링 하여 마스크를 제작 했다.
+![alt text](Artboard-1.png)
+
+#### Curvature, AO
+Houdini 에서 미리 계산된 Curvature 와 AO값을 각 G, B 에 저장 해 주었다.
+![alt text](image-2.png)
+
+### Material
+일단 녹이나 기타 웨더링을 위해서는 노이즈가 필수 적일 텐데, unreal에서 제공 하는 noise는 비용이 좀 크다.
+때문에 웨더링 노이즈 부분은 텍스쳐로 교체.
+바디 부분에서 텍스쳐의 심이 제일 잘 보이기 때문에 노이즈 텍스쳐의 사용을 위해서 uv맵을 다시 정렬 해 주었다.
+ ![alt text](image-5.png) | ![alt text](image-6.png) |
+ --- | --- |
+ 기존의 uv | 0_1로 정렬된 body 파트의 uv
+
+![alt text](image-3.png) | ![alt text](image-4.png) |
+--- | --- |
+![alt text](image-9.png) | ![alt text](image-8.png) |
+\`상) noise 노드\` \`하) 텍스쳐\` | Shader Complexity |
+
+![alt text](<2026-04-27 18-40-27_trimmed.gif>)
+
+텍스쳐는 Substance Designer 로 만들어 주었다. 각 재질별로 2장의 텍스쳐가 쓰였다.
+\`\`\`
+RGBA - BaseColor + Roughness
+RGB - Normal
+\`\`\`
+![alt text](<Artboard 2.png>)
+
+![alt text](image-16.png)
+
+<!-- 
+#### Optimization
+
+하나의 텍스쳐안에서 복수의 재질을 다루다 보니 파라미터가 많아지면서 자연스럽게 연산 비용이 올라간것 같다. 텍스쳐 샘플링도 아슬아슬한 상황.
+![alt text](image-13.png) | ![alt text](image-12.png) |
+--- | --- |
+
+
+![alt text](image-14.png) | ![alt text](image-15.png) | -->
+`
 };

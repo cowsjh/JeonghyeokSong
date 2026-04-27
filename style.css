@@ -266,13 +266,24 @@ section { padding: 80px 48px; }
 
 /* ─── Featured section ───────────────────────────────── */
 .featured-section {
-  margin-bottom: 40px;
+  margin-bottom: 5px;
 }
 
-/* Featured works: 2-column (카드 더 크게) */
+/* Featured works: masonry columns (gallery 스타일) */
 #featured-works-grid {
-  grid-template-columns: repeat(2, 1fr);
+  display: block;
+  columns: 2;
+  column-gap: 5px;
+  max-width: 1400px;
 }
+#featured-works-grid .post-card {
+  break-inside: avoid;
+  margin-bottom: 5px;
+  border: none;
+}
+#featured-works-grid .post-card:nth-child(3n+1) .post-thumb { aspect-ratio: 3/4; }
+#featured-works-grid .post-card:nth-child(3n+2) .post-thumb { aspect-ratio: 4/3; }
+#featured-works-grid .post-card:nth-child(3n)   .post-thumb { aspect-ratio: 1/1; }
 
 /* Featured notes: 리스트 형식 */
 #featured-notes-grid {
@@ -373,7 +384,7 @@ section { padding: 80px 48px; }
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 20px 22px;
+  padding: 12px 14px;
   background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%);
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -425,7 +436,7 @@ section { padding: 80px 48px; }
 }
 
 .post-info {
-  padding: 20px 24px 26px;
+  padding: 10px 12px 12px;
 }
 
 .post-category {
@@ -435,16 +446,16 @@ section { padding: 80px 48px; }
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .post-title {
   font-family: var(--font-serif);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 400;
   color: var(--text);
   line-height: 1.3;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   transition: color 0.2s;
 }
 

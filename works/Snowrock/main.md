@@ -1,9 +1,9 @@
 ---
 title: Snow Rock Texture
-category: Tool
+category: Game Art
 thumbnail: works/Snowrock/jh-rock-01.jpg
 date: 2025.10
-tools: substance designer
+tools: Substance Designer
 featured: true
 ---
 
