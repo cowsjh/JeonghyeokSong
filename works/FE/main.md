@@ -62,15 +62,16 @@ worldposition, objectposition, normal, curvature, ao 등을 활용 해서 개연
 ![alt text](chrome_K3OERJFM1F.png) |![alt text](chrome_KeYIWmdffM.png) |![alt text](chrome_q6e7ljdTX8.png) |![alt text](chrome_vIUu2jPtVT.png)|
 --- | --- | --- | --- |
 
-`VEX Material Builder` 에서 VOP 을 이용해 프로 시쥬얼 텍스쳐 생성. worldposition, normal, curvature 을 이용해 먼지가 쌓인 부분, 스크래치 를 생성 하고 노이즈로 도금이 벗겨져 녹슨 부분을
+`VEX Material Builder` 에서 VOP 을 이용해 프로 시쥬얼 텍스쳐 생성. worldposition, normal, curvature 을 이용해 먼지가 쌓인 부분, 스크래치 를 생성 하고 노이즈로 도금이 벗겨져 녹슨 부분을 표현했다.
 ![alt text](<image (1).png>) |![alt text](<image (2).png>)| ![alt text](image.png)|
 --- | --- | --- |
 
+바리에이션에 적용한 모습
 ![alt text](houdini_vJHVFKLP8m.png) |![alt text](houdini_0N89gLKUaG.png)|
 --- | --- |
 ![alt text](houdini_576HIfqRfz.png) |![alt text](houdini_GX3eHoMIin.png) | ![alt text](houdini_hftveQ7fAL.png)|
 
-## Texturing #2
+## Texturing - 2026
 `2026.04`
 위의 방법은 오래 됐기도 하고, 예전에 만들어 놓은 텍스쳐 워크플로우라 현재 쓰기에는 무리가 있다. 게다가 후디니 렌더러에 맞춰서 만들어진 것이기 때문에 이번에 새롭게 unreal 에서 메테리얼을 제작 했다.
 
@@ -96,14 +97,15 @@ Houdini 에서 미리 계산된 Curvature 와 AO값을 각 G, B 에 저장 해 �
 일단 녹이나 기타 웨더링을 위해서는 노이즈가 필수 적일 텐데, unreal에서 제공 하는 noise는 비용이 좀 크다.
 때문에 웨더링 노이즈 부분은 텍스쳐로 교체.
 바디 부분에서 텍스쳐의 심이 제일 잘 보이기 때문에 노이즈 텍스쳐의 사용을 위해서 uv맵을 다시 정렬 해 주었다.
- ![alt text](image-5.png) | ![alt text](image-6.png) |
- --- | --- |
- 기존의 uv | 0_1로 정렬된 body 파트의 uv
+![alt text](image-5.png) | ![alt text](image-6.png) |
+--- | --- |
+기존의 uv | 0_1로 정렬된 body 파트의 uv |
 
 ![alt text](image-3.png) | ![alt text](image-4.png) |
 --- | --- |
 ![alt text](image-9.png) | ![alt text](image-8.png) |
 `상) noise 노드` `하) 텍스쳐` | Shader Complexity |
+
 
 ![alt text](<2026-04-27 18-40-27_trimmed.gif>)
 
@@ -114,14 +116,5 @@ RGB - Normal
 ```
 ![alt text](<Artboard 2.png>)
 
+## Result
 ![alt text](image-16.png)
-
-<!-- 
-#### Optimization
-
-하나의 텍스쳐안에서 복수의 재질을 다루다 보니 파라미터가 많아지면서 자연스럽게 연산 비용이 올라간것 같다. 텍스쳐 샘플링도 아슬아슬한 상황.
-![alt text](image-13.png) | ![alt text](image-12.png) |
---- | --- |
-
-
-![alt text](image-14.png) | ![alt text](image-15.png) | -->

@@ -48,7 +48,10 @@ if (mdFiles.length === 0) {
   process.exit(0);
 }
 
-const entries = mdFiles.map(filePath => {
+const entries = mdFiles.filter(filePath => {
+  const content = fs.readFileSync(filePath, 'utf8');
+  return !/^draft:\s*true\s*$/m.test(content);
+}).map(filePath => {
   let slug = path.relative(blogDir, filePath).replace(/\.md$/, '').replace(/\\/g, '/');
   // Collapse "parent/slug/slug" or "parent/slug/main" → "parent/slug"
   const parts = slug.split('/');
@@ -71,5 +74,9 @@ const output = [
 ].join('\n');
 
 fs.writeFileSync(dataFile, output, 'utf8');
-console.log(`✓ notes/data.js updated (${mdFiles.length} posts)`);
-mdFiles.forEach(f => console.log(`  - ${path.relative(blogDir, f)}`));
+console.log(`✓ notes/data.js updated (${entries.length} posts)`);
+entries.forEach((_, i) => {
+  // entries는 이미 필터된 파일 목록이므로 로그는 개수만 표시
+});
+const draftCount = mdFiles.length - entries.length;
+if (draftCount > 0) console.log(`  (${draftCount} draft(s) skipped)`);

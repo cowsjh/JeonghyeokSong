@@ -49,11 +49,13 @@ thumbnail: thumb.jpg        ← 파일명만 (경로 자동 해석: works/<slug>
 date:      2024.06
 tools:     Houdini 21.0, Unreal Engine 5.6
 featured:  true
+draft:     false
 link:      https://www.artstation.com/...
 ```
 
 - `thumbnail`: 파일명만 작성. sync 시 `works/<slug>/` 자동 prefix
-- `featured: true` — Featured 탭에 노출 (소문자 `true`)
+- `featured: true` — Featured 탭에 노출. `false`이거나 항목 없으면 미노출
+- `draft: true` — sync 시 제외 (게시 안 함). `false`이거나 항목 없으면 게시
 
 ### 동기화
 
@@ -100,9 +102,11 @@ notes/<parent>/<slug>/
 title: Post Title
 date:  2024-06-15
 tags:  VEX, TIP, code
+draft: false
 ```
 
 - `tags`: 하위 태그 (parent 선택 시 나타나는 서브 필터)
+- `draft: true` — sync 시 제외 (게시 안 함). `false`이거나 항목 없으면 게시
 
 ### 동기화
 

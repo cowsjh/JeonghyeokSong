@@ -2,6 +2,7 @@
 title: DarkRuins Optimization
 date: 2026-04-24
 tags: Unreal Engine, optimization
+draft: true
 ---
 FABs 에 무료로 제공하는 `DarkRuinsMegascansSample` 씬을 최적화 해보자
 ![alt text](image-3.png)

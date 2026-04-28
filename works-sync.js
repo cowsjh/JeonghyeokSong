@@ -48,7 +48,7 @@ const works = slugs
     const meta    = parseFrontmatter(content);
     return { slug, content, ...meta };
   })
-  .filter(w => w && w.title && w.thumbnail)
+  .filter(w => w && w.title && w.thumbnail && w.draft !== 'true')
   .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
 // ─── index.html 카드 생성 ───────────────────────

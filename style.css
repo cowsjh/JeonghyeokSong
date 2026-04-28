@@ -868,6 +868,7 @@ footer {
   overflow-x: auto;
 }
 .md-body th, .md-body td {
+  box-sizing: border-box;
   padding: 8px 12px;
   border: 1px solid var(--border);
   vertical-align: top;
@@ -878,21 +879,38 @@ footer {
   background: var(--surface);
   text-align: left;
 }
-.md-body td img {
-  height: 240px;
-  width: auto;
-  display: block;
-  margin: 0;
-}
 
-/* image-only rows → flex so columns follow natural image width */
+/* img-row: JS로 크기 제어, 보더 겹침 방지 */
 .md-body tr.img-row {
   display: flex;
   gap: 0;
 }
-.md-body tr.img-row td {
-  flex: 0 0 auto;
-  width: auto;
+.md-body tr.img-row td,
+.md-body tr.img-row th {
+  padding: 0;
+  border: 1px solid var(--border);
+  border-right: none;
+  overflow: hidden;
+  flex: none;
+}
+.md-body tr.img-row td:last-child,
+.md-body tr.img-row th:last-child {
+  border-right: 1px solid var(--border);
+}
+/* 연속 img-row 간 보더 중첩 제거 */
+.md-body tr.img-row + tr.img-row td,
+.md-body tr.img-row + tr.img-row th {
+  border-top: none;
+}
+.md-body tr.img-row td img,
+.md-body tr.img-row th img {
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: none;
 }
 
 .md-body hr {

@@ -235,18 +235,73 @@
       buildTOC();
     }
 
-    // ─── Image table → flex ───────────────────────
+    // ─── Image table ───────────────────────────────
     function postProcessTables(container) {
       container.querySelectorAll('tr').forEach(tr => {
-        const cells = Array.from(tr.querySelectorAll('td'));
-        if (cells.length === 0) return;
-        const allImgCells = cells.every(td => {
-          const nonEmpty = Array.from(td.childNodes).filter(
-            n => !(n.nodeType === 3 && n.textContent.trim() === '')
-          );
-          return nonEmpty.length > 0 && nonEmpty[0].tagName === 'IMG';
+        if (tr.querySelector('td img, th img')) tr.classList.add('img-row');
+      });
+
+      container.querySelectorAll('table').forEach(table => {
+        const imgRows = Array.from(table.querySelectorAll('tr.img-row'));
+        if (!imgRows.length) return;
+
+        const allImgs = imgRows.flatMap(tr => Array.from(tr.querySelectorAll('img')));
+        Promise.all(allImgs.map(img =>
+          img.complete ? Promise.resolve(img)
+            : new Promise(r => { img.onload = () => r(img); img.onerror = () => r(img); })
+        )).then(() => {
+          // 열별 최소 naturalWidth + 텍스트 열 여부
+          const colMinW = {};
+          let hasTextCols = false;
+          imgRows.forEach(tr => {
+            tr.querySelectorAll('td, th').forEach((cell, ci) => {
+              const img = cell.querySelector('img');
+              if (img) {
+                colMinW[ci] = ci in colMinW ? Math.min(colMinW[ci], img.naturalWidth) : img.naturalWidth;
+              } else {
+                hasTextCols = true;
+              }
+            });
+          });
+
+          const totalNatW = Object.values(colMinW).reduce((a, b) => a + b, 0);
+          const scale = hasTextCols ? 1 : table.offsetWidth / totalNatW;
+
+          // img-row 셀 크기 적용
+          imgRows.forEach(tr => {
+            const cellH = Math.min(...Array.from(tr.querySelectorAll('img')).map(i => i.naturalHeight)) * scale;
+            tr.querySelectorAll('td, th').forEach((cell, ci) => {
+              if (ci in colMinW) {
+                const w = colMinW[ci] * scale;
+                cell.style.width  = `${w}px`;
+                cell.style.height = `${cellH}px`;
+                cell.style.flex   = 'none';
+                const img = cell.querySelector('img');
+                if (img) { img.style.width = `${w}px`; img.style.height = `${cellH}px`; }
+              } else {
+                cell.style.flex     = '1 1 0';
+                cell.style.minWidth = '0';
+                cell.style.height   = `${cellH}px`;
+              }
+            });
+          });
+
+          // 텍스트 행: flex 전환 + 동일 열 너비 + 보더 정리
+          table.querySelectorAll('tr:not(.img-row)').forEach(tr => {
+            tr.style.display = 'flex';
+            const cells = tr.querySelectorAll('td, th');
+            cells.forEach((cell, ci) => {
+              if (ci in colMinW) {
+                cell.style.width = `${colMinW[ci] * scale}px`;
+                cell.style.flex  = 'none';
+              } else {
+                cell.style.flex     = '1 1 0';
+                cell.style.minWidth = '0';
+              }
+              if (ci < cells.length - 1) cell.style.borderRight = 'none';
+            });
+          });
         });
-        if (allImgCells) tr.classList.add('img-row');
       });
     }
 
