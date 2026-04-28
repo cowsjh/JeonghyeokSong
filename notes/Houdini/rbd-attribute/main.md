@@ -5,7 +5,7 @@ tags: DOP, RBD, VEX
 ---
 
 > [!note]+ f@speedmax
-> v의 length(speed) 를 가지고 객체의 최대 속력을 clamp 해준다
+> v의 length(speed)를 가지고 객체의 최대 속력을 clamp 해준다
 
 > [!note]+ v@w → anglea
 >

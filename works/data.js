@@ -32,6 +32,48 @@ tools: AI, python
 간단한 아웃풋 설정이 가능하다.
 ![alt text](image-1.png)`,
 
+  'desertbiom': `---
+title: Desert Biom (PCG)
+category: Game Art
+thumbnail: image.png
+date: 2026.01
+tools: Unreal Engine, Houdini, Zbrush, Substance 3D
+featured: true
+link : https://www.artstation.com/artwork/Zlr0WG
+---
+
+## Overview
+PCG 공부를 위해서 작업해본 바이옴 셋업.
+## Workflow
+유연한 영역 설정이 가능한 Spline 을 채택 했고 노이즈의 조합으로 인스턴싱 되는 요소들을 조합했다. 자연적인 패턴을 노이즈의 적당한 비율로 구현하는 것이 시간이 조금 걸렸다. 아무래도 너무 뭉치거나 퍼지거나 해도 안되고 패턴이 너무 보이는 것도 피해야 했다.
+
+### Landscape
+Houdini 에서 제작 되었다.
+
+#### Material
+[MW_Landscape Auto Material](https://fab.com/s/0c488c6f4347) 을 참고해서 구현했다. 지형의 slope 값을 이용한 mask 로 텍스쳐를 배치 했다.
+
+### PCG_Biom
+가장 많이 쓰이고 베이스가 되는 셋업이다.
+기본 요소 로는 돌, 부쉬, 풀, 나무, 마른 나무 가지 - 총 5개로 구성 되어 있다.
+
+![alt text](image-2.png)
+
+파라미터의 조합으로 다양한 컨셉을 구현 할 수 있다. 
+![alt text](pcg01_trimmed.gif)
+### PCG_Rock
+
+큰 바위는 Zbrush 에서 작업 되었으며, 하나의 메쉬를 최대한 으로 활용하고 싶었기 때문에 한 메쉬에서 3가지 정도의 실루엣이 나올 수 있게 디자인 했다. \`PCG_Biom\`을 응용해서 큰 바위 주면에 \`PCG_Biom\`과 같은 패턴의 메쉬들이 인스턴싱 될 수 있게 셋업 했다. 그 결과 landscape 와 바위 메쉬의 경계선도 가릴수 있게 되었고 더욱 자연스러운 느낌을 만들 수 있었다.
+![alt text](cinecameraactor4_trimmed.gif)
+
+### PCG_Road
+Unreal 의 spline road 시스템을 이용해서 주변에 돌을 인스턴싱 했다. 추가로 차 바퀴 자국 용 PCG 를 제작해서 기존에 있는 길의 패턴을 깨주는 용도로 사용했다. 도로의 텍스쳐는 Substance Designer에서 제작 되었으며 Virture Texture 를 이용해서 landscape와 블렌딩 시켜 주었다.
+![alt text](image-3.png)
+
+## Result
+![alt text](image.png)
+![alt text](image-1.png)`,
+
   'tree-generator-hda': `---
 title: Tree Generator HDA
 category: Game Art
@@ -163,6 +205,53 @@ B = Curvature
 ![](jh-render02-0005.png)
 ![](jh-cinecameraactor-0001.png)
 ![](jh-render02-0007.png)
+`,
+
+  'MushRoomHDA': `---
+title: Mushroom HDA
+category: Game Art
+thumbnail: image.png
+date: 2025.11
+tools: Houdini, Substance 3D
+featured: true
+link: https://www.artstation.com/artwork/RKGgJe
+---
+
+## Overview
+하나의 컨셉을 가진 버섯 에셋을 만들어 보았다. 다양한 버섯을 위한 범용적인 셋업은 아니지만 파라미터 조절로 **개연성 있는 성장 단계**를 구현 해 보고 싶었다. 
+버섯의 전체적인 크기를 기준으로 단계가 정해진다.
+![alt text](image-1.png)
+![alt text](image-2.png)
+## Workflow
+ Module 형식으로 제작한 이유는 사용자가 노드 중간에서 지오메트리를 조작 할 수 있게 함이다. 또한 하이 메쉬로 제작 되기 때문에 순차적으로 빌드하는것이 효율이 좋을 거라고 생각했다. 
+![alt text](image-3.png)
+
+버섯의 분포는 지정된 파라미터로 쉽게 조작할 수 있게 구성했다.
+![alt text](timeline-1_trimmed.gif)
+
+### Pattern
+대부분의 패턴은 VOP안에서의 attribute와 noise 를 조합 하여 제작 되었다.
+![alt text](<2026-04-28 18-27-55_trimmed.gif>)
+
+### Lowpoly
+highpoly 와 lowpoly가 병렬 적으로 생성 되는 워크플로우를 채택했다. 각 노드의 연산 비용이 증가하지만 UV 보존을 용이하게 하고 내가 원하는 디테일을 의도적으로 보존할 수 있다는 확실한 장점이 있다.
+![alt text](image-8.png) | ![alt text](image-7.png) |
+--- | --- |
+
+
+
+### Texture
+Houdini 내에서 lowpoly, highpoly, IDmap(VertexColor), UDIM 등의 Substance Painter 에서 사용할 요소들이 만들어진다. 때문에 master material 을 하나 만들어 놓고 일괄적으로 적용 가능하게 구성하였다.
+![alt text](image-9.png) | ![alt text](image-6.png) |
+--- | --- |
+
+>[!note]
+>지금 워크플로우는 한번에 여러 오브젝트를 만들지만, 하나씩 생성 후에 Unreal 내부에서 레벨로 만들어 사용하거나 인스턴싱 하는 방식도 괜찮을 거 같다.
+
+![alt text](image-4.png)
+
+## Result
+![alt text](image.png)
 `,
 
   'Snowrock': `---

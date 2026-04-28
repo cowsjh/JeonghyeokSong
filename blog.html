@@ -5,7 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Notes | Jeonghyeok Song</title>
   <link rel="stylesheet" href="style.css">
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] },
+      startup: { typeset: false }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
   <script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+  <script>(function(){
+    var t=localStorage.getItem('theme')||'dark';
+    var l=document.createElement('link');
+    l.id='hljs-theme';l.rel='stylesheet';
+    l.href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/'+(t==='light'?'github':'github-dark')+'.min.css';
+    document.head.appendChild(l);
+  })();</script>
   <style>
     body { overflow-x: hidden; }
 
@@ -144,6 +158,11 @@
     }
     .post-error { color: #b05555; }
 
+    .hljs-addition { background: none !important; color: #3fb950; }
+    .hljs-deletion  { background: none !important; color: #f85149; }
+    [data-theme="light"] .hljs-addition { color: #1a7f37; }
+    [data-theme="light"] .hljs-deletion  { color: #cf222e; }
+
     @media (max-width: 640px) {
       #blog-page { padding: calc(var(--nav-h) + 32px) 20px 72px; }
     }
@@ -189,6 +208,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
   <script>
     'use strict';
 
@@ -225,6 +245,21 @@
         prev: idx > 0 ? slugs[idx - 1] : null,
         next: idx < slugs.length - 1 ? slugs[idx + 1] : null,
       };
+    }
+
+    // ─── Math 보호/복원 ──────────────────────────
+    function protectMath(text) {
+      const segs = [];
+      let out = text;
+      out = out.replace(/\$\$([\s\S]*?)\$\$/g, (_, m) => { segs.push({ d: true,  m }); return `\x02M${segs.length - 1}\x03`; });
+      out = out.replace(/\$([^\n$]+?)\$/g,      (_, m) => { segs.push({ d: false, m }); return `\x02M${segs.length - 1}\x03`; });
+      return { out, segs };
+    }
+    function restoreMath(html, segs) {
+      return html.replace(/\x02M(\d+)\x03/g, (_, i) => {
+        const { d, m } = segs[parseInt(i)];
+        return d ? `$$${m}$$` : `$${m}$`;
+      });
     }
 
     // ─── Alert 변환 ───────────────────────────────
@@ -294,10 +329,24 @@
         const external = /^https?:\/\//.test(href);
         return `<a href="${href}"${t ? ` title="${t}"` : ''}${external ? ' target="_blank" rel="noopener"' : ''}>${tx}</a>`;
       };
+      r.code = function(token) {
+        const code = typeof token === 'object' ? token.text : token;
+        const lang = typeof token === 'object' ? token.lang : arguments[1];
+        const language = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
+        const highlighted = hljs.highlight(code, { language }).value;
+        return `<pre><code class="hljs language-${language}">${highlighted}</code></pre>`;
+      };
       return r;
     }
 
+    new MutationObserver(() => {
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const el = document.getElementById('hljs-theme');
+      if (el) el.href = 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/' + (isDark ? 'github-dark' : 'github') + '.min.css';
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
     function render({ meta, body }, id) {
+      const { out: protectedBody, segs: mathSegs } = protectMath(body);
       const title   = meta.title  || 'Untitled';
       const date    = meta.date   || '';
       const series  = meta.series || '';
@@ -345,11 +394,23 @@
           ${dateStr ? `<span class="blog-post-date">${dateStr}</span>` : ''}
         </div>
         ${seriesNavHtml}
-        <div class="md-body">${convertAlerts(marked.parse(body, { renderer: makeRenderer(id), breaks: true }))}</div>
+        <div class="md-body">${convertAlerts(restoreMath(marked.parse(protectedBody, { renderer: makeRenderer(id), breaks: true }), mathSegs))}</div>
         ${prevNextHtml}
       `;
-      postProcessTables(document.getElementById('post-content'));
+      const container = document.getElementById('post-content');
+      postProcessTables(container);
       buildTOC();
+      const mdBody = container.querySelector('.md-body');
+      if (mdBody) mdBody.style.visibility = 'hidden';
+      (function typesetWhenReady() {
+        if (window.MathJax && MathJax.typesetPromise) {
+          MathJax.typesetPromise([container]).then(() => {
+            if (mdBody) mdBody.style.visibility = '';
+          });
+        } else {
+          setTimeout(typesetWhenReady, 50);
+        }
+      })();
     }
 
     function postProcessTables(container) {

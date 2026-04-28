@@ -12,7 +12,7 @@ tags: optimization
 >[!important]
 >Culling은 Rendering 이전에 작동 한다.
 
-보이지 않는 메쉬들을 제외 시켜 드로우콜을 낮추는 방법
+보이지 않는 메쉬들을 제외시켜 드로우콜을 낮추는 방법
 
 ## Culling Methods
 
@@ -51,7 +51,7 @@ stat initviews
 Volume -> Cull Distance Volume
 ```
 
-여러 Cull Distance Pair 를 만들어 다양한 크기의 오브 젝트를 컬링한다.
+여러 Cull Distance Pair를 만들어 다양한 크기의 오브젝트를 컬링한다.
 ![alt text](examplescenecdvvalues.png)
 
 - 약 200 유닛 오브젝트 + 카메라 거리 1000 유닛 이상 컬링됩니다.

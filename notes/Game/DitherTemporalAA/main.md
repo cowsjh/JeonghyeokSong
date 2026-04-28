@@ -4,7 +4,7 @@ date: 2026-04-16
 tags: Unreal Engine, Material, optimization
 ---
 
-DitherTemporalAA 노드는 픽셀 점묘 패턴을 생성하는 procedural meterial function 이다. **Opaque 나 Masked 같은 불투명 메테리얼을 블렌딩할때 주로 사용 된다.**
+DitherTemporalAA 노드는 픽셀 점묘 패턴을 생성하는 procedural meterial function 이다. **Opaque 나 Masked 같은 불투명 메테리얼을 블렌딩할 때 주로 사용된다.**
 
 DitherTemporalAA 는 **시간적 데이터**를 기반으로 생성되고 패턴은 프레임마다 바뀐다.
 - Frame 1 : 점 패턴 생성

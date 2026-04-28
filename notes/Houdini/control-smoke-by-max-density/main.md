@@ -18,4 +18,4 @@ max(dopfield("/obj/ground_destruction_rnd/smoke/pyrosolver2/dopnet1","pyro","den
 
 새로운 데이터 필드를 만들고, max를 불러 온다
 
-이때 계산 되는 순서가 다르기때문에 maxmax는 한프레임 낮은 값을 가져오며 서로 다른 값들을max( a,b) 펑션으로 지속 적인 max값을 찾아준다.
+이때 계산되는 순서가 다르기 때문에 maxmax는 한프레임 낮은 값을 가져오며 서로 다른 값들을 max(a,b) 펑션으로 지속적인 max값을 찾아준다.

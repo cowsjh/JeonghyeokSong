@@ -12,7 +12,7 @@ tags: vellum, DOP, node
 <!-- Column 2 -->
 Vellum grain의 기본 구조
 
-vellum grain에서 포인트를뿌려주고 glue로 붙여주는 과정이 있다.
+vellum grain에서 포인트를 뿌려주고 glue로 붙여주는 과정이 있다.
 
 
 기본적으로 solid 를 가져와 내부에 포인트를 뿌려주고 시작할수도 있지만, 직접 포인트를 이용할 수도 있다.

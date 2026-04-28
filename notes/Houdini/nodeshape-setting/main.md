@@ -33,4 +33,4 @@ tags: ui, TIP
 
 C:\Users\jeonghyeok.song\Documents\houdini18.5
 
-파일이름.nodeshape 으로 저장 하면 됨.
+파일이름.nodeshape으로 저장하면 됨.

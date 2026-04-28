@@ -21,7 +21,7 @@ tags: Unreal Engine, Rendering, shading
 - 쉐이더 언어로 작동됨 - 플랫폼 마다 상이
     - `DirectX` > `HLSL`
 
-Shader Complexity 뷰에서 봤을 때 하단 바를 보면 현재 십자선 을 기준으로 PS(Pixel Shader) VS(Vertex Shader) 의 복잡도를 보여준다.
+Shader Complexity 뷰에서 봤을 때 하단 바를 보면 현재 십자선을 기준으로 PS(Pixel Shader) VS(Vertex Shader) 의 복잡도를 보여준다.
 ![alt text](image-3.png)
 
 복잡한 PS는 pixel 단계에서 연산이 되기 때문에 pixel 에 적게 노출 되는, 멀리 있는 오브젝트에 있는 편이 낫다.
@@ -37,7 +37,7 @@ Shader Complexity 뷰에서 봤을 때 하단 바를 보면 현재 십자선 을
 1. HLSL 코드가 USF 파일로 저장됨
     - Material Editor의 그래픽 노드 인터페이스 에서 USF 템플릿을 노드로 변한하여 사용함
 3. Editor에서 작업된 것들이 컴파일되어 새로운 셰이더로 작성됨
-    - 셰이더가 컴파일 되어 Material Instance 를 생성
+    - 셰이더가 컴파일되어 Material Instance를 생성
 4. 모델에 적용
 
 Material Editor 에서 작성된 메테리얼 HLSL 확인

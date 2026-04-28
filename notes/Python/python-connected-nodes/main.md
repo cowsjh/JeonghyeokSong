@@ -17,7 +17,7 @@ def listInputs(node, nodeList):
     """
 
     inputs = node.inputs()
-    lenght = len(inputs)
+    length = len(inputs)
     if lenght > 0:
         for input in inputs:
             nodeList.append(input)

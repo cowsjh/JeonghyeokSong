@@ -59,5 +59,5 @@ View mode -> Nanite Visulization -> Pixel Programmable
 --- | WPO 최적화 | PDO off |
 
 쉐이더 단계 에서 최적화를 했는데 Draw 콜이 왜 낮아지나 싶지만,
-WPO 는 CPU 가 Draw 를 준비 하는 과정에서 프레임마다 변하는 vertex의 위치를 계산하여 최신화 해야하기 때문
+WPO는 CPU가 Draw를 준비하는 과정에서 프레임마다 변하는 vertex의 위치를 계산하여 최신화 해야하기 때문
 PDO 는 [여기로](../Pixel-Depth-Offset-(PDO)/Pixel-Depth-Offset-(PDO).md)

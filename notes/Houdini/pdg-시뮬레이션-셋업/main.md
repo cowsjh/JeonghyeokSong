@@ -20,6 +20,6 @@ pdg로 랜덤하게 바꿀 시드의 파라미터를 만들어줌
 
 환경 변수 설정
 
-Priority 는 두자리수 으로
+Priority는 두 자리 수로
 
 Concurrent Tasks는 팜 하나에 얼마나 줄건지 (무조건 1 이상)

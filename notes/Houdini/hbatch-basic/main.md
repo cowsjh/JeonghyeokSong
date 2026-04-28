@@ -20,7 +20,7 @@ Y:\>cd Y:\FX_TEAM\Test\SJH\RND\SJHRND\fx\dev\scenes\
 Y:\FX_TEAM\Test\SJH\RND\SJHRND\fx\dev\scenes>hbatch hbatch_test_scene.hip
 ```
 
-후디니 파일경로로 열어 주는 코드
+후디니 파일 경로로 열어 주는 코드
 
 이 툴 안에서는 Hscript를 문법으로 사용하며
 

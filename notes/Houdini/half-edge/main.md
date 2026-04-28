@@ -13,9 +13,9 @@ tags: VEX, GraphicTheory
 <!-- Column 1 -->
 
 <!-- Column 2 -->
-hal-edge는 각 primitive마다 normal 방향에 의하여 방향성을 가지는 엣지를 말한다.
+half-edge는 각 primitive마다 normal 방향에 의하여 방향성을 가지는 엣지를 말한다.
 
-두 면이 하나의 edge를 공유 한다면 각 면에서의 half-edge는 서로 다른 방향을 가지고 있다.
+두 면이 하나의 edge를 공유한다면 각 면에서의 half-edge는 서로 다른 방향을 가지고 있다.
 
 
 <!-- Column 1 -->
@@ -23,7 +23,7 @@ hal-edge는 각 primitive마다 normal 방향에 의하여 방향성을 가지�
 <!-- Column 2 -->
 이 사진에서는 세개의 prim이 동일한 엣지를 공유 하고 있고, 이때 같은 방향성을 가지거나 서로 반대 방향을 가지고 있는 half-edge를 가진다.
 
-** 방향성은 중요하지 않음
+**방향성은 중요하지 않음**
 
 ---
 

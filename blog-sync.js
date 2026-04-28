@@ -60,7 +60,7 @@ const entries = mdFiles.filter(filePath => {
     slug = parts.slice(0, -1).join('/');
   }
   const content = fs.readFileSync(filePath, 'utf8');
-  const escaped = content.replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
+  const escaped = content.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
   return `  '${slug}': \`${escaped}\``;
 });
 

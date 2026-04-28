@@ -7,7 +7,7 @@ tags: DOP, Flip, Particle
 물의 세부표현으로는 총 3가지 종류가 있는데
 
 1. bubble : 물속에 있는 거품 입자들. (sdf 음수)
-2. faom : 물표면에 있는 거품 입자들. (sdf 0)
+2. foam : 물표면에 있는 거품 입자들. (sdf 0)
 3. spray(mist) : 물밖에 있는 거품 입자들.(sdf 양수)
 
 화이트 워터 만드는 원리
@@ -54,7 +54,7 @@ DOP 에서 만들어진 fluid를 속도(v), dot, depth를 조건들로 지오메
 
 ## 영역 가공
 
-popkill을 이용 일전에 boundary를 아용한 부분을 지워준다.
+popkill을 이용 일전에 boundary를 이용한 부분을 지워준다.
 
 
 ---

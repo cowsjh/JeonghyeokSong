@@ -16,7 +16,7 @@ https://www.sidefx.com/docs/houdini/hom/hou/index.html
 open()
 .writelines()
 .close()
-.glob(pattern, ignoer_case=False) = 해당 노드의 자식노드들을 튜플로 모두 불러옴( 패턴 매칭을 이용해서
+.glob(pattern, ignore_case=False) = 해당 노드의 자식노드들을 튜플로 모두 불러옴( 패턴 매칭을 이용해서
 원하는 결과를 도출 할 수 있다.)
 .replace("find", "replaceswitch") = "find"를 찾아서 "replaceswitch"로 바꾼다.
 
@@ -33,7 +33,7 @@ for in
 .inputs() -> 해당 노드의 인풋 노드들을 튜플로 불러옴
 .setNextInput() -> merge같은 경우 순서대로 인풋을 정할 수 있음
 .layoutChildren() -> 노드 레이아웃 정리
-.moveToGoodPosiotion() -> 노드가 겹치지 않음
+.moveToGoodPosition() -> 노드가 겹치지 않음
 	:moveToGoodPosition(move_inputs=False) -> 인풋 노드는 움직이지 않음 ( 추측 )
 
 ----
@@ -42,7 +42,7 @@ for in
 
 .parms() -> 속해 있는 파라미터들을 list함
 .parmInFolder(['폴더 이름']) -> '폴더 이름' 안에 있는 파라미터들을 list함
-parm.deleteAllkeyframes() -> 파라미터에 걸려있는 키프레임을 전부 지운다.
+parm.deleteAllKeyframes() -> 파라미터에 걸려있는 키프레임을 전부 지운다.
 .parm("파라미터 이름").set(X) -> "파라미터 이름"d 의 값을 X 로 set함
 .setParms({'파라미터a' : 'a값', '파라미터b' : 'b값'}) -> 복수의 파라미터들을 동시에 설정
 .isDisabled() -> 사용 불가 상태면 1 가능 상태면 0

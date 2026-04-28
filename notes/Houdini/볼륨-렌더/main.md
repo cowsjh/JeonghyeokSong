@@ -8,4 +8,4 @@ tags: Volume, Render, DOP
 
 ## 볼륨 소스 name point attrib
 
-포인트에 볼륨 네이밍처럼 string 타입 어트리뷰트로 네이밍을 해주고 그걸 소싱할 수 있다.
+포인트에 볼륨 네이밍처럼 string 타입 어트리뷰트로 네이밍을 해주고 그것을 소싱할 수 있다.

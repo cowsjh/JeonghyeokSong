@@ -11,7 +11,7 @@ date: 2022-08-14
 
 투영 벡터를 구하는 방법은 다음과 같다
 
-**여기서 N은 noramlized된 단위 벡터 이다.**
+**여기서 N은 normalized된 단위 벡터이다.**
 
 
 $(|V| * cos\theta)*N = Proj(V)$

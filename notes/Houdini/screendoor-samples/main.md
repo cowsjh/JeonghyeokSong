@@ -16,4 +16,4 @@ tags: Render, Volume, Solaris
 <!-- Column 2 -->
 
 
-제한적인 상황에서 Pixel samples, Volume Step Rate, or Min and Max ray samples 값들을 조정해주는것 보다 빠르고 좋은 결과를 보여 준다.
+제한적인 상황에서 Pixel samples, Volume Step Rate, or Min and Max ray samples 값들을 조정해주는 것보다 빠르고 좋은 결과를 보여 준다.

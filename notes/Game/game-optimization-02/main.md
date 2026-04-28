@@ -38,7 +38,7 @@ series: Game Optimization
     - 라이트에 대한 비용이 비쌈
     - drawcall = meshes * lights → CPU 에도 부담
 
-불투명 메쉬가 겹치는 방식에 사용 되었던 Z-buffer를 더 응용하여 G-buffer를 사용하는 Deferred Rendering 이 나오게됨
+불투명 메쉬가 겹치는 방식에 사용되었던 Z-buffer를 더 응용하여 G-buffer를 사용하는 Deferred Rendering 이 나오게됨
 
 ### Deferred Rendering
 

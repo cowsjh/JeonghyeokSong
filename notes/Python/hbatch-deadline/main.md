@@ -3,7 +3,7 @@ title: hbatch deadline submiter
 date: 2022-10-12
 tags: HOM, deadline
 ---
-배치 상태에서 데드라인에 rop을 던지려면 데드라인 에서 사용할 파라미터로 job, info 두가지가 필요하다. 둘다 텍스트 로 적용이 가능 하며 종류는 아래에 거진 있고 여기 없는 것들은 general이나 다른 부분에 분포 되어 있다.
+배치 상태에서 데드라인에 rop을 던지려면 데드라인에서 사용할 파라미터로 job, info 두가지가 필요하다. 둘 다 텍스트로 적용이 가능하며 종류는 아래에 거진 있고 여기 없는 것들은 general이나 다른 부분에 분포 되어 있다.
 
 ```python
 import hou

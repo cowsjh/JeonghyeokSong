@@ -5,7 +5,7 @@ tags: node, SOP, TIP, UV, RBD, texturing
 ---
 
 
-fracture 단계 에서 Noise 를 적용 하기 위해 remesh를 적용 할 때 inside 와 outside 모서리 부분 normal이나 uv 가 고르게 적용 되지 않는 문제가 발생 할 수 있다.
+fracture 단계에서 Noise 를 적용 하기 위해 remesh를 적용 할 때 inside 와 outside 모서리 부분 normal이나 uv 가 고르게 적용 되지 않는 문제가 발생 할 수 있다.
 
 # UV
 

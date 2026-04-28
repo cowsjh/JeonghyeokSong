@@ -108,6 +108,115 @@ vs
 - HLOD는 여러개의 메쉬가 조건에 따라 그룹핑 되어 하나의 메쉬로 교체 되는 것.
 `,
 
+  'ComputerGraphics/oklab': `---
+title: Oklab
+date: 2026-04-28
+tags: Color
+---
+
+[All Shaders get Color Wrong](https://www.youtube.com/watch?v=Y2Rv6GPG_NQ)
+[Here's Bjorn's blog](https://bottosson.github.io/posts/oklab/)
+
+---
+
+## Oklab ?
+
+OKlab은 Björn Ottosson 이 발표한 색 공간 개념으로 단순한 물리적 수치를 보다 인간의 눈이 색을 어떻게 구분하고 느끼는지를 기준으로 성계된 색 공간이다.
+
+- $L$ - 인지된 밝기
+- $a$ - 초록/빨강 축
+- $b$ - 파랑/노랑 축
+
+$Lab$ 는 $LCh$ 로 표현될 수 도 있다.
+
+- $L$ - 인지된 밝기
+- $C$ - 채도 $(chroma)$
+- $h$ - 색상 $(hue)$
+
+### 수식
+$Lab$ $\\rightarrow$ $LCh$
+>$C$ = $\\sqrt{a^2 + b^2}, h = atan2(b,a)$
+
+$LCh$ $\\rightarrow$ $Lab$
+>$a = Ccos(h), b=Csin(h)$
+
+
+## HSV와 비교
+
+두 그라디언트를 비교하면 Oklab이 조금더 밝기측에서 고른 그라디언트를 가진것을 볼 수 있다. 반면 HSV는 yellow 와 cyan 에서 비교적 밝은 밝기를 보인다.
+
+OkLab gradient
+![alt text](image.png)
+HSV gradient 
+![alt text](image-1.png)
+HSV gradient - lightness
+![alt text](image-2.png)
+
+## Implement
+
+linear sRGB 를 Oklab 변환 하고 돌아가는 HLSL 코드이다. [위의 설명](#수식)으로 따르면 $sRGB$ 를 $LCh$ 까지 변환 가능하다.
+>C++버전은 [원본](https://bottosson.github.io/posts/oklab/#converting-from-linear-srgb-to-oklab) 참조
+
+\`\`\`HLSL
+float3 linear_srgb_to_oklab(float3 c) 
+{
+    float l = 0.4122214708f * c.x + 0.5363325363f * c.y + 0.0514459929f * c.z;
+    float m = 0.2119034982f * c.x + 0.6806995451f * c.y + 0.1073969566f * c.z;
+    float s = 0.0883024619f * c.x + 0.2817188376f * c.y + 0.6299787005f * c.z;
+
+    float l_ = sign(l) * pow(abs(l), 0.33333334f);
+    float m_ = sign(m) * pow(abs(m), 0.33333334f);
+    float s_ = sign(s) * pow(abs(s), 0.33333334f);
+
+    return float3(
+        0.2104542553f * l_ + 0.7936177850f * m_ - 0.0040720468f * s_,
+        1.9779984951f * l_ - 2.4285922050f * m_ + 0.4505937099f * s_,
+        0.0259040371f * l_ + 0.7827717662f * m_ - 0.8086757660f * s_
+    );
+}
+
+float3 oklab_to_linear_srgb(float3 c) 
+{
+    float l_ = c.x + 0.3963377774f * c.y + 0.2158037573f * c.z;
+    float m_ = c.x - 0.1055613458f * c.y - 0.0638541728f * c.z;
+    float s_ = c.x - 0.0894841775f * c.y - 1.2914855480f * c.z;
+
+    float l = l_ * l_ * l_;
+    float m = m_ * m_ * m_;
+    float s = s_ * s_ * s_;
+
+    return float3(
+        +4.0767416621f * l - 3.3077115913f * m + 0.2309699292f * s,
+        -1.2684380046f * l + 2.6097574011f * m - 0.3413193965f * s,
+        -0.0041960863f * l - 0.7034186147f * m + 1.7076147010f * s
+    );
+}
+
+\`\`\`
+### Unreal 에서의 응용
+
+기존의 Multiply 방식은 명도에 상관 없이 색상을 곱하기 때문에 어두워 지거나 밝게 타는 부정확성을 지닌다. OkLab은 명도를 최대한 유지하면서 올바른 Tint 컬러를 적용 시킬 수 있게 해준다.
+![alt text](image-6.png) | ![alt text](image-4.png) |
+--- | --- |
+![alt text](image-9.png) | ![alt text](image-8.png) |
+original | OkLab Tint |
+
+\`\`\`
+sRGB -> Lab -> LCh -> tint 조절 -> LCh -> sRGB
+\`\`\`
+![alt text](image-3.png)
+
+
+OkLab 중간에 tint 의 Saturate 값과 기존의 chroma 값을 곱해서 채도를 구한다. 색상의 채도(saturate)를 구하는 방식은 아래와 같다.
+
+$S = \\dfrac{Max-Min}{Max}$
+
+$Min = Min(R,G,B), Max = Max(R,G,B)$
+
+## Result
+Material Function으로 만들어 놓고 쓰면 좋을것 같다.
+![alt text](image-10.png)`,
+
   'ComputerGraphics/rasterizingandovershading': `---
 title: Rasterizing and Overshading
 date: 2026-04-21
@@ -326,7 +435,7 @@ Material Editor 에서 작성된 메테리얼 HLSL 확인
 Window > Shader Code > HLSL Code
 \`\`\`
 
-USF 템플릿 경로 : \`C:\Program Files\Epic Games\UE_5.6\Engine\Shaders\Private\`
+USF 템플릿 경로 : \`C:\\Program Files\\Epic Games\\UE_5.6\\Engine\\Shaders\\Private\`
 
 이것들이 전부 제공하는 템플릿이고 사용자가 원하는 쉐이딩 모델 템플릿을 추가 해서 늘릴 수도 있다.
 ![alt text](image-1.png)
@@ -1012,7 +1121,7 @@ tags: node
 >
 > 1. 그냥 건너 뛰고 1번 인풋의 그룹을 유지한다.
 > 2. 2번 인풋의 그룹으로 덮어 씌운다.
-> 3. 넘버링을 붙여서 둘다 유지 한다.\
+> 3. 넘버링을 붙여서 둘다 유지 한다.\\
 >
 > 접두사를 붙여 따로 관리할 수 있다.
 
@@ -1096,9 +1205,9 @@ Command Line Tool 에서 배치파일을 실행 시킬 수 있음
 \`\`\`powershell
 Y:
 
-Y:\>cd Y:\FX_TEAM\Test\SJH\RND\SJHRND\fx\dev\scenes\
+Y:\\>cd Y:\\FX_TEAM\\Test\\SJH\\RND\\SJHRND\\fx\\dev\\scenes\\
 
-Y:\FX_TEAM\Test\SJH\RND\SJHRND\fx\dev\scenes>hbatch hbatch_test_scene.hip
+Y:\\FX_TEAM\\Test\\SJH\\RND\\SJHRND\\fx\\dev\\scenes>hbatch hbatch_test_scene.hip
 \`\`\`
 
 후디니 파일경로로 열어 주는 코드
@@ -1257,7 +1366,7 @@ tags: ui, TIP
 
 경로
 
-C:\Users\jeonghyeok.song\Documents\houdini18.5
+C:\\Users\\jeonghyeok.song\\Documents\\houdini18.5
 
 파일이름.nodeshape 으로 저장 하면 됨.
 `,
@@ -2080,15 +2189,15 @@ tags:
 
 ---
 
-### 글자 색상, $\LaTeX$
+### 글자 색상, $\\LaTeX$
 \`\`\`
-$\color{red}{텍스트\ Text}$
-$\color{blue}{텍스트\ Text}$
-$\color{#58A6FF}{텍스트\ Text}$
+$\\color{red}{텍스트\\ Text}$
+$\\color{blue}{텍스트\\ Text}$
+$\\color{#58A6FF}{텍스트\\ Text}$
 \`\`\`
-$\color{red}{텍스트\ Text}$
-$\color{blue}{텍스트\ Text}$
-$\color{#58A6FF}{텍스트\ Text}$
+$\\color{red}{텍스트\\ Text}$
+$\\color{blue}{텍스트\\ Text}$
+$\\color{#58A6FF}{텍스트\\ Text}$
 
 ---
 
@@ -2099,7 +2208,6 @@ diff 로 코드블럭을 시작.
 \`\`\`diff
 + 이 줄은 초록색 배경으로 표시됩니다. (성공, 추가)
 - 이 줄은 빨간색 배경으로 표시됩니다. (실패, 삭제)
-! 이 줄은 주황색 계열로 보일 수 있음 (주의)
 \`\`\`
 `,
 
@@ -2187,19 +2295,19 @@ date: 2021-07-17
 
 ---
 
-# 라디안(radian)과 파이( $\pi$ )
+# 라디안(radian)과 파이( $\\pi$ )
 
 파이는 기본적으로 원 지름이 1일때 원의 둘레를 말한다.
 
-지름 1 ⇒ $\pi$
+지름 1 ⇒ $\\pi$
 
-반지름 0.5 ⇒ $\pi$
+반지름 0.5 ⇒ $\\pi$
 
-반지름 1 ⇒ 2$\pi$
+반지름 1 ⇒ 2$\\pi$
 
-위의 이유처럼 반지름이 1인 경우 원의 둘레는 2$\pi$이고, 그렇다면 반원의 호는 $\pi$가 성립 된다.
+위의 이유처럼 반지름이 1인 경우 원의 둘레는 2$\\pi$이고, 그렇다면 반원의 호는 $\\pi$가 성립 된다.
 
-곧 단위원에서 $\pi$는 180도를 나타내는 radian이 된다.
+곧 단위원에서 $\\pi$는 180도를 나타내는 radian이 된다.
 
 후디니에서의 파이는 <u>**$PI**</u> 로 표기된다.
 `,
@@ -2224,17 +2332,17 @@ date: 2021-07-17
 >
 > cos(25) = 0.9... 이 나온다. 100m 와 밑변의 비율이 0.9라는 의미이므로 0.9 * 100 = 90 이라는 밑변의 길이도 구할 수 있는 식이 나온다.
 >
-> 식으로 표현 하자면 ==cos(==$\theta$==) = 빗변/밑변== 이 될 수 있다.
+> 식으로 표현 하자면 ==cos(==$\\theta$==) = 빗변/밑변== 이 될 수 있다.
 >
 > 위와같은 단위원의 경우
 >
-> cos($\theta$)
+> cos($\\theta$)
 >
 > ⇒ x/r = 밑변
 >
 > ⇒ x/1 = x
 >
-> ⇒ cos($\theta$) = x가 성립 된다.
+> ⇒ cos($\\theta$) = x가 성립 된다.
 >
 > 즉 P의 x값을 구할 수 있다는 이야기 이다.
 >
@@ -2249,21 +2357,21 @@ date: 2021-07-17
 >
 > 위그림과 같을때
 >
-> 식으로 표현 하자면 ==sin(==$\theta$==) = 높이/빗변== 이 될 수 있다.
+> 식으로 표현 하자면 ==sin(==$\\theta$==) = 높이/빗변== 이 될 수 있다.
 >
-> 곧 sin($\theta$) * 100 = $x$( 높이 ) 가 되는 것이다.
+> 곧 sin($\\theta$) * 100 = $x$( 높이 ) 가 되는 것이다.
 >
 > ## 단위 원에서의 sin
 >
 > 위와같은 단위원의 경우
 >
-> sin($\theta$)
+> sin($\\theta$)
 >
 > ⇒ y/r = 밑변
 >
 > ⇒ y/1 = x
 >
-> ⇒ sin($\theta$) = x가 성립 된다.
+> ⇒ sin($\\theta$) = x가 성립 된다.
 >
 > 즉 P의 Y값을 구할 수 있다는 이야기 이다.
 >
@@ -2272,21 +2380,21 @@ date: 2021-07-17
 > 그래프 상에서 각도가 0( sin(0)) )일때, y가 0 이라는 말이고 시간에따라 각도가 변한다면 위와 같은 그래프가 그려진다.
 
 > [!note]+ **Tan**
-> 탄젠트 tan($\theta$) = 직각삼각형의 높이와 밑변의 비율을 구한다.
+> 탄젠트 tan($\\theta$) = 직각삼각형의 높이와 밑변의 비율을 구한다.
 >
 > 위그림과 같을때
 >
-> 식으로 표현 하자면  ==tan(==$\theta$==) = 높이/밑변== 이 될 수 있다.
+> 식으로 표현 하자면  ==tan(==$\\theta$==) = 높이/밑변== 이 될 수 있다.
 >
 > ## 단위 원에서의 sin
 >
 > 위와같은 단위원의 경우
 >
-> tan($\theta$) = 1이 나오며
+> tan($\\theta$) = 1이 나오며
 >
-> tan($\theta$) = y/x = y^/x^
+> tan($\\theta$) = y/x = y^/x^
 >
-> tan($\theta$) = y/x = y^/1
+> tan($\\theta$) = y/x = y^/1
 >
 > ⇒ y^이 나오게 된다.
 >
@@ -2320,16 +2428,16 @@ date: 2022-08-14
 **여기서 N은 noramlized된 단위 벡터 이다.**
 
 
-$(|V| * cos\theta)*N = Proj(V)$
+$(|V| * cos\\theta)*N = Proj(V)$
 
 
 내적 벡터로 구하기
 
-$(V\bullet N) * N = Proj(V)$
+$(V\\bullet N) * N = Proj(V)$
 
-$(|V| * |N| * cos\theta) * N = Proj(V)$ [******](/d2016b7c039448cdb2c09c809e1a1c3a)
+$(|V| * |N| * cos\\theta) * N = Proj(V)$ [******](/d2016b7c039448cdb2c09c809e1a1c3a)
 
-$(|V| * cos\theta) * N = Proj(V)$
+$(|V| * cos\\theta) * N = Proj(V)$
 
 $|N|$는 단위 벡터 이기 때문에 생략
 
@@ -2455,7 +2563,7 @@ def clipVideo(path, filename, start_time, end_time):
 
     ffmpeg_cmd = f'ffmpeg -ss {start_time} -t {end_time} -i {temp_file} -codec copy -avoid_negative_ts make_zero {path}{clip_filename}'
     subprocess.call(ffmpeg_cmd, shell=True)
-    subprocess.call(f"rm \"{temp_file}\"", shell=True)
+    subprocess.call(f"rm \\"{temp_file}\\"", shell=True)
 \`\`\`
 `,
 
@@ -2497,17 +2605,17 @@ class DeadlineController():
     def houdiniInfoCollect(self, nodeName, number):
         frame = self.changeFrame(nodeName)
 
-        info = 'Plugin={0}\n'\
-               'Name={1}\n'\
-               'Frames={2}\n'\
-               'ChunkSize={3}\n'.format(
+        info = 'Plugin={0}\\n'\\
+               'Name={1}\\n'\\
+               'Frames={2}\\n'\\
+               'ChunkSize={3}\\n'.format(
                    self.model.getPlugin(),
                    nodeName,
                    frame,
                    str(self.view.getChunkSize())
                )
 
-        saveInfoTemp = r'{}\houdini_deadline_info.job{}'.format(os.getenv('TEMP'), number)
+        saveInfoTemp = r'{}\\houdini_deadline_info.job{}'.format(os.getenv('TEMP'), number)
         with open(saveInfoTemp, 'w') as infoFile:
             infoFile.write(info)
 
@@ -2519,7 +2627,7 @@ class DeadlineController():
             info = self.houdiniInfoCollect(nodeList[i], i)
             job = self.houdiniJobCollect(i)
 
-            submit_command = "C:\\PROGRA~1\\Thinkbox\\Deadline10\\bin\\deadlinecommand "+"\""+info+"\""+" \""+job+"\""
+            submit_command = "C:\\\\PROGRA~1\\\\Thinkbox\\\\Deadline10\\\\bin\\\\deadlinecommand "+"\\""+info+"\\""+" \\""+job+"\\""
             deadline_command = subprocess.Popen(submit_command, shell=1)
 \`\`\`
 
@@ -2846,8 +2954,8 @@ tup = tuple(list)
 #########################################################
 # you can check the output uncommenting these lines
 
-print('LIST: \n' + str(list) + '\n')
-print('TUPLE \n' + str(tup) + '\n')
+print('LIST: \\n' + str(list) + '\\n')
+print('TUPLE \\n' + str(tup) + '\\n')
 print('TOTAL NODES: ' + str(len(list)))
 \`\`\`
 

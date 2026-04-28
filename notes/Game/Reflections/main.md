@@ -12,7 +12,7 @@ tags: Unreal Engine, rendering, shading
 
 - Reflection 은 real-time 으로 렌더링 하기엔 비용이 크다.
 - 3가지의 방법이 있으며 장단점이있다.
-- 3가지의 방식은 순서차적으로 블렌딩된다.
+- 3가지 방식은 순차적으로 블렌딩된다.
 - Lumen이 켜져 있다면 꺼야 적용 된다.
 
 >[!note]
@@ -21,7 +21,7 @@ tags: Unreal Engine, rendering, shading
 ### Reflection Captures
 
 - 액터 로케이션 기준으로 정적 큐브맵을 캡쳐하여 범위내 오브젝트에 블렌딩 하는 방식
-- 여러개 배치 가능
+- 여러 개 배치 가능
 - 매우 빠르다
 - 살짝 부정확
 
@@ -36,7 +36,7 @@ Project Setting > Reflection Capture Resolution
 ```
 
 기본적으로 큰 것들을 여러개 배치해 원하는 지역을 덮고 반사성이 높은 객체에 작은 것들을 배치한다.
-겹치는 갯수 만큼 블렌딩 연산을 하기 때문에 염두해두고 배치 한다.
+겹치는 개수만큼 블렌딩 연산을 하기 때문에 염두해두고 배치 한다.
 
 ![alt text](image.png)
 

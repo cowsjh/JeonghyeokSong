@@ -10,7 +10,7 @@ description: Houdini HDA로 제작한 프로시쥬얼 소화기 에셋. 파라�
 # Overview
 Procedural 소화기 HDA
 ## Planning
-대략적인 노드 구조를 짜보았다. HDA에서 다양한 종류의 에셋을 만들 수 있는것은 중요하지만, 너무 많은 파라미터들은 오히려 독이 될수 있어 계획 단계에서 만들어질 요소들과 상관관계를 정리하고 시작했다.
+대략적인 노드 구조를 짜보았다. HDA에서 다양한 종류의 에셋을 만들 수 있는 것은 중요하지만, 너무 많은 파라미터들은 오히려 독이 될 수 있어 계획 단계에서 만들어질 요소들과 상관관계를 정리하고 시작했다.
 ![alt text](<image (3).png>)
 ### Parameter
 - Body
@@ -40,7 +40,7 @@ Procedural 소화기 HDA
 ![alt text](<2026-04-15 19-03-27_trimmed.gif>)
 
 ### Hose
-호스 모델링, 호스가 시작 되는 부분과 끝부분의 노말 벡터를 이용해 부드럽게 이어지는 커브를 만드로 sweep 으로 두께를 만들었다. 
+호스 모델링, 호스가 시작 되는 부분과 끝부분의 노말 벡터를 이용해 부드럽게 이어지는 커브를 만들고 sweep으로 두께를 만들었다. 
 ![alt text](<2026-04-15 18-37-46_trimmed.gif>)
 ![alt text](44d57109-bf8b-11eb-937a-48df37269ee2_trimmed.gif)
 
@@ -56,7 +56,7 @@ Procedural 소화기 HDA
 
 
 ## Texturing
-worldposition, objectposition, normal, curvature, ao 등을 활용 해서 개연성 있는 텍스쳐를 만들고자 했다.
+worldposition, objectposition, normal, curvature, ao 등을 활용해서 개연성 있는 텍스쳐를 만들고자 했다.
 
 **텍스쳐 레퍼런스**
 ![alt text](chrome_K3OERJFM1F.png) |![alt text](chrome_KeYIWmdffM.png) |![alt text](chrome_q6e7ljdTX8.png) |![alt text](chrome_vIUu2jPtVT.png)|
@@ -73,7 +73,7 @@ worldposition, objectposition, normal, curvature, ao 등을 활용 해서 개연
 
 ## Texturing - 2026
 `2026.04`
-위의 방법은 오래 됐기도 하고, 예전에 만들어 놓은 텍스쳐 워크플로우라 현재 쓰기에는 무리가 있다. 게다가 후디니 렌더러에 맞춰서 만들어진 것이기 때문에 이번에 새롭게 unreal 에서 메테리얼을 제작 했다.
+위의 방법은 오래됐기도 하고, 예전에 만들어 놓은 텍스쳐 워크플로우라 현재 쓰기에는 무리가 있다. 게다가 후디니 렌더러에 맞춰서 만들어진 것이기 때문에 이번에 새롭게 Unreal에서 메테리얼을 제작했다.
 
 베이크를 하면 프로시쥬얼 모델링의 장점이 반감된다고 생각 되어 최대한 리소스를 사용하거나 메테리얼을 제작 하는 방식으로 바리에이션을 만들면 좋을 것 같다.
 
