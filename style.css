@@ -1,5 +1,25 @@
-/* ─── Google Fonts ──────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;500;700&family=Noto+Sans+KR:wght@400;500&family=JetBrains+Mono:wght@100&display=swap');
+/* ─── Local Fonts ───────────────────────────────────────── */
+@font-face {
+  font-family: 'Playfair Display';
+  src: url('fonts/playfairdisplay.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('fonts/roboto.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('fonts/jetbrainsmono.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+}
 
 /* ─── Variables ─────────────────────────────────────── */
 :root {
@@ -1030,13 +1050,13 @@ footer {
   overflow: hidden;
   cursor: pointer;
   opacity: 0;
-  transform: translate(-12px, -12px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transform: translateY(12px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .gallery-item.visible {
   opacity: 1;
-  transform: translate(0, 0);
+  transform: translateY(0);
 }
 
 .gallery-item img {

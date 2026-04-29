@@ -39,6 +39,9 @@ function activateTab(name, animate = false) {
   if (name === 'works') ['parent', 'child', 'year', 'tag'].forEach(k => p.delete(k));
   history.replaceState(null, '', location.pathname + '?' + p.toString());
   // 탭 전환 시 카드 재애니메이션
+  if (animate && name === 'featured' && typeof window._reanimateFeatured === 'function') {
+    window._reanimateFeatured();
+  }
   if (animate && name === 'notes' && typeof window._reanimateNotes === 'function') {
     window._reanimateNotes();
   }
@@ -46,9 +49,11 @@ function activateTab(name, animate = false) {
     window._reanimateGallery();
   }
   if (animate && name === 'works') {
-    document.querySelectorAll('.post-card').forEach((c, i) => {
-      c.classList.remove('visible');
-      setTimeout(() => c.classList.add('visible'), i * 100);
+    const visible = [...document.querySelectorAll('#tab-works .post-card')]
+      .filter(c => c.style.display !== 'none');
+    visible.forEach(c => c.classList.remove('visible'));
+    requestAnimationFrame(() => {
+      visible.forEach((c, i) => setTimeout(() => c.classList.add('visible'), i * 80));
     });
   }
 }
@@ -119,6 +124,17 @@ function makeFilterBtn(label, onClick) {
     setTimeout(() => c.classList.add('visible'), Number(c.dataset.delay) || 0);
   });
 
+  window._reanimateFeatured = function () {
+    worksGrid.querySelectorAll('.post-card').forEach(c => {
+      c.classList.remove('visible');
+      setTimeout(() => c.classList.add('visible'), Number(c.dataset.delay) || 0);
+    });
+    notesGrid.querySelectorAll('.note-card').forEach((c, i) => {
+      c.classList.remove('visible');
+      setTimeout(() => c.classList.add('visible'), i * 40);
+    });
+  };
+
   // Recent notes: notes IIFE data.js onload 후 호출
   window._onNotesReady = function (entries) {
     entries.slice(0, 5).forEach(({ slug, title, date, tags, parent }) => {
@@ -160,20 +176,22 @@ function makeFilterBtn(label, onClick) {
   const tools = [...toolSet].sort();
 
   function applyFilter() {
-    let i = 0;
+    const toShow = [];
     postCards.forEach(card => {
       const cardTools = (card.dataset.tools || '').split(',').map(t => t.trim());
       const catMatch  = !activeCategory || card.dataset.category === activeCategory;
       const toolMatch = !activeTools.size || [...activeTools].some(f => cardTools.includes(f));
-      const visible   = !activeCategory && !activeTools.size || (catMatch && toolMatch);
-      if (visible) {
+      const show      = !activeCategory && !activeTools.size || (catMatch && toolMatch);
+      if (show) {
         card.style.display = '';
         card.classList.remove('visible');
-        setTimeout(() => card.classList.add('visible'), i * 60);
-        i++;
+        toShow.push(card);
       } else {
         card.style.display = 'none';
       }
+    });
+    requestAnimationFrame(() => {
+      toShow.forEach((card, i) => setTimeout(() => card.classList.add('visible'), i * 60));
     });
   }
 
@@ -570,26 +588,15 @@ function makeFilterBtn(label, onClick) {
     });
 
     if (animate) {
-      // rAF 후 실제 x/y 좌표로 열·행 판별 (CSS columns 불균등 분배 대응)
-      // getBoundingClientRect는 transform(-12px, -12px) 포함이므로 +12 보정
-      void grid.offsetHeight;
       requestAnimationFrame(() => {
-        const gridRect = grid.getBoundingClientRect();
-        const gridLeft = gridRect.left;
-        const colCount = parseInt(getComputedStyle(grid).columnCount) || 4;
-        const colW     = gridRect.width / colCount;
-        const byCol    = Array.from({ length: colCount }, () => []);
         els.forEach(el => {
-          const r   = el.getBoundingClientRect();
-          const col = Math.max(0, Math.min(colCount - 1,
-            Math.floor((r.left - gridLeft + 12) / colW)));
-          byCol[col].push({ el, top: r.top + 12 });
-        });
-        byCol.forEach((colItems, col) => {
-          colItems.sort((a, b) => a.top - b.top);
-          colItems.forEach(({ el }, row) => {
-            setTimeout(() => el.classList.add('visible'), (col + row) * 55);
-          });
+          const img = el.querySelector('img');
+          if (img.complete) {
+            el.classList.add('visible');
+          } else {
+            img.addEventListener('load', () => el.classList.add('visible'), { once: true });
+            img.addEventListener('error', () => el.classList.add('visible'), { once: true });
+          }
         });
       });
     } else {

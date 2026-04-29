@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Work | Jeonghyeok Song</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&display=block">
   <link rel="stylesheet" href="style.css">
   <script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
   <style>
@@ -16,6 +19,8 @@
       max-width: 860px;
       margin: 0 auto;
     }
+
+    #work-content { min-height: 60vh; }
 
     .back-btn {
       display: inline-flex;
@@ -244,6 +249,20 @@
       container.querySelectorAll('table').forEach(table => {
         const imgRows = Array.from(table.querySelectorAll('tr.img-row'));
         if (!imgRows.length) return;
+
+        // 이미지 로드 전 근사 크기 예약 (CLS 방지)
+        imgRows.forEach(tr => {
+          const cells = tr.querySelectorAll('td, th');
+          const colCount = cells.length;
+          const approxW = table.offsetWidth / colCount;
+          const approxH = approxW * 0.67;
+          cells.forEach(cell => {
+            if (cell.querySelector('img')) {
+              cell.style.width  = `${approxW}px`;
+              cell.style.height = `${approxH}px`;
+            }
+          });
+        });
 
         const allImgs = imgRows.flatMap(tr => Array.from(tr.querySelectorAll('img')));
         Promise.all(allImgs.map(img =>
