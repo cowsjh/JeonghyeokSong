@@ -9,7 +9,7 @@ tags: optimization, Rendering
 
 CPU의 병목 현상을 해결하는 방법 중 하나.
 
-동일한 재질의 메쉬를 병합하여 한 번의 드로우 콜로 렌더링 하는 최적화 기법
+동일한 재질의 메쉬를 병합하여 한 번의 드로우 콜로 렌더링하는 최적화 기법
 
 ### 원리
 1. 동일한 재질의 메쉬 병합
@@ -19,7 +19,7 @@ CPU의 병목 현상을 해결하는 방법 중 하나.
 드로우콜 감소
 
 ### 단점
-**렌더링은 빠르지만 VRAM 사용량 급증 합쳐진 메쉬가 한번에 메모리에 저장 되기 때문.** 일반 적인 드로우콜은 1번에 메쉬 한 개 이기때문에 차이가 난다.
+**렌더링은 빠르지만 VRAM 사용량 급증. 합쳐진 메쉬가 한 번에 메모리에 저장되기 때문.** 일반적인 드로우콜은 1번에 메쉬 한 개이기때문에 차이가 난다.
 
 `,
 
@@ -29,7 +29,7 @@ date: 2026-04-17
 tags: optimization
 ---
 
-CPU와 GPU간의 병목 현상을 해결 하는 방법중 하나
+CPU와 GPU간의 병목 현상을 해결하는 방법 중 하나
 
 ### 기존 렝더링
 1,000 개를 그릴때 CPU는 GPU에게 1,000 번 명령
@@ -60,8 +60,8 @@ Draw 는 CPU 가 GPU 에게 특정한 오브젝트를 화면에 렌더 하는것
 ![alt text](image.png)
 
 ## Draw call ?
-CPU가 CPU API 에게 무엇을 어떻게 그릴지 알려주는 것. 각 드로 콜에넌 텍스쳐, 셰이더 및 버퍼 에대 한 정보가 있음.
-같은 속성을 공유하는 폴리곤 그룹이 하나의 드로우콜로 정의 된다. (단일 메쉬에 여러개의 메테리얼이 존재하는 액터는 드로우콜에 영향을 미친다.)
+CPU가 GPU API에게 무엇을 어떻게 그릴지 알려주는 것. 각 드로우 콜에는 텍스쳐, 셰이더 및 버퍼에 대한 정보가 있음.
+같은 속성을 공유하는 폴리곤 그룹이 하나의 드로우콜로 정의된다. (단일 메쉬에 여러개의 메테리얼이 존재하는 액터는 드로우콜에 영향을 미친다.)
 
  **대부분 draw call 자체 보다는 준비하는 과정에서 리소스가 더 많이 든다.**
 또한 드로우콜은 렌더하고 마치면 완료했다고 말하고 다음 명령을 받아야하는 통신 과정이 이루어지기 때문에 단순 크기 보다 그 양이 많을 때 병목 현상이 일어나기 쉽다.
@@ -121,7 +121,7 @@ tags: Color
 
 ## Oklab ?
 
-OKlab은 Björn Ottosson 이 발표한 색 공간 개념으로 단순한 물리적 수치를 보다 인간의 눈이 색을 어떻게 구분하고 느끼는지를 기준으로 성계된 색 공간이다.
+OKlab은 Björn Ottosson 이 발표한 색 공간 개념으로 단순한 물리적 수치를 보다 인간의 눈이 색을 어떻게 구분하고 느끼는지를 기준으로 설계된 색 공간이다.
 
 - $L$ - 인지된 밝기
 - $a$ - 초록/빨강 축
@@ -143,7 +143,7 @@ $LCh$ $\\rightarrow$ $Lab$
 
 ## HSV와 비교
 
-두 그라디언트를 비교하면 Oklab이 조금더 밝기측에서 고른 그라디언트를 가진것을 볼 수 있다. 반면 HSV는 yellow 와 cyan 에서 비교적 밝은 밝기를 보인다.
+두 그라디언트를 비교하면 Oklab이 조금 더 밝기 측에서 고른 그라디언트를 가진 것을 볼 수 있다. 반면 HSV는 yellow 와 cyan 에서 비교적 밝은 밝기를 보인다.
 
 OkLab gradient
 ![alt text](image.png)
@@ -154,7 +154,7 @@ HSV gradient - lightness
 
 ## Implement
 
-linear sRGB 를 Oklab 변환 하고 돌아가는 HLSL 코드이다. [위의 설명](#수식)으로 따르면 $sRGB$ 를 $LCh$ 까지 변환 가능하다.
+linear sRGB 를 Oklab으로 변환하고 돌아가는 HLSL 코드이다. [위의 설명](#수식)으로 따르면 $sRGB$ 를 $LCh$ 까지 변환 가능하다.
 >C++버전은 [원본](https://bottosson.github.io/posts/oklab/#converting-from-linear-srgb-to-oklab) 참조
 
 \`\`\`HLSL
@@ -195,7 +195,7 @@ float3 oklab_to_linear_srgb(float3 c)
 \`\`\`
 ### Unreal 에서의 응용
 
-기존의 Multiply 방식은 명도에 상관 없이 색상을 곱하기 때문에 어두워 지거나 밝게 타는 부정확성을 지닌다. OkLab은 명도를 최대한 유지하면서 올바른 Tint 컬러를 적용 시킬 수 있게 해준다.
+기존의 Multiply 방식은 명도에 상관 없이 색상을 곱하기 때문에 어두워지거나 밝게 타는 부정확성을 지닌다. OkLab은 명도를 최대한 유지하면서 올바른 Tint 컬러를 적용시킬 수 있게 해준다.
 ![alt text](image-6.png) | ![alt text](image-4.png) |
 --- | --- |
 ![alt text](image-9.png) | ![alt text](image-8.png) |
@@ -214,7 +214,7 @@ $S = \\dfrac{Max-Min}{Max}$
 $Min = Min(R,G,B), Max = Max(R,G,B)$
 
 ## Result
-Material Function으로 만들어 놓고 쓰면 좋을것 같다.
+Material Function으로 만들어 놓고 쓰면 좋을 것 같다.
 ![alt text](image-10.png)`,
 
   'ComputerGraphics/rasterizingandovershading': `---
@@ -230,7 +230,7 @@ tags: Rendering
 ### Rasterizing
 
 - 픽셀 그리드로 버텍스 정보를 렌더링 하는것
-- 1개의 픽셀에는 **무조건 1개의 polygon만 존재 한다.**
+- 1개의 픽셀에는 **무조건 1개의 polygon만 존재한다.**
 - 100,000개의 폴리곤이 아주 멀리 있어 1픽셀 만큼의 크기로 보인다면 그 1픽셀엔 1개의 폴리곤만 렌더된다.
 
 하드웨어는 렌더할때 항상 2x2 픽셀 쿼드 가 사용 된다. 아주 작은 1픽셀 짜리 오브젝트를 렌더링 한다고 해도 4개의 픽셀이 그룹으로 연산된다.
@@ -238,7 +238,7 @@ tags: Rendering
 주황색 - 연산되는 픽셀
 ![alt text](image-1.png)
 
-이와 같은 원리로 근접한 폴리곤 에서 overshading이 발생 한다.
+이와 같은 원리로 근접한 폴리곤에서 overshading이 발생한다.
 ![alt text](image-2.png)|![alt text](image-3.png)
 --- | --- |
 추가 폴리곤 영역 | 빨간부분 - overshading |
@@ -263,7 +263,7 @@ date: 2026-04-16
 tags: Unreal Engine, Material, optimization
 ---
 
-DitherTemporalAA 노드는 픽셀 점묘 패턴을 생성하는 procedural meterial function 이다. **Opaque 나 Masked 같은 불투명 메테리얼을 블렌딩할때 주로 사용 된다.**
+DitherTemporalAA 노드는 픽셀 점묘 패턴을 생성하는 procedural meterial function 이다. **Opaque 나 Masked 같은 불투명 메테리얼을 블렌딩할 때 주로 사용된다.**
 
 DitherTemporalAA 는 **시간적 데이터**를 기반으로 생성되고 패턴은 프레임마다 바뀐다.
 - Frame 1 : 점 패턴 생성
@@ -332,7 +332,7 @@ tags: Unreal Engine, rendering, shading
 
 - Reflection 은 real-time 으로 렌더링 하기엔 비용이 크다.
 - 3가지의 방법이 있으며 장단점이있다.
-- 3가지의 방식은 순서차적으로 블렌딩된다.
+- 3가지 방식은 순차적으로 블렌딩된다.
 - Lumen이 켜져 있다면 꺼야 적용 된다.
 
 >[!note]
@@ -341,7 +341,7 @@ tags: Unreal Engine, rendering, shading
 ### Reflection Captures
 
 - 액터 로케이션 기준으로 정적 큐브맵을 캡쳐하여 범위내 오브젝트에 블렌딩 하는 방식
-- 여러개 배치 가능
+- 여러 개 배치 가능
 - 매우 빠르다
 - 살짝 부정확
 
@@ -356,7 +356,7 @@ Project Setting > Reflection Capture Resolution
 \`\`\`
 
 기본적으로 큰 것들을 여러개 배치해 원하는 지역을 덮고 반사성이 높은 객체에 작은 것들을 배치한다.
-겹치는 갯수 만큼 블렌딩 연산을 하기 때문에 염두해두고 배치 한다.
+겹치는 개수만큼 블렌딩 연산을 하기 때문에 염두해두고 배치 한다.
 
 ![alt text](image.png)
 
@@ -411,7 +411,7 @@ tags: Unreal Engine, Rendering, shading
 - 쉐이더 언어로 작동됨 - 플랫폼 마다 상이
     - \`DirectX\` > \`HLSL\`
 
-Shader Complexity 뷰에서 봤을 때 하단 바를 보면 현재 십자선 을 기준으로 PS(Pixel Shader) VS(Vertex Shader) 의 복잡도를 보여준다.
+Shader Complexity 뷰에서 봤을 때 하단 바를 보면 현재 십자선을 기준으로 PS(Pixel Shader) VS(Vertex Shader) 의 복잡도를 보여준다.
 ![alt text](image-3.png)
 
 복잡한 PS는 pixel 단계에서 연산이 되기 때문에 pixel 에 적게 노출 되는, 멀리 있는 오브젝트에 있는 편이 낫다.
@@ -427,7 +427,7 @@ Shader Complexity 뷰에서 봤을 때 하단 바를 보면 현재 십자선 을
 1. HLSL 코드가 USF 파일로 저장됨
     - Material Editor의 그래픽 노드 인터페이스 에서 USF 템플릿을 노드로 변한하여 사용함
 3. Editor에서 작업된 것들이 컴파일되어 새로운 셰이더로 작성됨
-    - 셰이더가 컴파일 되어 Material Instance 를 생성
+    - 셰이더가 컴파일되어 Material Instance를 생성
 4. 모델에 적용
 
 Material Editor 에서 작성된 메테리얼 HLSL 확인
@@ -469,7 +469,7 @@ tags: optimization
 >[!important]
 >Culling은 Rendering 이전에 작동 한다.
 
-보이지 않는 메쉬들을 제외 시켜 드로우콜을 낮추는 방법
+보이지 않는 메쉬들을 제외시켜 드로우콜을 낮추는 방법
 
 ## Culling Methods
 
@@ -508,7 +508,7 @@ stat initviews
 Volume -> Cull Distance Volume
 \`\`\`
 
-여러 Cull Distance Pair 를 만들어 다양한 크기의 오브 젝트를 컬링한다.
+여러 Cull Distance Pair를 만들어 다양한 크기의 오브젝트를 컬링한다.
 ![alt text](examplescenecdvvalues.png)
 
 - 약 200 유닛 오브젝트 + 카메라 거리 1000 유닛 이상 컬링됩니다.
@@ -607,7 +607,7 @@ series: Game Optimization
     - 라이트에 대한 비용이 비쌈
     - drawcall = meshes * lights → CPU 에도 부담
 
-불투명 메쉬가 겹치는 방식에 사용 되었던 Z-buffer를 더 응용하여 G-buffer를 사용하는 Deferred Rendering 이 나오게됨
+불투명 메쉬가 겹치는 방식에 사용되었던 Z-buffer를 더 응용하여 G-buffer를 사용하는 Deferred Rendering 이 나오게됨
 
 ### Deferred Rendering
 
@@ -739,7 +739,7 @@ View mode -> Nanite Visulization -> Pixel Programmable
 --- | WPO 최적화 | PDO off |
 
 쉐이더 단계 에서 최적화를 했는데 Draw 콜이 왜 낮아지나 싶지만,
-WPO 는 CPU 가 Draw 를 준비 하는 과정에서 프레임마다 변하는 vertex의 위치를 계산하여 최신화 해야하기 때문
+WPO는 CPU가 Draw를 준비하는 과정에서 프레임마다 변하는 vertex의 위치를 계산하여 최신화 해야하기 때문
 PDO 는 [여기로](../Pixel-Depth-Offset-(PDO)/Pixel-Depth-Offset-(PDO).md)
 `,
 
@@ -812,7 +812,7 @@ stat RHI - 드로우 콜
 \`\`\`
 
 # GPU Visiualizer
-드로우 시간중 어떤것들이 비중을 차지 하는지 시각적으로 알려줌
+드로우 시간 중 어떤 것들이 비중을 차지하는지 시각적으로 알려줌
 
 **캡쳐**
 \`ctrl\`+\`shift\`+\`,\`
@@ -849,19 +849,19 @@ tags: optimization, Unreal Engine
 ---
 
 ## Texture
-- 텍스쳐는 임포트 될때 압축 된다. - 메모리와 대역폭 한계가 있기 때문
-- 플랫폼 마다 압축 방법이 다르며 PC 는 BC(DTXC)를 사용 한다.
-- UE5에서는 다양한 BC 압축 방법이 존재 한다.
+- 텍스쳐는 임포트될 때 압축된다. - 메모리와 대역폭 한계가 있기 때문
+- 플랫폼마다 압축 방법이 다르며 PC 는 BC(DTXC)를 사용한다.
+- UE5에서는 다양한 BC 압축 방법이 존재한다.
 - 쉐이더는 조회할 수 있는 텍스쳐 제한이 있다.
 
 ### Texture Streaming
-어느시점에 어느 mipmap을 로드할지 결정하는 프로세스. 엔진은  텍스트를 위해 **Streaming Pool** 이라고 하는 VRAM의 일정량을 미리 할당한다.
+어느 시점에 어느 mipmap을 로드할지 결정하는 프로세스. 엔진은  텍스트를 위해 **Streaming Pool** 이라고 하는 VRAM의 일정량을 미리 할당한다.
 
 ### Mipmap
 - 원본의 1/4 크기의 사본 이미지
-- 모든 사본 이미지는 텍스쳐에 저장 된다.
+- 모든 사본 이미지는 텍스쳐에 저장된다.
 
-밉맵이 없다면 먼거리의 텍스쳐는 노이즈 처럼 보이는 현상이 일어난다. 폴리곤의 오버쉐이딩 같은 느낌. 밉맵은 블렌딩되어 적용 된다.
+밉맵이 없다면 먼 거리의 텍스쳐는 노이즈 처럼 보이는 현상이 일어난다. 폴리곤의 오버쉐이딩 같은 느낌. 밉맵은 블렌딩되어 적용된다.
 ![alt text](image.png) | ![alt text](msedge_5WwuiHeqQO.png) |
 --- | --- |
 mipmap 적용, 미적용 | 블렌딩 적용 방식 |
@@ -976,7 +976,7 @@ max(dopfield("/obj/ground_destruction_rnd/smoke/pyrosolver2/dopnet1","pyro","den
 
 새로운 데이터 필드를 만들고, max를 불러 온다
 
-이때 계산 되는 순서가 다르기때문에 maxmax는 한프레임 낮은 값을 가져오며 서로 다른 값들을max( a,b) 펑션으로 지속 적인 max값을 찾아준다.
+이때 계산되는 순서가 다르기 때문에 maxmax는 한프레임 낮은 값을 가져오며 서로 다른 값들을 max(a,b) 펑션으로 지속적인 max값을 찾아준다.
 `,
 
   'Houdini/extract-point-from-curve': `---
@@ -987,7 +987,7 @@ tags: node, SOP
 
 ![](https://i.imgur.com/mrodZ6c.png)
 
-커브위의 포인트 어트리뷰트를 이용해서 값을 보간하여 그위치에 포인트를 만들어 준다
+커브 위의 포인트 어트리뷰트를 이용해서 값을 보간하여 그위치에 포인트를 만들어 준다
 
 ![](https://i.imgur.com/s9Rqgrm.png)
 
@@ -1003,7 +1003,7 @@ tags: node, SOP
 ---
 
 > [!warning] ⚠️
-> 명령을 반복하여 값을 도출 하는 노드
+> 명령을 반복하여 값을 도출하는 노드
 
 기본적으로 tab을 누른 후 for each를 검색 하면 여러 가지 For each가 나오는데, 자주 사용 하는 설정을 후디니에서 정해놓은거라고 생각 하면 될거 같다.
 
@@ -1016,13 +1016,13 @@ tags: node, SOP
 
 제일 기본적으로 For each point 를 꺼내면 노드가 2개 나온다.
 
-위에 노드가 input 아래 노드가 output이고 그 중간에서 명령이 반복 된다.
+위의 노드가 input 아래 노드가 output이고 그 중간에서 명령이 반복 된다.
 
 > [!note]+ 🧱Block Begin
 > > [!note] 👇
 > > 반복문의 값을 도출 하는 Block begin 노드의 항목들을 살펴보자
 >
-> > [!note]+ **Methhod** : begin 노드에 input되는 값의 출처를 정한다.
+> > [!note]+ **Method** : begin 노드에 input되는 값의 출처를 정한다.
 > > - **Fetch feedback** : end 노드에서 나온 값이 들어 간다 , begin노드에 직접적으로 연결 되는 것이 없어도 기능 한다.
 > > - **Fetch Piece or Point** : input에 들어오는 point,piece 가 차례대로 들어온다
 > >
@@ -1044,7 +1044,7 @@ tags: node, SOP
 >
 > ---
 >
-> ### Gather Methhod
+> ### Gather Method
 >
 > - 도출 되는 결과 값을 어떻게 출력 할것인가를 정한다. 각자 계산된 값들을 따로 보거나, 한꺼번에 merge해서 볼 수있다.
 >
@@ -1062,9 +1062,9 @@ tags: node, SOP
 >
 > ---
 >
-> End 블럭에 single pass를 체크해주면 순서대로 값을 따로 볼 수가 있다. 실제로 각자 값이 도출 되는것은 아니고 시각 적으로만 확인하는 용도로 생각 하자.
+> End 블록에 single pass를 체크해주면 순서대로 값을 따로 볼 수가 있다. 실제로 각자 값이 도출되는 것은 아니고 시각적으로만 확인하는 용도로 생각하자.
 >
-> 위 사진 처럼 single pass == 0 상태에서는 제일 첫번째(pt0) 값이 나온다.
+> 위 사진처럼 single pass == 0 상태에서는 제일 첫번째(pt0) 값이 나온다.
 >
 
 
@@ -1083,7 +1083,7 @@ date: 2021-11-01
 tags: TIP, Volume
 ---
 
-GPU로 빠른 계산을 하는 pyro 솔버 에셋노드이다.
+GPU로 빠른 계산을 하는 pyro 솔버 에셋 노드이다.
 
 하지만 이노드는 3가지의 볼륨밖에 없고 모션 블러에 필요한 vel이 없다.
 
@@ -1151,9 +1151,9 @@ tags: VEX, GraphicTheory
 <!-- Column 1 -->
 
 <!-- Column 2 -->
-hal-edge는 각 primitive마다 normal 방향에 의하여 방향성을 가지는 엣지를 말한다.
+half-edge는 각 primitive마다 normal 방향에 의하여 방향성을 가지는 엣지를 말한다.
 
-두 면이 하나의 edge를 공유 한다면 각 면에서의 half-edge는 서로 다른 방향을 가지고 있다.
+두 면이 하나의 edge를 공유한다면 각 면에서의 half-edge는 서로 다른 방향을 가지고 있다.
 
 
 <!-- Column 1 -->
@@ -1161,7 +1161,7 @@ hal-edge는 각 primitive마다 normal 방향에 의하여 방향성을 가지�
 <!-- Column 2 -->
 이 사진에서는 세개의 prim이 동일한 엣지를 공유 하고 있고, 이때 같은 방향성을 가지거나 서로 반대 방향을 가지고 있는 half-edge를 가진다.
 
-** 방향성은 중요하지 않음
+**방향성은 중요하지 않음**
 
 ---
 
@@ -1210,7 +1210,7 @@ Y:\\>cd Y:\\FX_TEAM\\Test\\SJH\\RND\\SJHRND\\fx\\dev\\scenes\\
 Y:\\FX_TEAM\\Test\\SJH\\RND\\SJHRND\\fx\\dev\\scenes>hbatch hbatch_test_scene.hip
 \`\`\`
 
-후디니 파일경로로 열어 주는 코드
+후디니 파일 경로로 열어 주는 코드
 
 이 툴 안에서는 Hscript를 문법으로 사용하며
 
@@ -1321,7 +1321,7 @@ f@u = u;
 @P += @N * ramp;
 \`\`\`
 
-chf 의 두번째 인풋에 프레임 * @TimeInc를 넣어주면 해당 프레임의 값을 받아 올 수 있는 특징을 이용하여 키프레임을 ramp처럼 이용 더욱 세밀한 값을 조절해줄 수 있다.
+chf의 두 번째 인풋에 프레임 * @TimeInc를 넣어주면 해당 프레임의 값을 받아 올 수 있는 특징을 이용하여 키프레임을 ramp처럼 이용 더욱 세밀한 값을 조절해줄 수 있다.
 `,
 
   'Houdini/material-builder-occlusion': `---
@@ -1330,7 +1330,7 @@ date: 2021-08-05
 tags: texturing, VOP, node
 ---
 
-P의 거리기반으로 인접한 서페이스가 있을 경우 색을 눌러주는 용도로 이용 된다.
+P의 거리를 기반으로 인접한 서페이스가 있을 경우 색을 눌러주는 용도로 이용된다.
 `,
 
   'Houdini/nodeshape-setting': `---
@@ -1368,7 +1368,7 @@ tags: ui, TIP
 
 C:\\Users\\jeonghyeok.song\\Documents\\houdini18.5
 
-파일이름.nodeshape 으로 저장 하면 됨.
+파일이름.nodeshape으로 저장하면 됨.
 `,
 
   'Houdini/particle-hit-attribute': `---
@@ -1404,11 +1404,11 @@ date: 2021-05-25
 tags: Particle, DOP, node
 ---
 
-swirl size, scale을 이용해 눈에 띄는 패턴을 만들 수 이ㅃㅆ음
+swirl size, scale을 이용해 눈에 띄는 패턴을 만들 수 있음
 
 Pulse Length = 노이즈 변화 속도
 
-popforce에서 적용된 속도는 계속 누적이 되기 때문에 후에 drag를 이용 해서 속도룰 잡아줄 필요가 있다.
+popforce에서 적용된 속도는 계속 누적이 되기 때문에 나중에 drag를 이용해서 속도를 잡아줄 필요가 있다.
 `,
 
   'Houdini/pcopen': `---
@@ -1688,7 +1688,7 @@ pdg로 랜덤하게 바꿀 시드의 파라미터를 만들어줌
 
 환경 변수 설정
 
-Priority 는 두자리수 으로
+Priority는 두 자리 수로
 
 Concurrent Tasks는 팜 하나에 얼마나 줄건지 (무조건 1 이상)
 `,
@@ -1705,7 +1705,7 @@ Birth Rate : 초당 파티클 생성 수
 
 파티클을 생성하는 포인트는 랜덤으로 지정 되는듯 하다.
 
- Seed 는 어느 점의 파티클의 생성 되는 위치를 정한다.
+ Seed는 어느 점의 파티클이 생성되는 위치를 정한다.
 
 attribute를 지정해주면 원하는 포인트에서 모두 파티클을 복사 해줄 수 있다. ( 1 = on, 0 = off )
 
@@ -1713,7 +1713,7 @@ Radial Velocity는 방사형으로 v를 추가해주는 옵션
 
 inherit Vel이 낮고 Radial 이 높다면 180도 에 가까운 각도로 방출된다.
 
-→ 적절이 섞어 주고== Birth의 Seed 도 $F로 다양성==을 주면서 다양한 각도로 퍼지게 할 수 있다.
+→ 적절히 섞어 주고== Birth의 Seed 도 $F로 다양성==을 주면서 다양한 각도로 퍼지게 할 수 있다.
 
 Uniform Scale같은 경우 소스의 @pscale의 값을 따라간다.
 `,
@@ -1725,7 +1725,7 @@ tags: DOP, RBD, VEX
 ---
 
 > [!note]+ f@speedmax
-> v의 length(speed) 를 가지고 객체의 최대 속력을 clamp 해준다
+> v의 length(speed)를 가지고 객체의 최대 속력을 clamp 해준다
 
 > [!note]+ v@w → anglea
 >
@@ -1782,7 +1782,7 @@ tags: node, SOP, TIP, UV, RBD, texturing
 ---
 
 
-fracture 단계 에서 Noise 를 적용 하기 위해 remesh를 적용 할 때 inside 와 outside 모서리 부분 normal이나 uv 가 고르게 적용 되지 않는 문제가 발생 할 수 있다.
+fracture 단계에서 Noise 를 적용 하기 위해 remesh를 적용 할 때 inside 와 outside 모서리 부분 normal이나 uv 가 고르게 적용 되지 않는 문제가 발생 할 수 있다.
 
 # UV
 
@@ -1819,7 +1819,7 @@ tags: Render, Volume, Solaris
 <!-- Column 2 -->
 
 
-제한적인 상황에서 Pixel samples, Volume Step Rate, or Min and Max ray samples 값들을 조정해주는것 보다 빠르고 좋은 결과를 보여 준다.
+제한적인 상황에서 Pixel samples, Volume Step Rate, or Min and Max ray samples 값들을 조정해주는 것보다 빠르고 좋은 결과를 보여 준다.
 `,
 
   'Houdini/uv-정리': `---
@@ -1828,9 +1828,9 @@ date: 2021-10-22
 tags: UV, node, TIP
 ---
 
-> [!note]+ Vertex Splite
+> [!note]+ Vertex Split
 >
-> UV를 가지고 있는 객체를 remesh 할 때 UV 가정돈 되지않을 경우 vertexsplite 노드를 이용해서 정리해 줄 수 있다.
+> UV를 가지고 있는 객체를 remesh 할 때 UV가 정돈되지 않을 경우 vertexsplit 노드를 이용해서 정리해 줄 수 있다.
 `,
 
   'Houdini/vellum-grain': `---
@@ -1847,7 +1847,7 @@ tags: vellum, DOP, node
 <!-- Column 2 -->
 Vellum grain의 기본 구조
 
-vellum grain에서 포인트를뿌려주고 glue로 붙여주는 과정이 있다.
+vellum grain에서 포인트를 뿌려주고 glue로 붙여주는 과정이 있다.
 
 
 기본적으로 solid 를 가져와 내부에 포인트를 뿌려주고 시작할수도 있지만, 직접 포인트를 이용할 수도 있다.
@@ -1956,9 +1956,9 @@ date: 2021-10-22
 tags: node, DOP, Volume, TIP
 ---
 
-Volume Source를 이용 해서collision을 불러올때 이런식으로 구멍이 나면서 제대로 역할을 할 수 없을 때가 있다.
+Volume Source를 이용해서 collision을 불러올 때 이런식으로 구멍이 나면서 제대로 역할을 할 수 없을 때가 있다.
 
-위의 방식 처럼 collision의 fill interior와 레졸루션, smoke oject의 레졸루션도 맞춰 가는 방식이 필요하다,.
+위의 방식처럼 collision의 fill interior와 레졸루션, smoke object의 레졸루션도 맞춰가는 방식이 필요하다.
 `,
 
   'Houdini/volume-retime': `---
@@ -1981,7 +1981,7 @@ tags: DOP, Flip, Particle
 물의 세부표현으로는 총 3가지 종류가 있는데
 
 1. bubble : 물속에 있는 거품 입자들. (sdf 음수)
-2. faom : 물표면에 있는 거품 입자들. (sdf 0)
+2. foam : 물표면에 있는 거품 입자들. (sdf 0)
 3. spray(mist) : 물밖에 있는 거품 입자들.(sdf 양수)
 
 화이트 워터 만드는 원리
@@ -2028,7 +2028,7 @@ DOP 에서 만들어진 fluid를 속도(v), dot, depth를 조건들로 지오메
 
 ## 영역 가공
 
-popkill을 이용 일전에 boundary를 아용한 부분을 지워준다.
+popkill을 이용 일전에 boundary를 이용한 부분을 지워준다.
 
 
 ---
@@ -2091,7 +2091,7 @@ tags: Volume, Render, DOP
 
 ## 볼륨 소스 name point attrib
 
-포인트에 볼륨 네이밍처럼 string 타입 어트리뷰트로 네이밍을 해주고 그걸 소싱할 수 있다.
+포인트에 볼륨 네이밍처럼 string 타입 어트리뷰트로 네이밍을 해주고 그것을 소싱할 수 있다.
 `,
 
   'Houdini/쓸만한-노드들': `---
@@ -2100,12 +2100,12 @@ date: 2022-10-07
 tags: node, TIP
 ---
 
-> [!note]+ # Point Relax
+> [!note]+ Point Relax
 >
-> > [!note]+ 스캐터 된 포인들 서페이스에 붙여서 정리, 간격 조절
+> > [!note]+ 스캐터된 포인트들을 서페이스에 붙여서 정리, 간격 조절
 >
 
-> [!note]+ # enumerate
+> [!note]+ enumerate
 >
 > 포인트, 프림 순서에 따른 integer나 string  값 부여
 `,
@@ -2297,7 +2297,7 @@ date: 2021-07-17
 
 # 라디안(radian)과 파이( $\\pi$ )
 
-파이는 기본적으로 원 지름이 1일때 원의 둘레를 말한다.
+파이는 기본적으로 원의 지름이 1일 때 원의 둘레를 말한다.
 
 지름 1 ⇒ $\\pi$
 
@@ -2332,7 +2332,7 @@ date: 2021-07-17
 >
 > cos(25) = 0.9... 이 나온다. 100m 와 밑변의 비율이 0.9라는 의미이므로 0.9 * 100 = 90 이라는 밑변의 길이도 구할 수 있는 식이 나온다.
 >
-> 식으로 표현 하자면 ==cos(==$\\theta$==) = 빗변/밑변== 이 될 수 있다.
+> 식으로 표현하자면 ==cos(==$\\theta$==) = 빗변/밑변== 이 될 수 있다.
 >
 > 위와같은 단위원의 경우
 >
@@ -2357,7 +2357,7 @@ date: 2021-07-17
 >
 > 위그림과 같을때
 >
-> 식으로 표현 하자면 ==sin(==$\\theta$==) = 높이/빗변== 이 될 수 있다.
+> 식으로 표현하자면 ==sin(==$\\theta$==) = 높이/빗변== 이 될 수 있다.
 >
 > 곧 sin($\\theta$) * 100 = $x$( 높이 ) 가 되는 것이다.
 >
@@ -2384,7 +2384,7 @@ date: 2021-07-17
 >
 > 위그림과 같을때
 >
-> 식으로 표현 하자면  ==tan(==$\\theta$==) = 높이/밑변== 이 될 수 있다.
+> 식으로 표현하자면  ==tan(==$\\theta$==) = 높이/밑변== 이 될 수 있다.
 >
 > ## 단위 원에서의 sin
 >
@@ -2425,7 +2425,7 @@ date: 2022-08-14
 
 투영 벡터를 구하는 방법은 다음과 같다
 
-**여기서 N은 noramlized된 단위 벡터 이다.**
+**여기서 N은 normalized된 단위 벡터이다.**
 
 
 $(|V| * cos\\theta)*N = Proj(V)$
@@ -2572,7 +2572,7 @@ title: hbatch deadline submiter
 date: 2022-10-12
 tags: HOM, deadline
 ---
-배치 상태에서 데드라인에 rop을 던지려면 데드라인 에서 사용할 파라미터로 job, info 두가지가 필요하다. 둘다 텍스트 로 적용이 가능 하며 종류는 아래에 거진 있고 여기 없는 것들은 general이나 다른 부분에 분포 되어 있다.
+배치 상태에서 데드라인에 rop을 던지려면 데드라인에서 사용할 파라미터로 job, info 두가지가 필요하다. 둘 다 텍스트로 적용이 가능하며 종류는 아래에 거진 있고 여기 없는 것들은 general이나 다른 부분에 분포 되어 있다.
 
 \`\`\`python
 import hou
@@ -2717,7 +2717,7 @@ hover: 커서가 버튼 위에 올라갔을 때
 
 pressed: 눌렸을 때
 
-**' : ' 띄어 쓰기 하면 안먹힘;;**
+**':' 띄어쓰기하면 안 먹힘;;**
 
 # QPixmap
 
@@ -2828,7 +2828,7 @@ https://www.sidefx.com/docs/houdini/hom/hou/index.html
 open()
 .writelines()
 .close()
-.glob(pattern, ignoer_case=False) = 해당 노드의 자식노드들을 튜플로 모두 불러옴( 패턴 매칭을 이용해서
+.glob(pattern, ignore_case=False) = 해당 노드의 자식노드들을 튜플로 모두 불러옴( 패턴 매칭을 이용해서
 원하는 결과를 도출 할 수 있다.)
 .replace("find", "replaceswitch") = "find"를 찾아서 "replaceswitch"로 바꾼다.
 
@@ -2845,7 +2845,7 @@ for in
 .inputs() -> 해당 노드의 인풋 노드들을 튜플로 불러옴
 .setNextInput() -> merge같은 경우 순서대로 인풋을 정할 수 있음
 .layoutChildren() -> 노드 레이아웃 정리
-.moveToGoodPosiotion() -> 노드가 겹치지 않음
+.moveToGoodPosition() -> 노드가 겹치지 않음
 	:moveToGoodPosition(move_inputs=False) -> 인풋 노드는 움직이지 않음 ( 추측 )
 
 ----
@@ -2854,7 +2854,7 @@ for in
 
 .parms() -> 속해 있는 파라미터들을 list함
 .parmInFolder(['폴더 이름']) -> '폴더 이름' 안에 있는 파라미터들을 list함
-parm.deleteAllkeyframes() -> 파라미터에 걸려있는 키프레임을 전부 지운다.
+parm.deleteAllKeyframes() -> 파라미터에 걸려있는 키프레임을 전부 지운다.
 .parm("파라미터 이름").set(X) -> "파라미터 이름"d 의 값을 X 로 set함
 .setParms({'파라미터a' : 'a값', '파라미터b' : 'b값'}) -> 복수의 파라미터들을 동시에 설정
 .isDisabled() -> 사용 불가 상태면 1 가능 상태면 0
@@ -2932,7 +2932,7 @@ def listInputs(node, nodeList):
     """
 
     inputs = node.inputs()
-    lenght = len(inputs)
+    length = len(inputs)
     if lenght > 0:
         for input in inputs:
             nodeList.append(input)

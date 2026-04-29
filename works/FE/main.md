@@ -11,7 +11,7 @@ description: Houdini HDA로 제작한 프로시쥬얼 소화기 에셋. 파라�
 Procedural 소화기 HDA
 ## Planning
 대략적인 노드 구조를 짜보았다. HDA에서 다양한 종류의 에셋을 만들 수 있는 것은 중요하지만, 너무 많은 파라미터들은 오히려 독이 될 수 있어 계획 단계에서 만들어질 요소들과 상관관계를 정리하고 시작했다.
-![alt text](<image (3).png>)
+![alt text](<image_10.png>)
 ### Parameter
 - Body
     - 너비

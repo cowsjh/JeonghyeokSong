@@ -1,7 +1,7 @@
 ---
-title: Hip Manager
+title: File Cache parm
 category: Tool
-thumbnail: works/parmstore/image.png
+thumbnail: works/parmstore/image-1.png
 date: 2023.11
 tools: python
 featured : false
@@ -9,7 +9,7 @@ featured : false
 ## Overview
 
 많은 지오메트리나 작은 복셀의 시뮬레이션에 대한 뷰포트 연산 속도나 노드 네트워크 cook 시간에 영향을 주게 되면서, 작업시 버퍼링을 대기하는 시간이 길어진다. 이를 조금이나마 해결하고자 고안한 툴. 렌더팜과 사용하면 효과가 좋다. 셋업을 마무리하고 복셀 사이즈나 포인트를 살짝만 더 높은 값으로 저장 해 놓으면 로우 셋업에서 작업을 쉽게 진행한 후 결과만 저장된 값으로 볼 수 있다. 
->[!important]
+>[!note]
 >PDG 와 유사한 메커니즘이지만 파라미터만 저장 하기때문에 훨씬 단순하고 쉽게 사용 할 수 있다.
 
 ## How to use
