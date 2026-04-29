@@ -10,8 +10,8 @@ Static HTML/CSS/JS portfolio. No build system.
 ## Rules
 
 - **`git push` 전 반드시 확인.** 커밋 후 → "푸시할까요?" 묻기
-- **신규 페이지 커밋 전 이미지 체크** (아래 참조)
-- **신규 Works/Notes 추가 시 `/grammar-check` 으로 `main.md` 본문 검수** (커밋 전)
+- **`node works-sync.js` 실행 후 `REVIEW_NEEDED: <slug>` 출력 시 → Works 검수 자동 실행** (아래 참조)
+- **Notes 커밋 직전 → Notes 검수 자동 실행** (아래 참조)
 
 ---
 
@@ -78,14 +78,31 @@ gallery/<category>/image.jpg  →  node gallery-sync.js
 
 ---
 
-## 신규 Works/Notes 커밋 전 체크리스트
+## Works 검수 (자동 트리거)
 
-### 1. 문법 검수
-`main.md` 본문을 `/grammar-check` 스킬로 검수. 수정 제안 반영 후 진행.
+`node works-sync.js` 결과에 `REVIEW_NEEDED: <slug>` 가 포함되면, 해당 slug에 대해 순서대로 자동 실행:
 
-### 2. 이미지 체크
+### 1. 이미지 체크
+- **누락** — `main.md`의 `![](파일명)` + frontmatter `thumbnail:` 값이 폴더에 실제로 존재하는지 확인. 없으면 파일 추가 또는 참조 제거.
+- **잉여** — 폴더의 이미지 중 `main.md`에서 참조되지 않는 것 → 삭제 여부 사용자에게 확인.
 
-1. **누락** — `main.md` 내 `![](파일명)` + frontmatter `thumbnail:` 값이 폴더에 실제로 존재하는지 확인. 없으면 파일 추가 또는 참조 제거 후 커밋.
-2. **잉여** — 폴더의 이미지 파일 중 `main.md`에서 참조되지 않는 것은 삭제 여부 사용자에게 확인.
+### 2. 포트폴리오 검수
+`main.md` 본문을 읽고 포트폴리오 관점에서 검토: 프로젝트 설명의 명확성, 어필 포인트, 구조, 빠진 정보 등. 구체적인 제안 제시 후 사용자 확인 → 반영.
 
-> Gallery는 폴더 스캔 방식이므로 이 체크 불필요.
+### 3. 문법 검수
+`/grammar-check` 스킬로 문법·맞춤법·흐름 검수. 수정 제안 반영 후 커밋 진행.
+
+---
+
+## Notes 검수 (커밋 직전 자동 실행)
+
+Notes 관련 커밋 전, 해당 note의 `main.md`에 대해 순서대로 자동 실행:
+
+### 1. 이미지 체크
+- **누락** — `main.md`의 `![](파일명)` 값이 폴더에 실제로 존재하는지 확인.
+- **잉여** — 폴더의 이미지 중 `main.md`에서 참조되지 않는 것 → 삭제 여부 사용자에게 확인.
+
+### 2. 문법 검수
+`/grammar-check` 스킬로 문법·맞춤법·흐름 검수. 수정 제안 반영 후 커밋 진행.
+
+> Gallery는 폴더 스캔 방식이므로 이미지 체크 불필요.

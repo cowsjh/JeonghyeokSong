@@ -29,6 +29,13 @@ function stripVersion(tool) {
   return tool.replace(/\s+\d[\d.]*$/, '').trim();
 }
 
+// sync 전 data.js에 등록된 slug 목록 추출 (새로 게시된 항목 감지용)
+let prevSlugs = new Set();
+if (fs.existsSync(dataFile)) {
+  const prev = fs.readFileSync(dataFile, 'utf8');
+  for (const m of prev.matchAll(/'([^']+)':\s*`/g)) prevSlugs.add(m[1]);
+}
+
 // works/<slug>/ 서브폴더 탐색
 const slugs = fs.readdirSync(worksDir, { withFileTypes: true })
   .filter(d => d.isDirectory())
@@ -116,3 +123,9 @@ works.forEach(w => {
   const tools = (w.tools || '').split(',').map(t => stripVersion(t.trim())).filter(Boolean);
   console.log(`  - ${w.slug} [${w.category}] [${tools.join(', ')}]`);
 });
+
+// 새로 게시된 항목(이전 data.js에 없던 slug) 출력
+const newlyPublished = works.filter(w => !prevSlugs.has(w.slug));
+if (newlyPublished.length > 0) {
+  console.log(`\nREVIEW_NEEDED: ${newlyPublished.map(w => w.slug).join(',')}`);
+}
