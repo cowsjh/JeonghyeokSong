@@ -291,31 +291,31 @@ link: https://www.artstation.com/artwork/1NDAlK
 ---
 
 ## Overview
-환경 제작을 위한 Unreal 의 기본적인 기능들 과 조작법을 공부 하기 위해 작업 했다. 대부분 Megascan Asset 을 사용했으며 필요한 것들은 Houdini 에서 제작 되었다. 
+환경 제작을 위해 Unreal의 기본 기능들을 탐구하며 구축한 작업이다. 대부분 Megascan Asset을 사용했으며 필요한 에셋들은 Houdini에서 직접 제작했다.
 
 ## Workflow
 
 ### Giant Tree HDA
-앙코르 와트의 사원을 감싸는 큰 나무들을 레퍼런스를 베이스로 제작한 나무 HDA. 기본적으로 curve를 인풋으로 받고 그것을 베이스로 나무가 생성된다.
+앙코르와트 사원을 감싸는 나무를 레퍼런스로 제작한 나무 HDA. 기본적으로 curve를 인풋으로 받아 나무가 생성된다.
 
 #### Stage Parameter
 HDA 내에서 **Stage** 를 오가며 파라미터를 조작할 수 있다. 각 단계별로 조작이 가능하고 불필요한 연산을 피할 수 있다.
 ![alt text](<2026-04-29 18-44-54_trimmed.gif>)
 
 #### Collision + VDB Vector field
-콜리전을 이용하여 나무가 오브젝트를 감싸는 표현을 구현했다. 뿌리의 형태는 VDB Vector field 로 커브를 생성했다. Curve 를 직접 조작 하는 것 보다 유기적이고 자연스러운 모습을 만들 수 있다.
+콜리전을 이용하여 나무가 오브젝트를 감싸는 표현을 구현했다. 뿌리의 형태는 VDB Vector field로 커브를 생성했다. Curve를 직접 조작하는 것보다 유기적이고 자연스러운 모습을 만들 수 있다.
 ![alt text](main_trimmed.gif)
 
-레퍼런스 나무는 뿌리들과 나무의 몸통이 부드럽게 이어지는 모습을 보여 주기 때문에 VDB 로 합친 후 Highpoly 단계에서 노이즈를 주어 디테일을 넣어 주었다.
+레퍼런스 나무는 뿌리와 몸통이 부드럽게 이어지는 모습이기 때문에 VDB로 합친 후 Highpoly 단계에서 노이즈를 주어 디테일을 넣어주었다.
 ![alt text](<2026-04-29 18-09-12_trimmed.gif>)
 
 #### lowpoly
-제작된 highpoly 는 폴리곤 수도 많고 디테일도 아주 많기 때문에 lowpoly로 만드는 공정에 노드 연산이 비 효율적으로 높았다. 때문에 자잘한 노이즈는 생략 하고 큰 실루엣은 잃어 버리지 않는 medium 단계의 지오메트리를 따로 만들어 진행했다. 그 결과 예상보다 연산도 빠르고 실루엣도 잃어 버리지 않는 선에서 만족할 만한 lowpoly를 만들 수 있었다.
+제작된 highpoly는 폴리곤 수와 디테일이 많아 lowpoly로 변환하는 공정에서 노드 연산 비용이 높았다. 자잘한 노이즈는 생략하고 큰 실루엣을 유지하는 medium 단계의 지오메트리를 중간 단계로 만들어 진행했다. 그 결과 예상보다 연산이 빠르고 실루엣을 잃지 않는 선에서 만족스러운 lowpoly를 만들 수 있었다.
 ![alt text](image-3.png)|![alt text](image-4.png)|![alt text](image-2.png)|
 --- | --- | -- |
 \`high\` \`1.5m\` | \`medium\` \`237k\` |\`low\` \`8k\` |
 
-원하는 모양이 픽스 되면 \`refresh\` 버튼으로 생성된다. 라이브로 업데이트가 되다 보면 불필요하게 연산 하는 시간이 길어지기 때문에 원하는 결과가 나왔을 때 마지막 단계로 생성해주는 것이 효율적이다.
+원하는 모양이 픽스되면 \`refresh\` 버튼으로 생성된다. 라이브 업데이트는 불필요한 연산 시간이 길어지기 때문에 원하는 결과가 나왔을 때 마지막 단계로 생성하는 것이 효율적이다.
 ![alt text](image-8.png)
 
 #### Texture
@@ -324,7 +324,7 @@ HDA 내에서 **Stage** 를 오가며 파라미터를 조작할 수 있다. 각 
 
 ### Block
 
-반복적으로 배치되는 블럭같은 경우 houdini 의 PDG를 통해 절차적으로 생성되는 워크플로우를 만들었다. 
+반복 배치되는 블럭의 경우 Houdini의 PDG를 통해 절차적으로 생성되는 워크플로우를 구축했다.
 
 #### Shape
 SDF 로 블럭의 부식 노이즈를 만들고 텍스쳐링에 쓰일 마스크도 만들어 주었다.
@@ -336,15 +336,15 @@ SDF 로 블럭의 부식 노이즈를 만들고 텍스쳐링에 쓰일 마스크
 블럭 형태의 UV는 Box mapping 으로 제작 했다. 하지만 Houdini 에는 Box mapping 하는 노드가 없기 때문에 따로 만들어 주었다.
 ![alt text](<2026-04-29 20-23-13_trimmed.gif>)
 
-Bake와 Texture 제작은 COPs 에서 진행했다. 텍스처 리소스를 블렌딩하여 활용 하였다.
+Bake와 Texture 제작은 COPs에서 진행했다. 텍스처 리소스를 블렌딩하여 활용했다.
 ![alt text](T_stoneBlock_01_B.png) |![alt text](T_stoneBlock_01_R.png)| ![alt text](T_stoneBlock_01_Nt.png)|
 --- | --- | --- |
 Base Color | Roughness | Normal |
 
 
 
-Unreal rendering
 ![alt text](image-1.png)
+
 
 
 
@@ -353,6 +353,55 @@ Unreal rendering
 ![alt text](image.png)
 
 `,
+
+  'RugFattern': `---
+title: Rug Pattern (COPs)
+category: Game Art
+thumbnail: image.png
+date: 2025.09
+tools: Houdini
+featured: true
+link: https://www.artstation.com/artwork/QK51EE
+---
+## Overview
+Houdini COPs에서 지오메트리 데이터를 활용해 Procedural 러그 텍스처를 제작했다. 그리드 지오메트리를 인풋으로 받아 영역, 코너, 테두리 정보를 마스크로 분리해 각 구역에 서로 다른 패턴을 자동으로 배치한다.
+![alt text](image-1.png)
+
+## Workflow
+
+### Patterns
+\`SDFshape\` 와 \`curve3d\` 를 적극 사용해서 문양을 제작했다.
+![alt text](image-6.png) | ![alt text](image-7.png) |
+--- | --- |
+
+![alt text](<2026-04-30 00-00-09_trimmed.gif>)
+
+### Geometry Data
+
+러그는 중앙, 코너, 테두리 세 영역에 각각 다른 패턴이 들어가야 하기 때문에, 그리드를 인풋으로 크게 3가지 섹션으로 나눠 COPs 안에서 마스킹으로 사용하였다.
+ ![alt text](image-14.png) |![alt text](image-12.png) |![alt text](image-13.png) |
+--- | --- | --- |
+
+테두리 부분의 point 데이터를 이용해서 패턴을 인스턴싱 하였다. point의 @N 로 패턴의 방향을 설정했다.
+![alt text](image-2.png) | ![alt text](image-3.png) |
+--- | -- |
+![alt text](image-4.png) | ![alt text](image-5.png) |
+
+grid 의 경계 부분의 포인트 데이터로 러그의 마감 부분의 짜임 패턴을 인스턴싱 하였다.
+![alt text](image-9.png) | ![alt text](image-10.png) |
+--- | --- |
+
+
+
+### Weave Pattern
+
+\`tilepattern\` 노드는 Substance Designer의 tile 노드들과 동일한 기능을 한다.
+![alt text](image-11.png) | ![alt text](image-8.png) |
+--- | --- |
+
+
+## Result
+지오메트리 데이터를 텍스처 제작에 직접 활용하는 COPs만의 워크플로우로, 패턴의 배치, 방향, 밀도를 그리드 인풋 하나로 일괄 제어할 수 있었다. COPs는 Houdini의 지오메트리와 시뮬레이션을 활용한 독특한 패턴 제작에서 강점을 보이지만, 노드의 안정성과 다양성 면에서는 Substance Designer에 비해 아쉬운 부분이 있어 일반적인 텍스처 작업에는 후자가 더 효율적인 선택이 될 수 있다.`,
 
   'parmstore': `---
 title: File Cache parm
