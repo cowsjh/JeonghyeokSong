@@ -3,7 +3,7 @@ title: Mushroom HDA
 category: Game Art
 thumbnail: image.png
 date: 2025.11
-tools: Houdini, Substance 3D
+tools: Houdini, Substance Painter
 featured: true
 link: https://www.artstation.com/artwork/RKGgJe
 ---

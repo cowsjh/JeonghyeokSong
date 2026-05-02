@@ -217,12 +217,29 @@ Branch 노드를 통한 뿌리 디자인과 카드 인스턴싱의 반복 패턴
 
 물론 SpeedTree 보다는 적은 기능들이지만, 원하는 퀄리티에 따라서는 다른 프로그램을 따로 사용 하지 않고 Houdini안에서 끝나는 공정이 큰 장점으로 적용 한다. 데칼기능이나 python viewer states의 추가로 편의성을 조금 더 높을 수 있을것 같다.`,
 
+  'HARIO_V60_driper_server': `---
+title: HARIO V60 Driper, Server
+category: Game Art
+thumbnail: image.png
+date: 2025.12
+tools: Blender, Substance Painter
+featured: true
+link: https://www.artstation.com/artwork/AZxEZq
+---
+심한 웨더링 보다는 현실적인 사용감에 집중해본 작업
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
+![alt text](image-4.png)
+![alt text](image-5.png)
+![alt text](image.png)`,
+
   'MushRoomHDA': `---
 title: Mushroom HDA
 category: Game Art
 thumbnail: image.png
 date: 2025.11
-tools: Houdini, Substance 3D
+tools: Houdini, Substance Painter
 featured: true
 link: https://www.artstation.com/artwork/RKGgJe
 ---
@@ -269,7 +286,7 @@ title: Snow Rock Texture
 category: Game Art
 thumbnail: works/Snowrock/jh-rock-01.jpg
 date: 2025.10
-tools: Substance 3D
+tools: Substance Designer
 featured: true
 ---
 
