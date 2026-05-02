@@ -220,7 +220,7 @@ Branch 노드를 통한 뿌리 디자인과 카드 인스턴싱의 반복 패턴
   'HARIO_V60_driper_server': `---
 title: HARIO V60 Driper, Server
 category: Game Art
-thumbnail: image.png
+thumbnail: image_01.png
 date: 2025.12
 tools: Blender, Substance Painter
 featured: true

@@ -1,7 +1,7 @@
 ---
 title: HARIO V60 Driper, Server
 category: Game Art
-thumbnail: image.png
+thumbnail: image_01.png
 date: 2025.12
 tools: Blender, Substance Painter
 featured: true
