@@ -137,19 +137,28 @@ function makeFilterBtn(label, onClick) {
 
   // Recent notes: notes IIFE data.js onload 후 호출
   window._onNotesReady = function (entries) {
-    entries.slice(0, 5).forEach(({ slug, title, date, tags, parent }) => {
+    entries.forEach(({ slug, title, date, tags, parent }) => {
       const card = document.createElement('a');
       card.className = 'note-card';
       card.href = `blog.html?id=${slug}`;
       const parentPill = parent && parent[0]
-        ? `<span class="note-tag note-tag--parent">${parent[0]}</span>` : '';
-      const childPills = tags.map(t => `<span class="note-tag">${t}</span>`).join('');
+        ? `<span class="note-tag note-tag--parent" data-tag="${parent[0]}">${parent[0]}</span>` : '';
+      const childPills = tags.map(t => `<span class="note-tag" data-tag="${t}">${t}</span>`).join('');
       const allPills = parentPill + childPills;
       card.innerHTML = `
         ${allPills ? `<div class="note-tags">${allPills}</div>` : ''}
         <h3 class="note-title">${title}</h3>
         ${date ? `<span class="note-date">${date.replace(/-/g, '.')}</span>` : ''}
       `;
+      card.querySelectorAll('.note-tag').forEach(tagEl => {
+        tagEl.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof window._jumpToNotesTag === 'function') {
+            window._jumpToNotesTag(tagEl.textContent, tagEl.classList.contains('note-tag--parent'));
+          }
+        });
+      });
       notesGrid.appendChild(card);
     });
     notesGrid.querySelectorAll('.note-card').forEach((c, i) => {
@@ -536,6 +545,18 @@ function makeFilterBtn(label, onClick) {
 
     buildFilters(entries, { initTag: urlTag, initParent: urlParent, initChildren: urlChild, initYears: urlYear });
     if (!hasState) buildCards(entries, { years: new Set(), children: new Set(), parent: null }, 0, false);
+
+    window._jumpToNotesTag = function (tag, isParent) {
+      activateTab('notes', true);
+      setTimeout(() => document.getElementById('portfolio').scrollIntoView({ behavior: 'smooth' }), 50);
+      if (isParent) {
+        buildFilters(entries, { initParent: tag });
+      } else {
+        const ownerEntry = entries.find(e => e.tags.includes(tag));
+        const parent = ownerEntry ? ownerEntry.parent[0] : null;
+        buildFilters(entries, { initParent: parent, initChildren: [tag] });
+      }
+    };
 
     if (hasState) {
       setTimeout(() => {

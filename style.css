@@ -285,6 +285,9 @@ section { padding: 80px 48px; }
 }
 
 /* ─── Featured section ───────────────────────────────── */
+#tab-featured {
+  margin-top: -36px;
+}
 .featured-section {
   margin-bottom: 5px;
 }
@@ -309,6 +312,10 @@ section { padding: 80px 48px; }
 #featured-notes-grid {
   display: flex;
   flex-direction: column;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 #featured-notes-grid .note-card {
   flex-direction: row;
@@ -555,6 +562,15 @@ section { padding: 80px 48px; }
   border-color: var(--text-muted);
 }
 
+#featured-notes-grid .note-tag {
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+#featured-notes-grid .note-tag:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
 .note-series-badge {
   display: block;
   font-size: 0.67rem;
@@ -693,7 +709,8 @@ section { padding: 80px 48px; }
 }
 
 /* ─── Math filter tag ───────────────────────────────── */
-.filter-btn[data-filter="Math"]:hover {
+.filter-btn[data-filter="Math"]:hover,
+#featured-notes-grid .note-tag[data-tag="Math"]:hover {
   color: #FF0034;
   border-color: #FF0034;
 }
@@ -704,7 +721,8 @@ section { padding: 80px 48px; }
 }
 
 /* ─── Python filter tag ─────────────────────────────── */
-.filter-btn[data-filter="Python"]:hover {
+.filter-btn[data-filter="Python"]:hover,
+#featured-notes-grid .note-tag[data-tag="Python"]:hover {
   color: #336E9F;
   border-color: #336E9F;
 }
@@ -715,7 +733,8 @@ section { padding: 80px 48px; }
 }
 
 /* ─── ComputerGraphics filter tag ───────────────────── */
-.filter-btn[data-filter="ComputerGraphics"]:hover {
+.filter-btn[data-filter="ComputerGraphics"]:hover,
+#featured-notes-grid .note-tag[data-tag="ComputerGraphics"]:hover {
   color: #889ECE;
   border-color: #889ECE;
 }
@@ -726,7 +745,8 @@ section { padding: 80px 48px; }
 }
 
 /* ─── Houdini filter tag ─────────────────────────────── */
-.filter-btn[data-filter="Houdini"]:hover {
+.filter-btn[data-filter="Houdini"]:hover,
+#featured-notes-grid .note-tag[data-tag="Houdini"]:hover {
   color: #FF6600;
   border-color: #FF6600;
 }
