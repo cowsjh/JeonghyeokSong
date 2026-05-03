@@ -318,7 +318,7 @@ link: https://www.artstation.com/artwork/1NDAlK
 ---
 
 ## Overview
-환경 제작을 위해 Unreal의 기본 기능들을 탐구하며 구축한 작업이다. 대부분 Megascan Asset을 사용했으며 필요한 에셋들은 Houdini에서 직접 제작했다.
+환경 제작을 위해 Unreal의 기본 기능들을 익히기 위해 작업 했다. 대부분 Megascan Asset을 사용했으며 필요한 에셋들은 Houdini에서 직접 제작했다.
 
 ## Workflow
 
@@ -351,7 +351,7 @@ HDA 내에서 **Stage** 를 오가며 파라미터를 조작할 수 있다. 각 
 
 ### Block
 
-반복 배치되는 블럭의 경우 Houdini의 PDG를 통해 절차적으로 생성되는 워크플로우를 구축했다.
+반복 배치되는 블럭의 경우 Houdini의 PDG를 통해 절차적으로 생성 되게 디자인 했다.
 
 #### Shape
 SDF 로 블럭의 부식 노이즈를 만들고 텍스쳐링에 쓰일 마스크도 만들어 주었다.
