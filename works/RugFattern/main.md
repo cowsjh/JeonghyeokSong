@@ -14,7 +14,7 @@ Houdini COPs에서 지오메트리 데이터를 활용해 Procedural 러그 텍�
 ## Workflow
 
 ### Patterns
-`SDFshape` 와 `curve3d` 를 적극 사용해서 문양을 제작했다.
+`SDFshape`와 `curve3d`를 적극 사용해서 문양을 제작했다.
 ![alt text](image-6.png) | ![alt text](image-7.png) |
 --- | --- |
 
@@ -26,12 +26,12 @@ Houdini COPs에서 지오메트리 데이터를 활용해 Procedural 러그 텍�
  ![alt text](image-14.png) |![alt text](image-12.png) |![alt text](image-13.png) |
 --- | --- | --- |
 
-테두리 부분의 point 데이터를 이용해서 패턴을 인스턴싱 하였다. point의 @N 로 패턴의 방향을 설정했다.
+테두리 부분의 point 데이터를 이용해서 패턴을 인스턴싱하였다. point의 @N으로 패턴의 방향을 설정했다.
 ![alt text](image-2.png) | ![alt text](image-3.png) |
 --- | -- |
 ![alt text](image-4.png) | ![alt text](image-5.png) |
 
-grid 의 경계 부분의 포인트 데이터로 러그의 마감 부분의 짜임 패턴을 인스턴싱 하였다.
+grid의 경계 부분의 포인트 데이터로 러그의 마감 부분의 짜임 패턴을 인스턴싱하였다.
 ![alt text](image-9.png) | ![alt text](image-10.png) |
 --- | --- |
 
