@@ -36,8 +36,8 @@ Houdini 내에서 lowpoly, highpoly, IDmap(VertexColor), UDIM 등의 Substance P
 ![alt text](image-9.png) | ![alt text](image-6.png) |
 --- | --- |
 
->[!note]
->지금 워크플로우는 한번에 여러 오브젝트를 만들지만, 하나씩 생성 후에 Unreal 내부에서 레벨로 만들어 사용하거나 인스턴싱 하는 방식도 괜찮을 거 같다.
+> [!NOTE]
+> 지금 워크플로우는 한번에 여러 오브젝트를 만들지만, 하나씩 생성 후에 Unreal 내부에서 레벨로 만들어 사용하거나 인스턴싱 하는 방식도 괜찮을 거 같다.
 
 ![alt text](image-4.png)
 

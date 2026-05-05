@@ -181,6 +181,19 @@
       nav.classList.toggle('scrolled', window.scrollY > 40);
     }, { passive: true });
 
+    // ─── Alert 변환 ───────────────────────────────
+    const ALERT_TYPES = { NOTE: 'Note', TIP: 'Tip', IMPORTANT: 'Important', WARNING: 'Warning', CAUTION: 'Caution' };
+    function convertAlerts(html) {
+      return html.replace(
+        /<blockquote>\s*<p>\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\n?([\s\S]*?)<\/blockquote>/gi,
+        (_, type, inner) => {
+          const key = type.toUpperCase();
+          const content = '<p>' + inner.trimStart();
+          return `<div class="md-alert md-alert-${key.toLowerCase()}"><div class="md-alert-title">${ALERT_TYPES[key]}</div>${content}</div>`;
+        }
+      );
+    }
+
     // ─── Frontmatter parser ───────────────────────
     function parseFrontmatter(text) {
       const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
@@ -233,7 +246,7 @@
           ${tools.length ? `<div class="work-tools">${toolBadges}</div>` : ''}
           ${linkBtn}
         </div>
-        <div class="md-body">${marked.parse(body).replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, `$1works/${id}/`)}</div>
+        <div class="md-body">${convertAlerts(marked.parse(body)).replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, `$1works/${id}/`)}</div>
       `;
 
       postProcessTables(document.getElementById('work-content'));
