@@ -23,28 +23,6 @@ CPU의 병목 현상을 해결하는 방법 중 하나.
 
 `,
 
-  'ComputerGraphics/Instancing': `---
-title: Instancing
-date: 2026-04-17
-tags: optimization
----
-
-CPU와 GPU간의 병목 현상을 해결하는 방법 중 하나
-
-### 기존 렝더링
-1,000 개를 그릴때 CPU는 GPU에게 1,000 번 명령
-
-### 원리
-1. mesh (공통 데이터) / instance buffer (인스턴스 데이터 - trans, rot, scale ...) **데이터 분리**
-2. 무거운 공통 메시 데이터는 GPU 메모리(VRAM)에 **한 번만 업로드**.
-3. instance buffer 전달.
-4. **GPU의 병렬 처리** (공통 메시 데이터를 instance buffer 와 조합)
-
-### 결과
-CPU의 작업 부하를 줄임 1,000 >>>> mesh,instance buffer
-
-`,
-
   'ComputerGraphics/aboutDraw': `---
 title: Draw Call
 date: 2026-04-21
@@ -108,115 +86,6 @@ vs
 - HLOD는 여러개의 메쉬가 조건에 따라 그룹핑 되어 하나의 메쉬로 교체 되는 것.
 `,
 
-  'ComputerGraphics/oklab': `---
-title: Oklab
-date: 2026-04-28
-tags: Color
----
-
-[All Shaders get Color Wrong](https://www.youtube.com/watch?v=Y2Rv6GPG_NQ)
-[Here's Bjorn's blog](https://bottosson.github.io/posts/oklab/)
-
----
-
-## Oklab ?
-
-OKlab은 Björn Ottosson 이 발표한 색 공간 개념으로 단순한 물리적 수치를 보다 인간의 눈이 색을 어떻게 구분하고 느끼는지를 기준으로 설계된 색 공간이다.
-
-- $L$ - 인지된 밝기
-- $a$ - 초록/빨강 축
-- $b$ - 파랑/노랑 축
-
-$Lab$ 는 $LCh$ 로 표현될 수 도 있다.
-
-- $L$ - 인지된 밝기
-- $C$ - 채도 $(chroma)$
-- $h$ - 색상 $(hue)$
-
-### 수식
-$Lab$ $\\rightarrow$ $LCh$
->$C$ = $\\sqrt{a^2 + b^2}, h = atan2(b,a)$
-
-$LCh$ $\\rightarrow$ $Lab$
->$a = Ccos(h), b=Csin(h)$
-
-
-## HSV와 비교
-
-두 그라디언트를 비교하면 Oklab이 조금 더 밝기 측에서 고른 그라디언트를 가진 것을 볼 수 있다. 반면 HSV는 yellow 와 cyan 에서 비교적 밝은 밝기를 보인다.
-
-OkLab gradient
-![alt text](image.png)
-HSV gradient 
-![alt text](image-1.png)
-HSV gradient - lightness
-![alt text](image-2.png)
-
-## Implement
-
-linear sRGB 를 Oklab으로 변환하고 돌아가는 HLSL 코드이다. [위의 설명](#수식)으로 따르면 $sRGB$ 를 $LCh$ 까지 변환 가능하다.
->C++버전은 [원본](https://bottosson.github.io/posts/oklab/#converting-from-linear-srgb-to-oklab) 참조
-
-\`\`\`HLSL
-float3 linear_srgb_to_oklab(float3 c) 
-{
-    float l = 0.4122214708f * c.x + 0.5363325363f * c.y + 0.0514459929f * c.z;
-    float m = 0.2119034982f * c.x + 0.6806995451f * c.y + 0.1073969566f * c.z;
-    float s = 0.0883024619f * c.x + 0.2817188376f * c.y + 0.6299787005f * c.z;
-
-    float l_ = sign(l) * pow(abs(l), 0.33333334f);
-    float m_ = sign(m) * pow(abs(m), 0.33333334f);
-    float s_ = sign(s) * pow(abs(s), 0.33333334f);
-
-    return float3(
-        0.2104542553f * l_ + 0.7936177850f * m_ - 0.0040720468f * s_,
-        1.9779984951f * l_ - 2.4285922050f * m_ + 0.4505937099f * s_,
-        0.0259040371f * l_ + 0.7827717662f * m_ - 0.8086757660f * s_
-    );
-}
-
-float3 oklab_to_linear_srgb(float3 c) 
-{
-    float l_ = c.x + 0.3963377774f * c.y + 0.2158037573f * c.z;
-    float m_ = c.x - 0.1055613458f * c.y - 0.0638541728f * c.z;
-    float s_ = c.x - 0.0894841775f * c.y - 1.2914855480f * c.z;
-
-    float l = l_ * l_ * l_;
-    float m = m_ * m_ * m_;
-    float s = s_ * s_ * s_;
-
-    return float3(
-        +4.0767416621f * l - 3.3077115913f * m + 0.2309699292f * s,
-        -1.2684380046f * l + 2.6097574011f * m - 0.3413193965f * s,
-        -0.0041960863f * l - 0.7034186147f * m + 1.7076147010f * s
-    );
-}
-
-\`\`\`
-### Unreal 에서의 응용
-
-기존의 Multiply 방식은 명도에 상관 없이 색상을 곱하기 때문에 어두워지거나 밝게 타는 부정확성을 지닌다. OkLab은 명도를 최대한 유지하면서 올바른 Tint 컬러를 적용시킬 수 있게 해준다.
-![alt text](image-6.png) | ![alt text](image-4.png) |
---- | --- |
-![alt text](image-9.png) | ![alt text](image-8.png) |
-original | OkLab Tint |
-
-\`\`\`
-sRGB -> Lab -> LCh -> tint 조절 -> LCh -> sRGB
-\`\`\`
-![alt text](image-3.png)
-
-
-OkLab 중간에 tint 의 Saturate 값과 기존의 chroma 값을 곱해서 채도를 구한다. 색상의 채도(saturate)를 구하는 방식은 아래와 같다.
-
-$S = \\dfrac{Max-Min}{Max}$
-
-$Min = Min(R,G,B), Max = Max(R,G,B)$
-
-## Result
-Material Function으로 만들어 놓고 쓰면 좋을 것 같다.
-![alt text](image-10.png)`,
-
   'ComputerGraphics/rasterizingandovershading': `---
 title: Rasterizing and Overshading
 date: 2026-04-21
@@ -256,6 +125,147 @@ view mode - OptimizationViewMode - Quad Overdraw
 
 3번의 이유로 이러한 폴리곤을 가진 모델링은 좋지 않다.
 ![alt text](image-5.png)`,
+
+  'ComputerGraphics/shapingFunctions': `---
+title: Shaping Functions
+date: 2026-05-09
+tags: code
+draft: false
+---
+
+입력값 $t \\in [0, 1]$을 원하는 곡선 형태로 변환하는 함수들.
+
+## Smoothstep
+
+$$
+S(t) = 3t^2 - 2t^3
+$$
+
+양 끝에서 $S'(0) = S'(1) = 0$이라 연결이 자연스럽다. 가장 많이 쓰이는 shaping function.
+
+Smoother step (Ken Perlin):
+
+$$
+S(t) = 6t^5 - 15t^4 + 10t^3
+$$
+
+2차 미분까지 0이라 더 부드럽다.
+
+\`\`\`hlsl
+float t = saturate(t); // 0~1 클램프
+float smooth  = t * t * (3.0 - 2.0 * t);
+float smoother = t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+\`\`\`
+
+## Power (Bias)
+
+$$
+f(t) = t^n
+$$
+
+- $n < 1$: 초반에 빠르고 후반에 느림
+- $n = 1$: 선형
+- $n > 1$: 초반에 느리고 후반에 빠름
+
+\`\`\`hlsl
+float f = pow(t, n);
+\`\`\`
+---
+## Parabola
+![alt text](msedge_pVZy7sMLTk.gif)
+$$
+f(t) = \\left(4t(1-t)\\right)^n
+$$
+
+$t = 0$과 $t = 1$에서 $0$, $t = 0.5$에서 최대값 $1$. 펄스나 bump 형태를 만들 때 유용.
+
+\`\`\`hlsl
+float f = pow(4.0 * t * (1.0 - t), n);
+\`\`\`
+---
+## Gain
+![alt text](msedge_kTE391Qhhz.gif)
+$$
+g(t, k) =
+\\begin{cases}
+\\dfrac{f(2t,\\, k)}{2} & t < 0.5 \\\\[6pt]
+1 - \\dfrac{f(2 - 2t,\\, k)}{2} & t \\geq 0.5
+\\end{cases}
+, \\quad f(t, k) = t^k
+$$
+
+$t = 0.5$를 기준으로 대칭인 S자 곡선. $k > 1$이면 중간이 급해지고, $k < 1$이면 중간이 평탄해진다.
+
+\`\`\`hlsl
+float gain(float t, float k)
+{
+    float a = 0.5 * pow(2.0 * (t < 0.5 ? t : 1.0 - t), k);
+    return t < 0.5 ? a : 1.0 - a;
+}
+\`\`\`
+---
+## Triangle / Sawtooth Wave
+![alt text](msedge_Ezt9ITFTnu.gif)
+Sawtooth:
+
+$$
+f(t) = \\text{frac}(t \\cdot n)
+$$
+
+Triangle:
+
+$$
+f(t) = \\left| 2\\,\\text{frac}(t \\cdot n) - 1 \\right|
+$$
+
+반복 패턴 생성에 사용.
+
+\`\`\`hlsl
+float sawtooth = frac(t * freq);
+float triangle = abs(frac(t * freq) * 2.0 - 1.0);
+\`\`\`
+---
+## Sine-based
+![alt text](image-1.png)
+$$
+f(t) = \\sin(\\pi t)
+$$
+
+높이 를 $[0, 1]$ 범위로:
+
+$$
+f(t) = \\frac{\\sin(2\\pi t) + 1}{2}
+$$
+
+\`\`\`hlsl
+float bell       = sin(t * 3.14159265);
+float oscillation = (sin(t * 6.28318530) + 1.0) * 0.5;
+\`\`\`
+---
+## Exponential
+![alt text](msedge_9KKgG539de.gif)
+감쇠:
+
+$$
+f(t) = e^{-kt}
+$$
+
+점근 상승:
+
+$$
+f(t) = 1 - e^{-kt}
+$$
+
+$k$가 클수록 변화가 빠르다. 스프링, 물리 기반 이징에 자주 쓰임.
+
+\`\`\`hlsl
+float decay = exp(-k * t);
+float rise  = 1.0 - exp(-k * t);
+\`\`\`
+
+>[!note]
+>$e$는 자연상수($\\approx 2.71828$)로, $\\frac{d}{dt}e^t = e^t$인(미분해도 자기 자신인) 유일한 함수다. 변화율이 현재 값에 비례하는 현상을 자연스럽게 표현한다.
+`,
 
   'Game/DitherTemporalAA': `---
 title: DitherTemporalAA
@@ -870,91 +880,6 @@ mipmap 적용, 미적용 | 블렌딩 적용 방식 |
 >streaming, mipmap 은 2제곱 크기의 해상도 를 지원한다.
 GPU는 메모리를 절약을 위해 4*4 픽셀 블록 단위로 묶어서 압축된다.
 >(직사각형)32x16도 지원한다.`,
-
-  'Houdini/camera-ndc': `---
-title: Camera NDC
-date: 2022-05-28
-tags: VEX
----
-
-## NDC란?
-
-NDC (Normalized Device Coordinates) — 카메라를 기준으로 정규화된 좌표계다.
-
-3D 공간의 점을 카메라 시야 안에서 어디에 위치하는지 0~1 범위로 표현한다.
-
-| 축 | 범위 | 설명 |
-|---|---|---|
-| X | 0 ~ 1 | 화면 왼쪽(0) → 오른쪽(1) |
-| Y | 0 ~ 1 | 화면 아래(0) → 위(1) |
-| Z | 양수 절대값 | 카메라로부터의 거리 (깊이) |
-
-> [!NOTE]
-> Z축은 0~1로 정규화되지 않는다. 카메라가 바라보는 방향이 음(−), 반대가 양(+)이며 절대 거리값을 가진다.
-
-카메라 프레임 밖의 점은 X, Y가 0보다 작거나 1보다 크다. 이를 이용해 오브젝트가 카메라 안에 있는지 판별할 수 있다.
-
----
-
-## toNDC / fromNDC
-
-Houdini VEX에는 두 가지 변환 함수가 있다.
-
-### toNDC
-
-\`\`\`vex
-vector toNDC(string camera, vector pos)
-\`\`\`
-
-월드 공간의 점 \`pos\`를 NDC 좌표로 변환한다.
-
-\`\`\`vex
-string cam = "/obj/cam1";
-vector ndc = toNDC(cam, @P);
-
-// 화면 안에 있는지 확인
-if (ndc.x > 0 && ndc.x < 1 && ndc.y > 0 && ndc.y < 1) {
-    // 카메라 프레임 안
-}
-\`\`\`
-
-### fromNDC
-
-\`\`\`vex
-vector fromNDC(string camera, vector ndc)
-\`\`\`
-
-NDC 좌표를 다시 월드 공간으로 역변환한다.
-
-\`\`\`vex
-string cam = "/obj/cam1";
-vector world_pos = fromNDC(cam, set(0.5, 0.5, 10));
-// 화면 정중앙, 카메라에서 10 거리의 월드 좌표
-\`\`\`
-
----
-
-## 활용 예시
-
-**카메라 기반 컬러 매핑**
-\`\`\`vex
-string cam = "/obj/cam1";
-vector ndc = toNDC(cam, @P);
-@Cd = set(ndc.x, ndc.y, 0);
-\`\`\`
-
-**카메라 밖 포인트 제거**
-\`\`\`vex
-string cam = "/obj/cam1";
-vector ndc = toNDC(cam, @P);
-if (ndc.x < 0 || ndc.x > 1 || ndc.y < 0 || ndc.y > 1) {
-    removepoint(0, @ptnum);
-}
-\`\`\`
-
-> [!TIP]
-> \`toNDC\`는 SOP 레벨의 Wrangle에서 카메라 경로를 문자열로 직접 지정해야 한다. 카메라가 씬에 없으면 오류가 발생하므로 경로를 파라미터로 빼두는 게 좋다.
-`,
 
   'Houdini/control-smoke-by-max-density': `---
 title: Control Smoke by Max Density
@@ -1972,87 +1897,6 @@ tags: Volume, TIP
 감속 후 $FF + 0.25 하면 프레임 중간중간에 생기는 플리커를 어느정도 보간이 가능 하다
 `,
 
-  'Houdini/white-water-tip': `---
-title: White Water Tip
-date: 2021-09-03
-tags: DOP, Flip, Particle
----
-
-물의 세부표현으로는 총 3가지 종류가 있는데
-
-1. bubble : 물속에 있는 거품 입자들. (sdf 음수)
-2. foam : 물표면에 있는 거품 입자들. (sdf 0)
-3. spray(mist) : 물밖에 있는 거품 입자들.(sdf 양수)
-
-화이트 워터 만드는 원리
-
-dop 안의 계산된 fluid tank를 소스로 가져와 볼륨, 파티클들을 만들어 표현한다.
-
----
-
-# Self Tool - White Water
-
-Self Tool 에 있는 White Water의 노드들
-
-> [!note]+ whitewater_source - ( DOP에 있는 flip tank를 소스로 가공하는 단계 )
-
-
-> [!note]+ whitewater_sim - ( 가공된 소스로 파티클을 만드는 단계 )
-
-
-> [!note]+ whitewater_import - ( 만들어진 파티클들로 볼륨을 만드는 단계 )
->
-> 4. fluid tank를 소스로 하여 만든 파티클들을 가져온다.
-> 5. depth와 age를 이용해서 density를 만든다.
-> 6. density로 볼륨을 만든다.( fog )
-> 7. denstiy 의 값을 반전시킨다. ( 내부 : - / 외부 : + )
-> 8. 반전시킨 값을 토대로 gradiant( normal )을 구한다.
->     1. 볼륨의 normal을 구하는 이유는 렌더링시 반사가 일어나 실제같은 표현을 해주기 위함.
->
-
----
-
-# Custom White Water
-
-DOP 에서 만들어진 fluid를 속도(v), dot, depth를 조건들로 지오메트리 표면에 붙어있는 파티클들을 걸러준다.
-
-> [!note]+ 파티클들의 V를 커스텀 하는법.
-> > [!note]+ 1. volume의 vel을 이용해서 움직인다.
-> >
-> > 가져온 소스의 vel volume을 이용해서 파티클들을 움직인다. volume은 vdb로 변환후 vdbmerge 를 이용해서 가져온다.
-> >
->
-> > [!note]+ 2. volumegradiant를 이용해서 파티클들을 표면위로 붙여준다.
-> >
-> > 서로 모여서 선으로 보이는 형태가 된다.
-
-## 영역 가공
-
-popkill을 이용 일전에 boundary를 이용한 부분을 지워준다.
-
-
----
-
-# Repellant_Point
-
-SOP solver 로 repellantpoint를 만들고 POP wrangle 을 이용해서 파티클을 밀어주기.
-
-> [!note]+ %%%%%%pointfromvolume이 작동 되지 않을 때.
-
-
-surface volume 을 이용 해서 point 를 필터링 해줌
-
-POP object 는 그룹을 가지고 있다. 이것을 이용해서 foam 파티클들만 뽑아낼 수 있음.
-
-sop solver에서 생성한 repellant point를 기반으로 밀어주는 코드 작성.
-
-퍼지는 넓이 모양을 랜덤, 노이즈를 이용해 바꿔 준다.
-
----
-
-실제로 만들어 지는 geo는 소스보다 조금 두껍기 때문에 만들어진 폼 파티클들이 묻힐 수 있다. 그렇기 때문에 surface 값을 이용해서 offset을 해줘야. 보일 수 있다.
-`,
-
   'Houdini/경로-vex': `---
 title: 경로 vex
 date: 2022-09-02
@@ -2280,36 +2124,6 @@ README.md 에서
 
 [GOOGLE]: https://google.com
 [1]:<https://naver.com>
-`,
-
-  'Math/라디안': `---
-title: 라디안(Radian)
-date: 2021-07-17
----
-
-프로그램에선 각도를 나타낼때 degree보단 radian을 이용한다.
-
-후디니에서는 [cos, sin, tan](/4b39224626a7408480ab8b495942ae47)에서 사용된다.
-
-위의 그림 처럼 원의== 호가 반지름과 1:1의 비율이 되는 각도==를 1radian이라고 한다.
-
----
-
-# 라디안(radian)과 파이( $\\pi$ )
-
-파이는 기본적으로 원의 지름이 1일 때 원의 둘레를 말한다.
-
-지름 1 ⇒ $\\pi$
-
-반지름 0.5 ⇒ $\\pi$
-
-반지름 1 ⇒ 2$\\pi$
-
-위의 이유처럼 반지름이 1인 경우 원의 둘레는 2$\\pi$이고, 그렇다면 반원의 호는 $\\pi$가 성립 된다.
-
-곧 단위원에서 $\\pi$는 180도를 나타내는 radian이 된다.
-
-후디니에서의 파이는 <u>**$PI**</u> 로 표기된다.
 `,
 
   'Math/삼각-함수': `---
@@ -2542,135 +2356,6 @@ https://goodthings4me.tistory.com/m/59
 Class 사용시 \`__str__\`을 사용하게되면 인스턴스를 프린트 할때 바로 str의 반환을 출력한다.
 `,
 
-  'Python/dict-value': `---
-title: dict value 처리법
-date: 2023-02-13
-tags: dict
----
-https://www.daleseo.com/python-collections-defaultdict/
-`,
-
-  'Python/ffmpeg-crop': `---
-title: ffmpeg으로 영상 crop하기
-date: 2023-02-23
-tags: ffmpeg
----
-\`\`\`python
-def clipVideo(path, filename, start_time, end_time):
-    
-    temp_file = path + filename
-    clip_filename = filename.replace('_temp','')
-
-    ffmpeg_cmd = f'ffmpeg -ss {start_time} -t {end_time} -i {temp_file} -codec copy -avoid_negative_ts make_zero {path}{clip_filename}'
-    subprocess.call(ffmpeg_cmd, shell=True)
-    subprocess.call(f"rm \\"{temp_file}\\"", shell=True)
-\`\`\`
-`,
-
-  'Python/hbatch-deadline': `---
-title: hbatch deadline submiter
-date: 2022-10-12
-tags: HOM, deadline
----
-배치 상태에서 데드라인에 rop을 던지려면 데드라인에서 사용할 파라미터로 job, info 두가지가 필요하다. 둘 다 텍스트로 적용이 가능하며 종류는 아래에 거진 있고 여기 없는 것들은 general이나 다른 부분에 분포 되어 있다.
-
-\`\`\`python
-import hou
-import pyqt_houdini
-import sys
-import os
-import subprocess
-
-from collections import OrderedDict
-
-class DeadlineController():
-    def __init__(self, view):
-        self.view = view
-        self.model = self.view.model
-
-    def changeFrame(self, nodeName):
-        byStep = self.view.frameInterval_lineEdit.text()
-
-        node = hou.node(nodeName)
-
-        startFrame= node.parm('f1').eval()
-        endFrame= node.parm('f2').eval()
-        intervalFrame= node.parm('f3').eval()
-
-        frame = str(int(startFrame))+"-"+str(int(endFrame))
-        frame = '{0}-{1}step{2}'.format(str(int(startFrame)), str(int(endFrame)), str(int(intervalFrame)))
-        # ...
-        return frame
-
-    def houdiniInfoCollect(self, nodeName, number):
-        frame = self.changeFrame(nodeName)
-
-        info = 'Plugin={0}\\n'\\
-               'Name={1}\\n'\\
-               'Frames={2}\\n'\\
-               'ChunkSize={3}\\n'.format(
-                   self.model.getPlugin(),
-                   nodeName,
-                   frame,
-                   str(self.view.getChunkSize())
-               )
-
-        saveInfoTemp = r'{}\\houdini_deadline_info.job{}'.format(os.getenv('TEMP'), number)
-        with open(saveInfoTemp, 'w') as infoFile:
-            infoFile.write(info)
-
-        return saveInfoTemp
-
-    def submitDeadline(self):
-        nodeList = self.model.renderNodes
-        for i in range(len(nodeList)):
-            info = self.houdiniInfoCollect(nodeList[i], i)
-            job = self.houdiniJobCollect(i)
-
-            submit_command = "C:\\\\PROGRA~1\\\\Thinkbox\\\\Deadline10\\\\bin\\\\deadlinecommand "+"\\""+info+"\\""+" \\""+job+"\\""
-            deadline_command = subprocess.Popen(submit_command, shell=1)
-\`\`\`
-
-Job Info Parameters
-
-\`\`\`
-Plugin = 'Houdini'
-Name = '힙네임 - 만트라 노드 네임'
-Comment = ''
-Pool = 'none'
-MachineLimit = '머신 리밋'
-Priority = "프로퍼티"
-OnJobComplete = 'Nothing'
-TaskTimeoutMinutes = '0'
-LimitConcurrentTasksToNumberOfCpus = '0'
-ConcurrentTasks = '1'
-Department = ''
-Group = 'houdini'
-LimitGroups = ''
-JobDependencies = ''
-Frames = "프레임"
-ChunkSize = "청크사이즈"
-WhiteList = ''
-PopupNotification = True
-BatchName = ''
-Blacklist = ''
-InitialStatus = 'Active', 'Suspended'
-\`\`\`
-
-Plugin Info Parameters
-
-\`\`\`
-SceneFile = 힙파일 경로
-IFD =''
-Output = 아웃풋 경로
-OutputDriver = 만트라 노드 경로
-Version = 후디니 버전
-Build = 프로퍼티랑 동일
-\`\`\`
-
-위의 두가지를 텍스트 형식의 .job 파일로 temp 경로에 저장한 후에 그것을 가져다 쓰는 방식으로 데드라인이 작동됨
-`,
-
   'Python/houdini-widget-custom': `---
 title: Houdini 에서 위젯 커스텀(stylesheet, QPixmap) 반영 하기
 date: 2022-06-26
@@ -2731,14 +2416,6 @@ self.logoimage.load(BASE_DIR + '/mantra.svg')              ## 이미지 경로�
 self.logoimage = self.logoimage.scaled(self.MW.logo.sizeHint())     ## 사이즈 설정
 self.MW.logo.setPixmap(self.logoimage)                              ## 원하는 위젯에 이미지 적용
 \`\`\`
-`,
-
-  'Python/lambda': `---
-title: lambda
-date: 2022-12-22
-tags: function
----
-https://wikidocs.net/64
 `,
 
   'Python/list-sort-by-index': `---
