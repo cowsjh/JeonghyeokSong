@@ -13,6 +13,8 @@ Static HTML/CSS/JS portfolio. No build system.
 - **`node works-sync.js` 실행 후 `REVIEW_NEEDED: <slug>` 출력 시 → Works 검수 자동 실행** (아래 참조)
 - **Notes 커밋 직전 → Notes 검수 자동 실행** (아래 참조)
 - **신규 work/note 추가 시 폴더 전체를 스테이징.** `git add works/<slug>/` 또는 `git add notes/<parent>/<slug>/` — 이미지 누락 방지
+- **새 Note 생성 요청 시 → 제목·카테고리·슬러그·태그를 순서대로 물어본 후 `node new-note.js` 실행** (아래 참조)
+- **새 Work 생성 요청 시 → 제목·슬러그·카테고리·툴·featured·link를 순서대로 물어본 후 `node new-work.js` 실행** (아래 참조)
 
 ---
 
@@ -61,10 +63,11 @@ notes/<parent>/<slug>/main.md  +  이미지들
 **Frontmatter 필수 필드:**
 
 ```yaml
-title: Post Title
-date:  2024-06-15
-tags:  VEX, TIP, code   # 하위 필터 태그
-draft: false             # true → sync 제외
+title:    Post Title
+date:     2024-06-15
+tags:     VEX, TIP, code   # 하위 필터 태그
+featured: false            # true → 정렬 시 우선 노출
+draft:    false            # true → sync 제외
 ```
 
 ---
@@ -107,3 +110,47 @@ Notes 관련 커밋 전, 해당 note의 `main.md`에 대해 순서대로 자동 
 `/grammar-check` 스킬로 문법·맞춤법·흐름 검수. 수정 제안 반영 후 커밋 진행.
 
 > Gallery는 폴더 스캔 방식이므로 이미지 체크 불필요.
+
+---
+
+## 새 Note 생성 (자동 트리거)
+
+사용자가 새 note 페이지 생성을 요청하면 아래 순서대로 진행:
+
+### 1. 정보 수집 (순서대로 질문)
+1. **제목** (title)
+2. **카테고리** (기존: `Game`, `Houdini`, `ComputerGraphics`, `Math`, `Markdown` — 또는 새 카테고리)
+3. **슬러그** (폴더명, 기본값: 제목을 camelCase로 변환)
+4. **태그** (쉼표 구분)
+
+### 2. 스크립트 실행
+```
+node new-note.js "<title>" "<category>" "<slug>" "<tags>"
+```
+
+- `draft: true` 고정 (작성 완료 후 수동으로 `false` 변경)
+- 날짜는 오늘 날짜 자동 입력
+- 이미 존재하는 경로면 에러 출력 후 중단
+
+---
+
+## 새 Work 생성 (자동 트리거)
+
+사용자가 새 work 페이지 생성을 요청하면 아래 순서대로 진행:
+
+### 1. 정보 수집 (순서대로 질문)
+1. **제목** (title)
+2. **슬러그** (폴더명, 기본값: 제목을 kebab-case로 변환)
+3. **카테고리** (기존: `Game Art`, `Tool` — 또는 새 카테고리)
+4. **툴** (쉼표 구분, 예: `Houdini, Unreal Engine`)
+5. **featured** (`true` / `false`)
+6. **link** (없으면 빈칸)
+
+### 2. 스크립트 실행
+```
+node new-work.js "<title>" "<slug>" "<category>" "<tools>" "<featured>" "<link>"
+```
+
+- `draft: true` 고정, `thumbnail: thumb.jpg` 플레이스홀더 삽입
+- 날짜는 오늘 날짜 YYYY.MM 형식 자동 입력
+- 이미 존재하는 경로면 에러 출력 후 중단

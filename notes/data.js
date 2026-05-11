@@ -91,6 +91,7 @@ title: OKLab
 date: 2026-05-11
 tags: color
 draft: false
+featured: true
 ---
 
 https://bottosson.github.io/posts/oklab/
@@ -124,15 +125,17 @@ Lab는 바로 사용할 수도 있지만 a, b와 같은 축을 사람이 조절�
 - $h$ = 색상
 
 ### $Lab$ $\\rightarrow$ $LCh$
-$
-C = \\sqrt{a^2+b^2}\\\\ h = atan2(b,a)
-$
+
+$C = \\sqrt{a^2+b^2}$
+$h = atan2(b,a)$
+
 
 ### $Lch$ $\\rightarrow$ $Lab$
 
-$
-a = Ccos(h)\\\\ b = Csin(h)
-$
+
+$a = Ccos(h)$
+$b = Csin(h)$
+
 
 ## Implementation to Unreal
 
@@ -240,6 +243,7 @@ title: Shaping Functions
 date: 2026-05-09
 tags: code
 draft: false
+featured: true
 ---
 
 입력값 $t \\in [0, 1]$을 원하는 곡선 형태로 변환하는 함수들.

@@ -262,6 +262,8 @@ function makeFilterBtn(label, onClick) {
   let tagMode     = 'OR'; // 'OR' | 'AND'
   let seriesMap   = {};
   let noteObserver = null;
+  let searchQuery = '';
+  let currentRefresh = null;
 
   function parseFrontmatter(text) {
     const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
@@ -272,10 +274,11 @@ function makeFilterBtn(label, onClick) {
       if (idx > 0) meta[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
     });
     return {
-      title:  meta.title  || '',
-      date:   meta.date   || '',
-      tags:   meta.tags   ? meta.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [],
-      series: meta.series || '',
+      title:    meta.title  || '',
+      date:     meta.date   || '',
+      tags:     meta.tags   ? meta.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [],
+      series:   meta.series || '',
+      featured: meta.featured === 'true',
     };
   }
 
@@ -283,7 +286,8 @@ function makeFilterBtn(label, onClick) {
     const { years, children, parent: filterParent } = filters;
     grid.innerHTML = '';
 
-    const filtered = entries.filter(({ date, parent, tags }) => {
+    const q = searchQuery.trim().toLowerCase();
+    const filtered = entries.filter(({ date, parent, tags, title }) => {
       if (filterParent && !parent.includes(filterParent)) return false;
       if (years.size > 0 && !years.has(date.slice(0, 4))) return false;
       if (children.size > 0) {
@@ -291,6 +295,10 @@ function makeFilterBtn(label, onClick) {
           ? [...children].every(t => tags.includes(t))
           : tags.some(t => children.has(t));
         if (!match) return false;
+      }
+      if (q) {
+        const hay = (title + ' ' + tags.join(' ') + ' ' + parent.join(' ')).toLowerCase();
+        if (!hay.includes(q)) return false;
       }
       return true;
     });
@@ -490,6 +498,8 @@ function makeFilterBtn(label, onClick) {
       refresh(false);
     }
 
+    currentRefresh = refresh;
+
     function refresh(animate = true) {
       updateParentBtns();
       updateSubBar();
@@ -514,16 +524,31 @@ function makeFilterBtn(label, onClick) {
     }
   }
 
+  const searchInput = document.getElementById('notes-search-input');
+  if (searchInput) {
+    let debounce = null;
+    searchInput.addEventListener('input', () => {
+      searchQuery = searchInput.value;
+      clearTimeout(debounce);
+      debounce = setTimeout(() => {
+        if (typeof currentRefresh === 'function') currentRefresh();
+      }, 120);
+    });
+  }
+
   const script = document.createElement('script');
   script.src = 'notes/data.js';
   script.onload = () => {
     if (!window.BLOG) { grid.innerHTML = ''; return; }
 
     const entries = Object.entries(window.BLOG).map(([slug, raw]) => {
-      const { title, date, tags, series } = parseFrontmatter(raw);
+      const { title, date, tags, series, featured } = parseFrontmatter(raw);
       const parent = [slug.split('/')[0]]; // 폴더명 = 상위 태그
-      return { slug, title, date, parent, tags, series };
-    }).sort((a, b) => b.date.localeCompare(a.date));
+      return { slug, title, date, parent, tags, series, featured };
+    }).sort((a, b) => {
+      if (a.featured !== b.featured) return a.featured ? -1 : 1;
+      return b.date.localeCompare(a.date);
+    });
 
     if (typeof window._onNotesReady === 'function') window._onNotesReady(entries);
 

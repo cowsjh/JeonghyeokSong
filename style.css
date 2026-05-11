@@ -236,13 +236,57 @@ section { padding: 80px 48px; }
   margin-bottom: 20px;
 }
 
+.notes-search {
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+  margin-bottom: 16px;
+}
+
+.notes-search-input {
+  width: 100%;
+  padding: 8px 38px 8px 14px;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.notes-search-input:focus {
+  border-color: var(--text);
+}
+
+.notes-search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.notes-search-input:focus + .notes-search-icon {
+  color: var(--text);
+}
+
+.notes-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 /* ─── Tab bar ────────────────────────────────────────── */
 #portfolio { background: var(--bg); }
 
 .tab-bar {
   display: flex;
   gap: 32px;
-  margin-bottom: 48px;
+  margin-bottom: 24px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -286,7 +330,7 @@ section { padding: 80px 48px; }
 
 /* ─── Featured section ───────────────────────────────── */
 #tab-featured {
-  margin-top: -36px;
+  margin-top: -12px;
 }
 .featured-section {
   margin-bottom: 5px;
@@ -312,7 +356,7 @@ section { padding: 80px 48px; }
 #featured-notes-grid {
   display: flex;
   flex-direction: column;
-  max-height: 220px;
+  max-height: 260px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
