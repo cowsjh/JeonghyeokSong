@@ -87,7 +87,7 @@ vs
 `,
 
   'ComputerGraphics/oklab': `---
-title: Lab, LCh
+title: OKLab
 date: 2026-05-11
 tags: color
 draft: false
@@ -99,10 +99,10 @@ https://bottosson.github.io/posts/oklab/
 
 ## Perceptually uniform color
 
-$HSV$, $RGB$ 같은 기존의 색공간은 밝기를 유지한채 색상을 바꾸는 것이 어렵고 인간의 시각과 거리감이 있는 그라데이션을 가진다.
+$HSV$, $RGB$ 같은 기존의 색공간은 밝기를 유지한 채 색상을 바꾸는 것이 어렵고 인간의 시각과 거리감이 있는 그라데이션을 가진다.
 $Lab$(CIELAB)은 이러한 문제점을 개선하여 만들어진 색공간이다.
 
-gradient 로 보면 색공간의 밝기 처리가 확연하게 차이 난다.
+gradient로 보면 색공간의 밝기 처리가 확연하게 차이 난다.
 **RGB gradient**
 ![alt text](image-1.png)
 ![alt text](image-2.png)
@@ -111,13 +111,13 @@ gradient 로 보면 색공간의 밝기 처리가 확연하게 차이 난다.
 
 ## $OKLab$, $OKLCh$
 
-기존의 $Lab$ 의 단점을 보완 하여 나온것이 $OKLab$이다. 
+기존의 $Lab$의 단점을 보완하여 나온 것이 $OKLab$이다.
 
 - $L$ = 지각적 밝기
 - $a$ = 초록/빨강 축
 - $b$ = 파랑/노랑 축
 
-Lab는 바로 사용할 수도 있지만 a,b 와 같은 축을 사람이 조절 하기에는 어려움이 있기 때문에 사용 하기 좋게 하기 위해서 치환하는 $LCh$ 가 필요하다.
+Lab는 바로 사용할 수도 있지만 a, b와 같은 축을 사람이 조절하기에는 어려움이 있기 때문에 사용하기 편리하게 치환하는 $LCh$가 필요하다.
 
 - $L$ = 지각적 밝기
 - $C$ = 채도
@@ -177,17 +177,17 @@ float3 linear_srgb_to_oklab(float3 c)
 \`\`\`
 
 ### Unreal
-**Unreal** 에서는 $Lab, LCh$을 통해서 **Tint color**를 크게 개선할 수 있다.
-일단은 확인을 위해서 Custom 노드에 하드 코드를 적용 시켜 보았다.
-중간의 노드들은 TintColor 의 채도를 구해 $LCh$ 의 chroma 에 적용 시켜 주는 수식이다.
+**Unreal**에서는 $Lab, LCh$을 통해서 **Tint color**를 크게 개선할 수 있다.
+일단은 확인을 위해서 Custom 노드에 하드 코드를 적용시켜 보았다.
+중간의 노드들은 TintColor의 채도를 구해 $LCh$의 chroma에 적용시켜 주는 수식이다.
 
 $
 C = 1 - Min(R,G,B)/Max(R,G,B)
 $
 
 ![alt text](image-3.png)
-명도의 차이가 거의 없이 Tint color 가 적용된 모습.
-![alt text](image-5.png) |![alt text](image-4.png) |
+명도의 차이가 거의 없이 Tint color가 적용된 모습.
+![alt text](image-6.png) |![alt text](image-4.png) |
 --- | --- |
 ![alt text](image-7.png) | ![alt text](image-7.png) |
 
