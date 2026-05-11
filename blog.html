@@ -407,7 +407,9 @@
       if (mdBody) mdBody.style.visibility = 'hidden';
       (function typesetWhenReady() {
         if (window.MathJax && MathJax.typesetPromise) {
-          MathJax.typesetPromise([container]).then(() => {
+          const toc = document.querySelector('.toc-sidebar');
+          const targets = toc ? [container, toc] : [container];
+          MathJax.typesetPromise(targets).then(() => {
             if (mdBody) mdBody.style.visibility = '';
           });
         } else {

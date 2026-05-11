@@ -829,6 +829,9 @@ footer {
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
 }
+.md-body h2 {
+  margin-top: 96px;
+}
 
 .md-body h3 {
   font-family: var(--font-sans);
@@ -836,8 +839,28 @@ footer {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
-  margin: 32px 0 10px;
+  color: var(--text);
+  margin: 64px 0 10px;
+}
+
+.md-body h4 {
+  font-family: var(--font-sans);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 56px 0 8px;
+}
+
+.md-body h5 {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 48px 0 6px;
 }
 
 .md-body p {
@@ -879,6 +902,17 @@ footer {
   display: block;
   margin: 32px 0;
   background: var(--surface);
+}
+.md-body img + img,
+.md-body br + img {
+  margin-top: 0;
+}
+.md-body img:has(+ img),
+.md-body img:has(+ br + img) {
+  margin-bottom: 0;
+}
+.md-body br:has(+ img) {
+  display: none;
 }
 
 .md-body pre {
