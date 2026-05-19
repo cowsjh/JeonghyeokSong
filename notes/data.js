@@ -181,6 +181,29 @@ CPU의 병목 현상을 해결하는 방법 중 하나.
 
 `,
 
+  'ComputerGraphics/SSAO': `---
+title: SSAO (Screen Space Ambient Occlusion)
+date: 2026-05-20
+tags: Rendering
+draft: false
+---
+
+[A Comparative Study of Screen-Space Ambient Occlusion Methods](https://frederikaalund.com/a-comparative-study-of-screen-space-ambient-occlusion-methods/)
+
+---
+
+## Ambient Occlusion
+기준이 되는 점에서 노멀 방향으로 반원을 그려 광선을 쏴 차폐되는 정도와 거리를 계산한다. 이 때문에 연산 비용이 커 최적화가 중요한 게임에서는 쓰기 힘들다. 그래서 나온 것이 SSAO다.
+
+## SSAO
+SSAO는 [Deferred Rendering](../../Game/game-optimization-02/main.md#deferrec-rendering)의 G-buffer 단계에서 depth-buffer로 연산되기 때문에 씬의 복잡도에서 자유롭다.
+
+
+### Unreal Engine 4
+샘플을 단일 점으로 쓰지 않고, 두 점을 한 쌍으로 연산한다. 샘플을 실제 표면에 투영하여 기준 점에서부터 두 벡터의 각도를 계산한다.
+적은 수의 샘플로 좋은 AO를 얻을 수 있다.
+![alt text](image.png)`,
+
   'ComputerGraphics/aboutDraw': `---
 title: Draw Call
 date: 2026-04-21
@@ -375,7 +398,6 @@ tags: Rendering
 하드웨어는 렌더할때 항상 2x2 픽셀 쿼드 가 사용 된다. 아주 작은 1픽셀 짜리 오브젝트를 렌더링 한다고 해도 4개의 픽셀이 그룹으로 연산된다.
 초록색 - 폴리곤 영역
 주황색 - 연산되는 픽셀
-![alt text](image-1.png)
 
 이와 같은 원리로 근접한 폴리곤에서 overshading이 발생한다.
 ![alt text](image-2.png)|![alt text](image-3.png)
