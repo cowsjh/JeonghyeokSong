@@ -423,7 +423,11 @@
             if (mdBody) mdBody.style.visibility = '';
             if (location.hash) {
               const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
-              if (target) target.scrollIntoView();
+              if (target) {
+                const imgs = Array.from(container.querySelectorAll('img')).filter(img => !img.complete);
+                Promise.all(imgs.map(img => new Promise(r => { img.onload = img.onerror = r; })))
+                  .then(() => target.scrollIntoView());
+              }
             }
           });
         } else {
