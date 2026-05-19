@@ -406,6 +406,12 @@
       `;
       const container = document.getElementById('post-content');
       postProcessTables(container);
+      container.querySelectorAll('.md-body h1, .md-body h2, .md-body h3').forEach((h, i) => {
+        if (!h.id) {
+          h.id = h.textContent.trim().toLowerCase()
+            .replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') || `section-${i}`;
+        }
+      });
       buildTOC();
       const mdBody = container.querySelector('.md-body');
       if (mdBody) mdBody.style.visibility = 'hidden';
@@ -415,6 +421,10 @@
           const targets = toc ? [container, toc] : [container];
           MathJax.typesetPromise(targets).then(() => {
             if (mdBody) mdBody.style.visibility = '';
+            if (location.hash) {
+              const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+              if (target) target.scrollIntoView();
+            }
           });
         } else {
           setTimeout(typesetWhenReady, 50);
