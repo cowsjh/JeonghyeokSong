@@ -298,7 +298,7 @@
       }
       let slug = path.replace(/^notes\//, '').replace(/\.md$/, '');
       const parts = slug.split('/');
-      if (parts.length >= 2 && parts[parts.length - 1] === parts[parts.length - 2]) {
+      if (parts.length >= 2 && (parts[parts.length - 1] === 'main' || parts[parts.length - 1] === parts[parts.length - 2])) {
         slug = parts.slice(0, -1).join('/');
       }
       return slug;
