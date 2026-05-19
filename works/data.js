@@ -41,10 +41,16 @@ Unreal에서의 사용을 염두에 두고 인풋을 버텍스 컬러로 선정�
 Stylized 작업에서 자주 쓰이는 스컬핑 방식을 참고하여, 바위의 모서리와 크랙 형태를 \`polyextrude\`와 \`polybevel\` 노드로 적용했다. 크랙은 \`edgefracture\` 노드를 활용해 유기적인 패턴을 만들었다.
 ![alt text](houdini_WHRgTjvI00.png) 
 #### Geometry control
-\`polybevel\` 노드는 강력하지만, 프로시쥬얼로 쓰기에는 파라미터가 민감하다. 그래서 중간중간 보정이 필요한데, 어느 정도 튀는 포인트는 \`blur\`나 \`smooth\`로 조절할 수 있다. 다만 격하게 튀는 포인트들은 반복문을 쓰거나 값을 높여도 비용만 늘고 결과가 아쉬울 때가 있다. 이 경우에는 안정화 작업 전에 한 번 필터링해 주는 편이 효율적이다.
+\`polybevel\` 노드는 강력하지만, 프로시쥬얼로 예민한 파라미터를 가지고 있다. 그래서 중간중간 보정이 필요한데, 어느 정도 튀는 포인트는 \`blur\`나 \`smooth\`로 조절할 수 있다. 다만 격하게 튀는 포인트들은 반복문을 쓰거나 값을 높여도 비용만 늘고 결과가 아쉬울 때가 있다. 이 경우에는 안정화 작업 전에 한 번 필터링해 주는 편이 효율적이다.
 ![alt text](houdini_m9zxRQDVih.png) | ![alt text](image-17.png) |
 --- | --- |
 
+### UV, Collision, LOD
+UV 는 커스텀 Box 매핑 노드를 사용했다.
+![alt text](image-1.png)
+후디니는 언리얼과 호환되는 어트리뷰트, 그룹핑 파이프라인을 가지고 있다.[Unreal](https://www.sidefx.com/docs/houdini/unreal/attributes.html)
+어트리뷰트와 그룹 네임을 이용해서 Bake 경로, 이름, Collision, LOD 설정을 해주었다.
+![alt text](image-2.png)
 
 ## Optimizing
 생각보다 생성에 시간이 오래 걸려, 전체적인 최적화를 한번 진행하기로 했다.
@@ -70,6 +76,7 @@ HDA에서 가장 불안정한 부분은 크랙과 베벨이 적용되는 단계�
 최적화 전 | 최적화 후 |
 
 ## Unreal
+Vertex Painting을 통해 버텍스 컬러를 입히고 그걸을 베이스로 에셋이 생성 된다. 불필요한 연산은 피하기 위해 파라미터 조작시 collision, lod, polyreduce 등의 포스트 프로세스 파라미터를 분리 시켜 놓았다.
 https://www.youtube.com/watch?v=eH-oy7hPmHQ&feature=youtu.be
 `,
 
