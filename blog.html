@@ -323,10 +323,14 @@
         } else {
           href = hrefOrToken; t = title; tx = text;
         }
-        if (href && href.endsWith('.md')) {
-          const slug = mdPathToSlug(href, id);
-          if (slug) {
-            return `<a href="blog.html?id=${encodeURIComponent(slug)}"${t ? ` title="${t}"` : ''}>${tx}</a>`;
+        if (href) {
+          const mdMatch = href.match(/^([^#]+\.md)(#.*)?$/);
+          if (mdMatch) {
+            const slug = mdPathToSlug(mdMatch[1], id);
+            if (slug) {
+              const hash = mdMatch[2] || '';
+              return `<a href="blog.html?id=${encodeURIComponent(slug)}${hash}"${t ? ` title="${t}"` : ''}>${tx}</a>`;
+            }
           }
         }
         const external = /^https?:\/\//.test(href);

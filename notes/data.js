@@ -1121,7 +1121,7 @@ series: Game Optimization
 \`\`\`
 Volume -> Cull Distance Volume
 \`\`\`
-[Distance Culling](../culling/main.md#Distance_Culling)
+[Distance Culling](../culling/main.md#distance-culling)
 
 
 ## Hierarchical Level of Detail (HLODS)
