@@ -15,6 +15,9 @@ Static HTML/CSS/JS portfolio. No build system.
 - **신규 work/note 추가 시 폴더 전체를 스테이징.** `git add works/<slug>/` 또는 `git add notes/<parent>/<slug>/` — 이미지 누락 방지
 - **새 Note 생성 요청 시 → 제목·카테고리·슬러그·태그를 순서대로 물어본 후 `node new-note.js` 실행** (아래 참조)
 - **새 Work 생성 요청 시 → 제목·슬러그·카테고리·툴·featured·link를 순서대로 물어본 후 `node new-work.js` 실행** (아래 참조)
+- **"배포 확인되면 알려줘" 요청 시 → 백그라운드 폴링 실행, 사용자에게 확인하지 않음**
+  - 명령: `until curl -s <검증 URL> | grep -q <키워드>; do sleep 15; done`
+  - 검증 키워드는 방금 푸시한 변경사항 중 고유한 문자열 사용
 
 ---
 
