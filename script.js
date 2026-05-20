@@ -21,7 +21,7 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 
 cards.forEach((card, i) => {
-  card.dataset.delay = i * 100;
+  card.dataset.delay = i * 30;
   observer.observe(card);
 });
 
@@ -53,7 +53,7 @@ function activateTab(name, animate = false) {
       .filter(c => c.style.display !== 'none');
     visible.forEach(c => c.classList.remove('visible'));
     requestAnimationFrame(() => {
-      visible.forEach((c, i) => setTimeout(() => c.classList.add('visible'), i * 80));
+      visible.forEach((c, i) => setTimeout(() => c.classList.add('visible'), i * 25));
     });
   }
 }
@@ -108,7 +108,7 @@ function makeFilterBtn(label, onClick) {
       const a = document.createElement('a');
       a.className = 'post-card post-card--featured';
       a.href = card.href;
-      a.dataset.delay = i * 60;
+      a.dataset.delay = i * 20;
       a.innerHTML = `
         <div class="post-thumb">
           <img src="${img?.src || ''}" alt="${title}" loading="lazy">
@@ -131,13 +131,17 @@ function makeFilterBtn(label, onClick) {
     });
     notesGrid.querySelectorAll('.note-card').forEach((c, i) => {
       c.classList.remove('visible');
-      setTimeout(() => c.classList.add('visible'), i * 40);
+      setTimeout(() => c.classList.add('visible'), i * 15);
     });
   };
 
   // Recent notes: notes IIFE data.js onload 후 호출
   window._onNotesReady = function (entries) {
-    entries.forEach(({ slug, title, date, tags, parent }) => {
+    const ordered = [...entries].sort((a, b) => {
+      if (a.featured !== b.featured) return a.featured ? -1 : 1;
+      return b.date.localeCompare(a.date);
+    });
+    ordered.forEach(({ slug, title, date, tags, parent }) => {
       const card = document.createElement('a');
       card.className = 'note-card';
       card.href = `blog.html?id=${slug}`;
@@ -162,7 +166,7 @@ function makeFilterBtn(label, onClick) {
       notesGrid.appendChild(card);
     });
     notesGrid.querySelectorAll('.note-card').forEach((c, i) => {
-      setTimeout(() => c.classList.add('visible'), i * 40);
+      setTimeout(() => c.classList.add('visible'), i * 15);
     });
   };
 })();
@@ -200,7 +204,7 @@ function makeFilterBtn(label, onClick) {
       }
     });
     requestAnimationFrame(() => {
-      toShow.forEach((card, i) => setTimeout(() => card.classList.add('visible'), i * 60));
+      toShow.forEach((card, i) => setTimeout(() => card.classList.add('visible'), i * 20));
     });
   }
 
@@ -263,7 +267,20 @@ function makeFilterBtn(label, onClick) {
   let seriesMap   = {};
   let noteObserver = null;
   let searchQuery = '';
+  let searchScope = 'title'; // 'title' | 'body' | 'all'
   let currentRefresh = null;
+
+  function stripMarkdownToSearchable(raw) {
+    let text = raw.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
+    text = text.replace(/```[\s\S]*?```/g, ' ');
+    text = text.replace(/`[^`]*`/g, ' ');
+    text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1');
+    text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+    text = text.replace(/<[^>]+>/g, ' ');
+    text = text.replace(/[#>*_~`|-]+/g, ' ');
+    text = text.replace(/\s+/g, ' ');
+    return text.toLowerCase();
+  }
 
   function parseFrontmatter(text) {
     const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
@@ -287,7 +304,7 @@ function makeFilterBtn(label, onClick) {
     grid.innerHTML = '';
 
     const q = searchQuery.trim().toLowerCase();
-    const filtered = entries.filter(({ date, parent, tags, title }) => {
+    const filtered = entries.filter(({ date, parent, tags, title, body }) => {
       if (filterParent && !parent.includes(filterParent)) return false;
       if (years.size > 0 && !years.has(date.slice(0, 4))) return false;
       if (children.size > 0) {
@@ -297,7 +314,11 @@ function makeFilterBtn(label, onClick) {
         if (!match) return false;
       }
       if (q) {
-        const hay = (title + ' ' + tags.join(' ') + ' ' + parent.join(' ')).toLowerCase();
+        const meta = (title + ' ' + tags.join(' ') + ' ' + parent.join(' ')).toLowerCase();
+        let hay;
+        if (searchScope === 'title')     hay = meta;
+        else if (searchScope === 'body') hay = body || '';
+        else                             hay = meta + ' ' + (body || '');
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -321,7 +342,10 @@ function makeFilterBtn(label, onClick) {
         : '';
       const card = document.createElement('a');
       card.className = 'note-card';
-      card.href = `blog.html?id=${slug}`;
+      const jumpQ = (searchScope !== 'title' && searchQuery.trim())
+        ? `&q=${encodeURIComponent(searchQuery.trim())}`
+        : '';
+      card.href = `blog.html?id=${slug}${jumpQ}`;
       card.dataset.tags = tags.join(',');
       card.innerHTML = `
         ${tags.length ? `<div class="note-tags">${tagPills}</div>` : ''}
@@ -329,7 +353,7 @@ function makeFilterBtn(label, onClick) {
         <h3 class="note-title">${title}</h3>
         ${date ? `<span class="note-date">${date.replace(/-/g, '.')}</span>` : ''}
       `;
-      card.dataset.delay = i * 40;
+      card.dataset.delay = i * 15;
       grid.appendChild(card);
       i++;
     });
@@ -524,15 +548,45 @@ function makeFilterBtn(label, onClick) {
     }
   }
 
+  const SCOPE_CYCLE = [
+    { key: 'title', label: 'Title' },
+    { key: 'body',  label: 'Body' },
+    { key: 'all',   label: 'All' },
+  ];
+
+  const savedQuery = sessionStorage.getItem('notesSearchQuery') || '';
+  const savedScope = sessionStorage.getItem('notesSearchScope');
+  if (savedScope && SCOPE_CYCLE.some(s => s.key === savedScope)) searchScope = savedScope;
+  if (savedQuery) searchQuery = savedQuery;
+
   const searchInput = document.getElementById('notes-search-input');
   if (searchInput) {
+    if (searchQuery) searchInput.value = searchQuery;
     let debounce = null;
     searchInput.addEventListener('input', () => {
       searchQuery = searchInput.value;
+      sessionStorage.setItem('notesSearchQuery', searchQuery);
       clearTimeout(debounce);
       debounce = setTimeout(() => {
         if (typeof currentRefresh === 'function') currentRefresh();
       }, 120);
+    });
+  }
+
+  const scopeBtn = document.getElementById('notes-search-scope');
+  if (scopeBtn) {
+    const current = SCOPE_CYCLE.find(s => s.key === searchScope) || SCOPE_CYCLE[0];
+    scopeBtn.textContent = current.label;
+    scopeBtn.dataset.scope = current.key;
+    scopeBtn.addEventListener('mousedown', e => e.preventDefault());
+    scopeBtn.addEventListener('click', () => {
+      const i = SCOPE_CYCLE.findIndex(s => s.key === searchScope);
+      const next = SCOPE_CYCLE[(i + 1) % SCOPE_CYCLE.length];
+      searchScope = next.key;
+      sessionStorage.setItem('notesSearchScope', next.key);
+      scopeBtn.textContent = next.label;
+      scopeBtn.dataset.scope = next.key;
+      if (typeof currentRefresh === 'function' && searchQuery.trim()) currentRefresh();
     });
   }
 
@@ -544,11 +598,9 @@ function makeFilterBtn(label, onClick) {
     const entries = Object.entries(window.BLOG).map(([slug, raw]) => {
       const { title, date, tags, series, featured } = parseFrontmatter(raw);
       const parent = [slug.split('/')[0]]; // 폴더명 = 상위 태그
-      return { slug, title, date, parent, tags, series, featured };
-    }).sort((a, b) => {
-      if (a.featured !== b.featured) return a.featured ? -1 : 1;
-      return b.date.localeCompare(a.date);
-    });
+      const body = stripMarkdownToSearchable(raw);
+      return { slug, title, date, parent, tags, series, featured, body };
+    }).sort((a, b) => b.date.localeCompare(a.date));
 
     if (typeof window._onNotesReady === 'function') window._onNotesReady(entries);
 
@@ -597,7 +649,7 @@ function makeFilterBtn(label, onClick) {
     let i = 0;
     grid.querySelectorAll('.note-card').forEach(c => {
       c.classList.remove('visible');
-      const delay = i++ * 40;
+      const delay = i++ * 15;
       setTimeout(() => c.classList.add('visible'), delay);
     });
   };

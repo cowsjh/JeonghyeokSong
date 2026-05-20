@@ -6,7 +6,7 @@
   <title>Work | Jeonghyeok Song</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&display=block">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&display=swap">
   <link rel="stylesheet" href="style.css">
   <script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
   <style>
@@ -133,6 +133,11 @@
       font-size: 1.03rem;
       letter-spacing: 0.08em;
     }
+    .work-loading {
+      opacity: 0;
+      animation: fadeInLoading 0.3s ease 0.3s forwards;
+    }
+    @keyframes fadeInLoading { to { opacity: 1; } }
     .work-error { color: #b05555; }
 
     @media (max-width: 640px) {
@@ -181,6 +186,18 @@
     window.addEventListener('scroll', () => {
       nav.classList.toggle('scrolled', window.scrollY > 40);
     }, { passive: true });
+
+    // ─── img(.mp4/.webm) → video 치환 ─────────────
+    function convertImgToVideo(html) {
+      return html.replace(
+        /<img\s+([^>]*?)src="([^"]+\.(?:mp4|webm|mov))"([^>]*)>/gi,
+        (_, pre, src, post) => {
+          const attrs = (pre + post).match(/title="[^"]*"/i);
+          const titleAttr = attrs ? ' ' + attrs[0] : '';
+          return `<video src="${src}#t=0.001" autoplay muted loop playsinline${titleAttr}></video>`;
+        }
+      );
+    }
 
     // ─── Alert 변환 ───────────────────────────────
     const ALERT_TYPES = { NOTE: 'Note', TIP: 'Tip', IMPORTANT: 'Important', WARNING: 'Warning', CAUTION: 'Caution' };
@@ -247,7 +264,7 @@
           ${tools.length ? `<div class="work-tools">${toolBadges}</div>` : ''}
           ${linkBtn}
         </div>
-        <div class="md-body">${convertAlerts(marked.parse(body)).replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, `$1works/${id}/`)}</div>
+        <div class="md-body">${convertImgToVideo(convertAlerts(marked.parse(body)).replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, `$1works/${id}/`))}</div>
       `;
 
       postProcessTables(document.getElementById('work-content'));
@@ -362,7 +379,7 @@
       document.head.appendChild(script);
     }
   </script>
-  <script src="toc.js"></script>
-  <script src="theme.js"></script>
+  <script src="toc.js" defer></script>
+  <script src="theme.js" defer></script>
 </body>
 </html>

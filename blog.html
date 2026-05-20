@@ -6,7 +6,7 @@
   <title>Notes | Jeonghyeok Song</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&display=block">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&display=swap">
   <link rel="stylesheet" href="style.css">
   <script>
     MathJax = {
@@ -14,15 +14,7 @@
       startup: { typeset: false }
     };
   </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
   <script>(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
-  <script>(function(){
-    var t=localStorage.getItem('theme')||'dark';
-    var l=document.createElement('link');
-    l.id='hljs-theme';l.rel='stylesheet';
-    l.href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/'+(t==='light'?'github':'github-dark')+'.min.css';
-    document.head.appendChild(l);
-  })();</script>
   <style>
     body { overflow-x: hidden; }
 
@@ -159,6 +151,11 @@
       font-size: 1.03rem;
       letter-spacing: 0.08em;
     }
+    .post-loading {
+      opacity: 0;
+      animation: fadeInLoading 0.3s ease 0.3s forwards;
+    }
+    @keyframes fadeInLoading { to { opacity: 1; } }
     .post-error { color: #b05555; }
 
     .hljs-addition { background: none !important; color: #3fb950; }
@@ -212,7 +209,6 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
   <script>
     'use strict';
 
@@ -315,6 +311,9 @@
           href = hrefOrToken; t = title; tx = text;
         }
         const src = /^https?:\/\/|^\//.test(href) ? href : `notes/${id}/${href}`;
+        if (/\.(mp4|webm|mov)$/i.test(href)) {
+          return `<video src="${src}#t=0.001" autoplay muted loop playsinline${t ? ` title="${t}"` : ''}></video>`;
+        }
         return `<img src="${src}" alt="${tx || ''}"${t ? ` title="${t}"` : ''} loading="lazy">`;
       };
       r.link = function(hrefOrToken, title, text) {
@@ -340,6 +339,10 @@
       r.code = function(token) {
         const code = typeof token === 'object' ? token.text : token;
         const lang = typeof token === 'object' ? token.lang : arguments[1];
+        if (typeof hljs === 'undefined') {
+          const esc = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          return `<pre><code class="language-${lang || 'plaintext'}">${esc}</code></pre>`;
+        }
         const language = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
         const highlighted = hljs.highlight(code, { language }).value;
         return `<pre><code class="hljs language-${language}">${highlighted}</code></pre>`;
@@ -415,31 +418,37 @@
       });
       buildTOC();
       const mdBody = container.querySelector('.md-body');
-      if (mdBody) mdBody.style.visibility = 'hidden';
-      (function typesetWhenReady() {
-        if (window.MathJax && MathJax.typesetPromise) {
-          const toc = document.querySelector('.toc-sidebar');
-          const targets = toc ? [container, toc] : [container];
-          MathJax.typesetPromise(targets).then(() => {
-            if (mdBody) mdBody.style.visibility = '';
-            const searchQ = new URLSearchParams(location.search).get('q');
-            if (searchQ && mdBody) {
-              const imgs = Array.from(container.querySelectorAll('img')).filter(img => !img.complete);
-              Promise.all(imgs.map(img => new Promise(r => { img.onload = img.onerror = r; })))
-                .then(() => highlightFirstMatch(mdBody, searchQ));
-            } else if (location.hash) {
-              const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
-              if (target) {
-                const imgs = Array.from(container.querySelectorAll('img')).filter(img => !img.complete);
-                Promise.all(imgs.map(img => new Promise(r => { img.onload = img.onerror = r; })))
-                  .then(() => target.scrollIntoView());
-              }
-            }
-          });
-        } else {
-          setTimeout(typesetWhenReady, 50);
+      const hasMath = mathSegs.length > 0;
+      if (mdBody && hasMath) mdBody.style.visibility = 'hidden';
+      function afterTypeset() {
+        if (mdBody) mdBody.style.visibility = '';
+        const searchQ = new URLSearchParams(location.search).get('q');
+        if (searchQ && mdBody) {
+          const imgs = Array.from(container.querySelectorAll('img')).filter(img => !img.complete);
+          Promise.all(imgs.map(img => new Promise(r => { img.onload = img.onerror = r; })))
+            .then(() => highlightFirstMatch(mdBody, searchQ));
+        } else if (location.hash) {
+          const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+          if (target) {
+            const imgs = Array.from(container.querySelectorAll('img')).filter(img => !img.complete);
+            Promise.all(imgs.map(img => new Promise(r => { img.onload = img.onerror = r; })))
+              .then(() => target.scrollIntoView());
+          }
         }
-      })();
+      }
+      if (!hasMath) {
+        afterTypeset();
+      } else {
+        (function typesetWhenReady() {
+          if (window.MathJax && MathJax.typesetPromise) {
+            const toc = document.querySelector('.toc-sidebar');
+            const targets = toc ? [container, toc] : [container];
+            MathJax.typesetPromise(targets).then(afterTypeset);
+          } else {
+            setTimeout(typesetWhenReady, 50);
+          }
+        })();
+      }
     }
 
     function highlightFirstMatch(root, query) {
@@ -540,27 +549,75 @@
     const params = new URLSearchParams(window.location.search);
     const id     = params.get('id');
 
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('failed: ' + src));
+        document.head.appendChild(s);
+      });
+    }
+    function loadStylesheet(href, id) {
+      return new Promise((resolve) => {
+        const l = document.createElement('link');
+        if (id) l.id = id;
+        l.rel = 'stylesheet';
+        l.href = href;
+        l.onload = () => resolve();
+        l.onerror = () => resolve();
+        document.head.appendChild(l);
+      });
+    }
+    function needsMath(raw) {
+      return /\$\$[\s\S]+?\$\$/.test(raw) || /(^|[^\\$])\$[^\n$]+\$/.test(raw);
+    }
+    function needsHljs(raw) {
+      return /(^|\n)```/.test(raw);
+    }
+
+    function loadDataJs() {
+      if (window.BLOG) return Promise.resolve();
+      return loadScript('notes/data.js');
+    }
+    function fetchPostRaw(slug) {
+      return fetch('notes/' + slug + '/main.md', { cache: 'force-cache' })
+        .then(r => { if (!r.ok) throw new Error('404'); return r.text(); })
+        .catch(() => loadDataJs().then(() => (window.BLOG && window.BLOG[slug]) || null));
+    }
+
+    function showError(msg) {
+      document.getElementById('post-content').innerHTML = '<p class="post-error">' + msg + '</p>';
+    }
+
     if (!id) {
       window.location.replace('index.html#notes');
     } else {
-      const script = document.createElement('script');
-      script.src = 'notes/data.js';
-      script.onload = () => {
-        if (window.BLOG && window.BLOG[id]) {
-          render(parseFrontmatter(window.BLOG[id]), id);
-        } else {
-          document.getElementById('post-content').innerHTML =
-            '<p class="post-error">포스트를 찾을 수 없습니다 (' + id + ')</p>';
+      fetchPostRaw(id).then(raw => {
+        if (!raw) { showError('포스트를 찾을 수 없습니다 (' + id + ')'); return; }
+        const meta = parseFrontmatter(raw).meta;
+        const tasks = [];
+        if (needsHljs(raw)) {
+          const t = localStorage.getItem('theme') || 'dark';
+          loadStylesheet(
+            'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/' +
+              (t === 'light' ? 'github' : 'github-dark') + '.min.css',
+            'hljs-theme'
+          );
+          tasks.push(loadScript('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js'));
         }
-      };
-      script.onerror = () => {
-        document.getElementById('post-content').innerHTML =
-          '<p class="post-error">데이터 파일을 불러올 수 없습니다.</p>';
-      };
-      document.head.appendChild(script);
+        if (needsMath(raw)) {
+          tasks.push(loadScript('https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js'));
+        }
+        if (meta.series) {
+          tasks.push(loadDataJs().catch(() => {}));
+        }
+        Promise.all(tasks).then(() => render(parseFrontmatter(raw), id))
+          .catch(() => render(parseFrontmatter(raw), id));
+      }).catch(() => showError('데이터 파일을 불러올 수 없습니다.'));
     }
   </script>
-  <script src="toc.js"></script>
-  <script src="theme.js"></script>
+  <script src="toc.js" defer></script>
+  <script src="theme.js" defer></script>
 </body>
 </html>
