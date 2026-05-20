@@ -2,8 +2,7 @@
 
 function buildTOC() {
   const headings = Array.from(document.querySelectorAll('.md-body h1, .md-body h2, .md-body h3'));
-  const mainHeadings = headings.filter(h => h.tagName !== 'H3');
-  if (mainHeadings.length < 2) return;
+  if (headings.length < 1) return;
 
   // ─── Assign IDs ──────────────────────────────────
   headings.forEach((h, i) => {
@@ -52,7 +51,15 @@ function buildTOC() {
 
       toc.appendChild(currentGroup);
 
-    } else if (h.tagName === 'H3' && currentH3Container) {
+    } else if (h.tagName === 'H3') {
+      if (!currentH3Container) {
+        currentGroup = document.createElement('div');
+        currentGroup.className = 'toc-group';
+        currentH3Container = document.createElement('div');
+        currentH3Container.className = 'toc-group-h3';
+        currentGroup.appendChild(currentH3Container);
+        toc.appendChild(currentGroup);
+      }
       const a = document.createElement('a');
       a.className = 'toc-link toc-link--h3';
       a.href = `#${h.id}`;

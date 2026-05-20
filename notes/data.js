@@ -196,7 +196,7 @@ draft: false
 기준이 되는 점에서 노멀 방향으로 반원을 그려 광선을 쏴 차폐되는 정도와 거리를 계산한다. 이 때문에 연산 비용이 커 최적화가 중요한 게임에서는 쓰기 힘들다. 그래서 나온 것이 SSAO다.
 
 ## SSAO
-SSAO는 [Deferred Rendering](../../Game/game-optimization-02/main.md#deferrec-rendering)의 G-buffer 단계에서 depth-buffer로 연산되기 때문에 씬의 복잡도에서 자유롭다.
+SSAO는 [Deferred Rendering](../../Game/game-optimization-02/main.md#deferred-rendering)의 G-buffer 단계에서 depth-buffer로 연산되기 때문에 씬의 복잡도에서 자유롭다.
 
 
 ### Unreal Engine 4
