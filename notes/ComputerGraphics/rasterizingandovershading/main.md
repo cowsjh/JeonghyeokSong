@@ -17,7 +17,6 @@ tags: Rendering
 하드웨어는 렌더할때 항상 2x2 픽셀 쿼드 가 사용 된다. 아주 작은 1픽셀 짜리 오브젝트를 렌더링 한다고 해도 4개의 픽셀이 그룹으로 연산된다.
 초록색 - 폴리곤 영역
 주황색 - 연산되는 픽셀
-![alt text](image-1.png)
 
 이와 같은 원리로 근접한 폴리곤에서 overshading이 발생한다.
 ![alt text](image-2.png)|![alt text](image-3.png)
