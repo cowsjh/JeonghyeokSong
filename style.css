@@ -243,9 +243,30 @@ section { padding: 80px 48px; }
   margin-bottom: 16px;
 }
 
+.notes-search-scope {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 38px;
+  padding: 0 10px 0 0;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.notes-search-scope:hover {
+  color: var(--text);
+}
+
 .notes-search-input {
   width: 100%;
-  padding: 8px 38px 8px 14px;
+  padding: 8px 38px 8px 70px;
   font-family: var(--font-sans);
   font-size: 0.85rem;
   background: transparent;
@@ -273,6 +294,13 @@ section { padding: 80px 48px; }
 
 .notes-search-input:focus + .notes-search-icon {
   color: var(--text);
+}
+
+.search-hit {
+  background: rgba(255, 220, 0, 0.35);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 2px;
 }
 
 .notes-search-input::-webkit-search-cancel-button {
@@ -609,6 +637,9 @@ section { padding: 80px 48px; }
 #featured-notes-grid .note-tag {
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
+}
+#featured-notes-grid .note-tag:not(.note-tag--parent) {
+  display: none;
 }
 #featured-notes-grid .note-tag:hover {
   color: var(--text);
@@ -1285,8 +1316,17 @@ footer {
   #nav { padding: 0 20px; }
   section { padding: 60px 20px; }
   footer { padding: 24px 20px; }
-  .posts-grid { grid-template-columns: 1fr; gap: 16px; }
-  .notes-grid { grid-template-columns: 1fr; }
+  .posts-grid { grid-template-columns: repeat(2, 1fr); gap: 5px; }
+  .notes-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Works 2열: 카드 내부 텍스트/패딩 축소 */
+  .posts-grid .post-info { padding: 8px 10px 10px; }
+  .posts-grid .post-title { font-size: 0.88rem; margin-bottom: 1px; }
+  .posts-grid .post-category { font-size: 0.55rem; margin-bottom: 1px; }
+  .posts-grid .post-date { display: none; }
+  .posts-grid .post-desc { font-size: 0.64rem; margin-top: 2px; }
+  .posts-grid .featured-tool-tag { font-size: 0.55rem; }
+  .posts-grid .post-card--featured .post-thumb-overlay .post-title { font-size: 0.82rem; }
   .gallery-grid { columns: 2; }
   .contact-links { flex-direction: column; }
   .contact-item { width: 100%; }
@@ -1350,18 +1390,20 @@ footer {
     display: flex;
     align-items: center;
     gap: 6px;
-    justify-content: flex-end;
+    justify-content: flex-start;
     width: 100%;
     background: none;
     border: none;
     font-size: 0.72rem;
     font-weight: 500;
     letter-spacing: 0.12em;
-    text-transform: uppercase;
+    text-transform: none;
     color: var(--text-muted);
     cursor: pointer;
-    margin-bottom: 16px;
+    margin-bottom: 40px;
     padding: 0;
+    position: relative;
+    z-index: 1;
   }
   .fmt-arrow {
     display: inline-block;
@@ -1383,6 +1425,54 @@ footer {
   }
   .fmt-badge:empty { display: none; }
 
+  /* Featured notes: 모바일 타이틀 ellipsis + 태그 절반 크기 */
+  #featured-notes-grid {
+    max-height: 130px;
+  }
+  #featured-notes-grid .note-card {
+    padding: 6px 0;
+    gap: 8px;
+  }
+  #featured-notes-grid .note-card .note-title {
+    min-width: 0;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #featured-notes-grid .note-tag {
+    font-size: 0.5rem;
+    padding: 1px 6px;
+    letter-spacing: 0.08em;
+  }
+  #featured-notes-grid .note-date {
+    display: none;
+  }
+
+  /* Notes 2열: 카드 내부 텍스트/패딩 축소 */
+  #notes-grid .note-card {
+    padding: 14px;
+    gap: 7px;
+  }
+  #notes-grid .note-title {
+    font-size: 0.75rem;
+  }
+  #notes-grid .note-date {
+    font-size: 0.62rem;
+  }
+  #notes-grid .note-tag {
+    font-size: 0.33rem;
+    padding: 1px 5px;
+    letter-spacing: 0.08em;
+  }
+  .filter-btn {
+    font-size: 0.52rem;
+    padding: 4px 10px;
+  }
+  #notes-grid .note-series-badge {
+    font-size: 0.55rem;
+  }
+
   /* 필터 영역: 기본 접힘 */
   .filter-bar:not(.filter-bar--sub),
   #notes-mode-bar {
@@ -1392,17 +1482,31 @@ footer {
     opacity: 0;
     transition: max-height 0.3s ease, opacity 0.25s ease, margin-bottom 0.25s ease;
   }
+  .tab-panel:not(.filters-open) .filter-bar--sub.open {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    border-top: none;
+  }
 
   /* 펼쳐진 상태 */
   .tab-panel.filters-open .filter-bar:not(.filter-bar--sub),
   .tab-panel.filters-open #notes-mode-bar {
     max-height: 300px;
     opacity: 1;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
   .tab-panel.filters-open .filter-bar--sub.open {
     max-height: 300px;
     opacity: 1;
-    margin-bottom: 20px;
+    margin-top: 0;
+    margin-bottom: 10px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+  .tab-panel.filters-open .filter-mobile-toggle {
+    margin-bottom: 18px;
   }
 }

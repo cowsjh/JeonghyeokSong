@@ -167,6 +167,7 @@
     [data-theme="light"] .hljs-deletion  { color: #cf222e; }
 
     @media (max-width: 640px) {
+      html { font-size: 12px; }
       #blog-page { padding: calc(var(--nav-h) + 32px) 20px 72px; }
     }
 
@@ -421,7 +422,12 @@
           const targets = toc ? [container, toc] : [container];
           MathJax.typesetPromise(targets).then(() => {
             if (mdBody) mdBody.style.visibility = '';
-            if (location.hash) {
+            const searchQ = new URLSearchParams(location.search).get('q');
+            if (searchQ && mdBody) {
+              const imgs = Array.from(container.querySelectorAll('img')).filter(img => !img.complete);
+              Promise.all(imgs.map(img => new Promise(r => { img.onload = img.onerror = r; })))
+                .then(() => highlightFirstMatch(mdBody, searchQ));
+            } else if (location.hash) {
               const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
               if (target) {
                 const imgs = Array.from(container.querySelectorAll('img')).filter(img => !img.complete);
@@ -434,6 +440,34 @@
           setTimeout(typesetWhenReady, 50);
         }
       })();
+    }
+
+    function highlightFirstMatch(root, query) {
+      const q = query.toLowerCase();
+      if (!q) return;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+          const p = node.parentNode;
+          if (p && (p.tagName === 'SCRIPT' || p.tagName === 'STYLE')) return NodeFilter.FILTER_REJECT;
+          return node.nodeValue.toLowerCase().includes(q) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        }
+      });
+      const node = walker.nextNode();
+      if (!node) return;
+      const text = node.nodeValue;
+      const idx = text.toLowerCase().indexOf(q);
+      const before = document.createTextNode(text.slice(0, idx));
+      const mark = document.createElement('mark');
+      mark.className = 'search-hit';
+      mark.textContent = text.slice(idx, idx + q.length);
+      const after = document.createTextNode(text.slice(idx + q.length));
+      const parent = node.parentNode;
+      parent.insertBefore(before, node);
+      parent.insertBefore(mark, node);
+      parent.insertBefore(after, node);
+      parent.removeChild(node);
+      mark.scrollIntoView({ block: 'center' });
     }
 
     function postProcessTables(container) {
