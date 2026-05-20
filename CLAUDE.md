@@ -12,6 +12,7 @@ Static HTML/CSS/JS portfolio. No build system.
 - **`git push` 전 반드시 확인.** 커밋 후 → "푸시할까요?" 묻기
 - **`node works-sync.js` 실행 후 `REVIEW_NEEDED: <slug>` 출력 시 → Works 검수 자동 실행** (아래 참조)
 - **Notes 커밋 직전 → Notes 검수 자동 실행** (아래 참조)
+- **코드/구조/미디어 변경 커밋 직전 → `OPTIMIZATION_PLAN.md` 체크리스트 자동 실행** (트리거 조건은 해당 파일 상단 참조)
 - **신규 work/note 추가 시 폴더 전체를 스테이징.** `git add works/<slug>/` 또는 `git add notes/<parent>/<slug>/` — 이미지 누락 방지
 - **새 Note 생성 요청 시 → 제목·카테고리·슬러그·태그를 순서대로 물어본 후 `node new-note.js` 실행** (아래 참조)
 - **새 Work 생성 요청 시 → 제목·슬러그·카테고리·툴·featured·link를 순서대로 물어본 후 `node new-work.js` 실행** (아래 참조)
