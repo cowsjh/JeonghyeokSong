@@ -24,7 +24,7 @@ featured : false
 
 #### Note, Search
 노트의 내용을 통해 버전을 검색할 수 있다.
-![alt text](<2026-04-20 12-08-49_trimmed.gif>)
+![alt text](<2026-04-20 12-08-49_trimmed.webm>)
 
 #### JSON
 노트와 색상 같은 정보는 전부 hip 경로에 있는 backup 폴더에 저장된다. 그렇기 때문에 새로운 프로젝트 씬이라면 저장을 한번 해주어야 한다.

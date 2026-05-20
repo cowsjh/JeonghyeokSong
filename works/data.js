@@ -31,7 +31,7 @@ Unreal에서의 사용을 염두에 두고 인풋을 버텍스 컬러로 선정�
 
 ### Clustering
 얻은 버텍스 컬러로 마스킹과 클러스터링을 진행했다.
-![alt text](<2026-05-16 14-16-31_trimmed.gif>)
+![alt text](<2026-05-16 14-16-31_trimmed.webm>)
 
 바위의 덩어리감을 잡는 방법으로는 \`voronoifracture\`를 먼저 떠올렸다. 하지만 스캐터된 포인트만으로 형태감을 유도하는 것은 쉽지 않았다. 겹치는 부분이 제한적이고 조각의 모양 또한 인위적이어서 추가 공정이 필요했다. \`cluster\`와 \`shrink\` 노드로 덩어리감을 살리고, 클러스터 밀도도 조작할 수 있게 만들었다.
 ![alt text](image-18.png) | ![alt text](image-19.png) |
@@ -139,11 +139,11 @@ Houdini에서 제작되었다.
 ![alt text](image-2.png)
 
 파라미터의 조합으로 다양한 컨셉을 구현할 수 있다. 
-![alt text](pcg01_trimmed.gif)
+![alt text](pcg01_trimmed.webm)
 ### PCG_Rock
 
 큰 바위는 Zbrush 에서 작업 되었으며, 하나의 메쉬를 최대한으로 활용하고 싶었기 때문에 한 메쉬에서 3가지 정도의 실루엣이 나올 수 있게 디자인 했다. \`PCG_Biom\`을 응용해서 큰 바위 주변에 \`PCG_Biom\`과 같은 패턴의 메쉬들이 인스턴싱 될 수 있게 셋업 했다. 그 결과 landscape와 바위 메쉬의 경계선도 가릴 수 있게 되었고 더욱 자연스러운 느낌을 만들 수 있었다.
-![alt text](cinecameraactor4_trimmed.gif)
+![alt text](cinecameraactor4_trimmed.webm)
 
 ### PCG_Road
 Unreal 의 spline road 시스템을 이용해서 주변에 돌을 인스턴싱 했다. 추가로 차 바퀴 자국 용 PCG 를 제작해서 기존에 있는 길의 패턴을 깨주는 용도로 사용했다. 도로의 텍스쳐는 Substance Designer에서 제작되었으며 Virtual Texture 를 이용해서 landscape와 블렌딩 시켜 주었다.
@@ -223,7 +223,7 @@ s[]@tags
 ![alt text](<2026-04-14 02-26-11_trimmed.gif>)
 
 같은 맥락으로 force 파라미터는 나무의 컨셉을 잡는 데 중요한 기능을 한다. 말 그대로 가지가 힘을 받고 변형되는 방향과 세기를 정한다. **force는 중첩시킬 수 있으며 force가 적용되는 순서를 변경하면서 다양한 모양을 만들 수 있다.**
-![alt text](<2026-04-14 02-45-53_trimmed.gif>)
+![alt text](<2026-04-14 02-45-53_trimmed.webm>)
 
 내부적으로 노드는 인풋으로 받은 지오메트리를 에셋에서 사용 가능하게 재구성하기 때문에 외부에서 자유롭게 지오메트리를 조작해도 오류없이 출력할 수 있다. 이를 이용하여 원하는 쉐잎을 보다 쉽게 얻을 수 있다.
 ![alt text](image-1.png)
@@ -333,7 +333,7 @@ Module 형식으로 제작한 이유는 사용자가 노드 중간에서 지오�
 ![alt text](image-3.png)
 
 버섯의 분포는 지정된 파라미터로 쉽게 조작할 수 있게 구성했다.
-![alt text](timeline-1_trimmed.gif)
+![alt text](timeline-1_trimmed.webm)
 
 ### Pattern
 대부분의 패턴은 VOP 안에서의 attribute와 noise를 조합하여 제작되었다.
@@ -379,7 +379,7 @@ Substance Designer 공부를 위한 텍스쳐 제작
 HDA 같은 에셋을 만들어 보고 싶어 이것저것 건드려보다가 Pixel Processor를 발견했고, 이것을 이용하여 간단한 마스크 툴을 제작해 보았다.
 Substance Painter에 있는 light와 동일한 기능을 가진 툴이다. 라이트 종류는 direction, point 두 가지를 지원한다.
 
-![alt text](2025-10-24-00-26-11_trimmed.gif)
+![alt text](2025-10-24-00-26-11_trimmed.webm)
 ![alt text](jh-adobe-substance-3d-designer-hoi5912muo.jpg)
 
 만든 light map 을 이용해 눈을 만들어 보았다.
@@ -410,7 +410,7 @@ HDA 내에서 **Stage** 를 오가며 파라미터를 조작할 수 있다. 각 
 
 #### Collision + VDB Vector field
 콜리전을 이용하여 나무가 오브젝트를 감싸는 표현을 구현했다. 뿌리의 형태는 VDB Vector field로 커브를 생성했다. Curve를 직접 조작하는 것보다 유기적이고 자연스러운 모습을 만들 수 있다.
-![alt text](main_trimmed.gif)
+![alt text](main_trimmed.webm)
 
 레퍼런스 나무는 뿌리와 몸통이 부드럽게 이어지는 모습이기 때문에 VDB로 합친 후 하이 폴리 단계에서 노이즈를 주어 디테일을 넣어주었다.
 ![alt text](<2026-04-29 18-09-12_trimmed.gif>)
@@ -528,7 +528,7 @@ featured : false
 2. build 버튼 클릭
 3. 원하는 값 기입
 4. 캐시
-![alt text](<2026-04-20 16-54-44_trimmed.gif>)
+![alt text](<2026-04-20 16-54-44_trimmed.webm>)
 
 셋업을 수정할때 최적화 셋업을 꺼놓고 확인 해 보는 경우가 많은데, 이 경우 스위치 파라미터를 저장함으로써 최종 결과에 반영되는 최적화를 쉽게 보존시킬 수 있다.
 ![alt text](image-2.png)
@@ -562,7 +562,7 @@ featured : false
 
 #### Note, Search
 노트의 내용을 통해 버전을 검색할 수 있다.
-![alt text](<2026-04-20 12-08-49_trimmed.gif>)
+![alt text](<2026-04-20 12-08-49_trimmed.webm>)
 
 #### JSON
 노트와 색상 같은 정보는 전부 hip 경로에 있는 backup 폴더에 저장된다. 그렇기 때문에 새로운 프로젝트 씬이라면 저장을 한번 해주어야 한다.
@@ -699,7 +699,7 @@ Houdini 에서 미리 계산된 Curvature 와 AO값을 각 G, B 에 저장 해 �
 \`상) noise 노드\` \`하) 텍스쳐\` | Shader Complexity |
 
 
-![alt text](<2026-04-27 18-40-27_trimmed.gif>)
+![alt text](<2026-04-27 18-40-27_trimmed.webm>)
 
 텍스쳐는 Substance Designer 로 만들어 주었다. 각 재질별로 2장의 텍스쳐가 쓰였다.
 \`\`\`

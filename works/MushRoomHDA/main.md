@@ -18,7 +18,7 @@ Module 형식으로 제작한 이유는 사용자가 노드 중간에서 지오�
 ![alt text](image-3.png)
 
 버섯의 분포는 지정된 파라미터로 쉽게 조작할 수 있게 구성했다.
-![alt text](timeline-1_trimmed.gif)
+![alt text](timeline-1_trimmed.webm)
 
 ### Pattern
 대부분의 패턴은 VOP 안에서의 attribute와 noise를 조합하여 제작되었다.

@@ -107,7 +107,7 @@ Houdini 에서 미리 계산된 Curvature 와 AO값을 각 G, B 에 저장 해 �
 `상) noise 노드` `하) 텍스쳐` | Shader Complexity |
 
 
-![alt text](<2026-04-27 18-40-27_trimmed.gif>)
+![alt text](<2026-04-27 18-40-27_trimmed.webm>)
 
 텍스쳐는 Substance Designer 로 만들어 주었다. 각 재질별로 2장의 텍스쳐가 쓰였다.
 ```

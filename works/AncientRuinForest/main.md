@@ -22,7 +22,7 @@ HDA 내에서 **Stage** 를 오가며 파라미터를 조작할 수 있다. 각 
 
 #### Collision + VDB Vector field
 콜리전을 이용하여 나무가 오브젝트를 감싸는 표현을 구현했다. 뿌리의 형태는 VDB Vector field로 커브를 생성했다. Curve를 직접 조작하는 것보다 유기적이고 자연스러운 모습을 만들 수 있다.
-![alt text](main_trimmed.gif)
+![alt text](main_trimmed.webm)
 
 레퍼런스 나무는 뿌리와 몸통이 부드럽게 이어지는 모습이기 때문에 VDB로 합친 후 하이 폴리 단계에서 노이즈를 주어 디테일을 넣어주었다.
 ![alt text](<2026-04-29 18-09-12_trimmed.gif>)
