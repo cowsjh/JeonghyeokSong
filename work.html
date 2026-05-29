@@ -199,6 +199,44 @@
       );
     }
 
+    // ─── .md 링크 → work 페이지 링크 치환 ──────────
+    function resolvePath(base, rel) {
+      const parts = base.split('/');
+      parts.pop();
+      rel.split('/').forEach(seg => {
+        if (seg === '..') parts.pop();
+        else if (seg !== '.') parts.push(seg);
+      });
+      return parts.join('/');
+    }
+
+    function mdPathToWorkSlug(href, id) {
+      if (/^https?:\/\//.test(href)) return null;
+      let path;
+      if (href.startsWith('works/') || href.startsWith('/works/')) {
+        path = href.replace(/^\//, '');
+      } else {
+        path = resolvePath('works/' + id + '/', href);
+      }
+      let slug = path.replace(/^works\//, '').replace(/\.md$/, '');
+      const parts = slug.split('/');
+      if (parts.length >= 2 && (parts[parts.length - 1] === 'main' || parts[parts.length - 1] === parts[parts.length - 2])) {
+        slug = parts.slice(0, -1).join('/');
+      }
+      return slug;
+    }
+
+    function convertMdLinks(html, id) {
+      return html.replace(
+        /<a href="([^"#]+\.md)(#[^"]*)?"/gi,
+        (m, path, hash) => {
+          const slug = mdPathToWorkSlug(path, id);
+          if (!slug) return m;
+          return `<a href="work.html?id=${encodeURIComponent(slug)}${hash || ''}"`;
+        }
+      );
+    }
+
     // ─── Alert 변환 ───────────────────────────────
     const ALERT_TYPES = { NOTE: 'Note', TIP: 'Tip', IMPORTANT: 'Important', WARNING: 'Warning', CAUTION: 'Caution' };
     function convertAlerts(html) {
@@ -264,7 +302,7 @@
           ${tools.length ? `<div class="work-tools">${toolBadges}</div>` : ''}
           ${linkBtn}
         </div>
-        <div class="md-body">${convertImgToVideo(convertAlerts(marked.parse(body)).replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, `$1works/${id}/`))}</div>
+        <div class="md-body">${convertMdLinks(convertImgToVideo(convertAlerts(marked.parse(body)).replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, `$1works/${id}/`)), id)}</div>
       `;
 
       postProcessTables(document.getElementById('work-content'));
