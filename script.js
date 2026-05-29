@@ -107,6 +107,12 @@ function makeFilterBtn(label, onClick) {
   worksGrid.appendChild(col2);
 
   [...document.querySelectorAll('#tab-works .post-card[data-featured="true"]')]
+    .sort((a, b) => {
+      const aOrd = a.dataset.order ? Number(a.dataset.order) : Infinity;
+      const bOrd = b.dataset.order ? Number(b.dataset.order) : Infinity;
+      if (aOrd !== bOrd) return aOrd - bOrd;
+      return (b.dataset.date || '').localeCompare(a.dataset.date || '');
+    })
     .forEach((card, i) => {
       const img   = card.querySelector('.post-thumb img');
       const title = card.querySelector('.post-title')?.textContent || '';
@@ -610,12 +616,7 @@ function makeFilterBtn(label, onClick) {
       const parent = [slug.split('/')[0]]; // 폴더명 = 상위 태그
       const body = stripMarkdownToSearchable(raw);
       return { slug, title, date, parent, tags, series, featured, order, body };
-    }).sort((a, b) => {
-      const aOrd = a.order !== undefined ? Number(a.order) : Infinity;
-      const bOrd = b.order !== undefined ? Number(b.order) : Infinity;
-      if (aOrd !== bOrd) return aOrd - bOrd;
-      return b.date.localeCompare(a.date);
-    });
+    }).sort((a, b) => b.date.localeCompare(a.date));
 
     if (typeof window._onNotesReady === 'function') window._onNotesReady(entries);
 

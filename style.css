@@ -368,21 +368,28 @@ section { padding: 80px 48px; }
   margin-bottom: 5px;
 }
 
-/* Featured works: masonry columns (gallery 스타일) */
+/* Featured works: 2열, 행 우선 정렬 + 이격 없는 마소니리 */
 #featured-works-grid {
-  display: block;
-  columns: 2;
-  column-gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+  align-items: start;
   max-width: 1400px;
 }
-#featured-works-grid .post-card {
-  break-inside: avoid;
-  margin-bottom: 5px;
+.featured-works-col {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.featured-works-col .post-card {
   border: none;
 }
-#featured-works-grid .post-card:nth-child(3n+1) .post-thumb { aspect-ratio: 3/4; }
-#featured-works-grid .post-card:nth-child(3n+2) .post-thumb { aspect-ratio: 4/3; }
-#featured-works-grid .post-card:nth-child(3n)   .post-thumb { aspect-ratio: 1/1; }
+.featured-works-col:first-child .post-card:nth-child(3n+1) .post-thumb { aspect-ratio: 3/4; }
+.featured-works-col:first-child .post-card:nth-child(3n+2) .post-thumb { aspect-ratio: 4/3; }
+.featured-works-col:first-child .post-card:nth-child(3n)   .post-thumb { aspect-ratio: 1/1; }
+.featured-works-col:last-child  .post-card:nth-child(3n+1) .post-thumb { aspect-ratio: 4/3; }
+.featured-works-col:last-child  .post-card:nth-child(3n+2) .post-thumb { aspect-ratio: 1/1; }
+.featured-works-col:last-child  .post-card:nth-child(3n)   .post-thumb { aspect-ratio: 3/4; }
 
 /* Featured notes: 리스트 형식 */
 #featured-notes-grid {
@@ -1331,8 +1338,8 @@ footer {
   .posts-grid { grid-template-columns: repeat(2, 1fr); gap: 2.5px; }
   .notes-grid { grid-template-columns: repeat(2, 1fr); }
 
-  #featured-works-grid { column-gap: 2.5px; }
-  #featured-works-grid .post-card { margin-bottom: 2.5px; }
+  #featured-works-grid { gap: 2.5px; }
+  .featured-works-col { gap: 2.5px; }
 
   /* Works 2열: 카드 내부 텍스트/패딩 축소 */
   .posts-grid .post-info { padding: 8px 10px 10px; }

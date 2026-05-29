@@ -49,6 +49,7 @@ thumbnail: thumb.jpg      # 파일명만 — works/<slug>/ 자동 prefix
 date:      2024.06
 tools:     Houdini 21.0, Unreal Engine 5.6
 featured:  false          # true → Featured 탭 노출
+order:     1             # 선택. Featured 탭 정렬용(오름차순, 동일 order는 날짜순). 일반 Works 리스트는 항상 날짜순
 draft:     false          # true → sync 제외
 link:      https://...
 ```
@@ -70,7 +71,8 @@ notes/<parent>/<slug>/main.md  +  이미지들
 title:    Post Title
 date:     2024-06-15
 tags:     VEX, TIP, code   # 하위 필터 태그
-featured: false            # true → 정렬 시 우선 노출
+order:    1               # 선택. Featured(Recent) 정렬용(오름차순, 동일 order는 날짜순). 일반 Notes 리스트는 항상 날짜순
+featured: false            # 레거시. order로 대체됨
 draft:    false            # true → sync 제외
 ```
 

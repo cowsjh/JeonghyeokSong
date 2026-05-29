@@ -5,6 +5,7 @@ thumbnail: image.png
 date: 2025.11
 tools: Houdini, Substance Painter
 featured: true
+order: 2
 link: https://www.artstation.com/artwork/RKGgJe
 ---
 

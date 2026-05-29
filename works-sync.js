@@ -69,7 +69,7 @@ function generateCard(work) {
   const desc = (work.description || '').trim();
   const thumb = work.thumbnail.includes('/') ? work.thumbnail : `works/${work.slug}/${work.thumbnail}`;
   return [
-    `        <a class="post-card" href="work.html?id=${work.slug}" data-category="${work.category || ''}" data-tools="${tools.join(',')}" data-date="${work.date || ''}" data-featured="${featured}"${desc ? ` data-desc="${desc}"` : ''}>`,
+    `        <a class="post-card" href="work.html?id=${work.slug}" data-category="${work.category || ''}" data-tools="${tools.join(',')}" data-date="${work.date || ''}" data-featured="${featured}"${work.order !== undefined ? ` data-order="${work.order}"` : ''}${desc ? ` data-desc="${desc}"` : ''}>`,
     `          <div class="post-thumb">`,
     `            <img src="${thumb}" alt="${work.title}" loading="lazy">`,
     `          </div>`,

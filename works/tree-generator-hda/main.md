@@ -6,6 +6,7 @@ date: 2026.01
 tools: Houdini 21.0, Unreal Engine 5.6
 link: https://www.artstation.com/artwork/x3k13R
 featured: true
+order: 0
 description: 모듈식 프로시쥬얼 나무 에셋 제작을 위한 Houdini HDA. SpeedTree의 노드 워크플로우에서 영감받아 확장성에 집중하여 구현.
 ---
 
