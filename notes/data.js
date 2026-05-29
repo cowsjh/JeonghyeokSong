@@ -272,7 +272,7 @@ title: OKLab
 date: 2026-05-11
 tags: color
 draft: false
-featured: true
+order: 1
 ---
 
 https://bottosson.github.io/posts/oklab/
@@ -423,7 +423,7 @@ title: Shaping Functions
 date: 2026-05-09
 tags: code
 draft: false
-featured: true
+order: 1
 ---
 
 입력값 $t \\in [0, 1]$을 원하는 곡선 형태로 변환하는 함수들.

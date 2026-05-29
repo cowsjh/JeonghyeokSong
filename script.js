@@ -99,6 +99,13 @@ function makeFilterBtn(label, onClick) {
   if (!worksGrid || !notesGrid) return;
 
   // Featured works: 썸네일만, 호버 시 타이틀 오버레이
+  // 행 우선 순서 유지 + 이격 없는 마소니리: 짝수 인덱스 → col1, 홀수 → col2
+  const col1 = document.createElement('div');
+  const col2 = document.createElement('div');
+  col1.className = col2.className = 'featured-works-col';
+  worksGrid.appendChild(col1);
+  worksGrid.appendChild(col2);
+
   [...document.querySelectorAll('#tab-works .post-card[data-featured="true"]')]
     .forEach((card, i) => {
       const img   = card.querySelector('.post-thumb img');
@@ -118,7 +125,7 @@ function makeFilterBtn(label, onClick) {
           </div>
         </div>
       `;
-      worksGrid.appendChild(a);
+      (i % 2 === 0 ? col1 : col2).appendChild(a);
     });
   worksGrid.querySelectorAll('.post-card').forEach(c => {
     setTimeout(() => c.classList.add('visible'), Number(c.dataset.delay) || 0);
@@ -138,7 +145,9 @@ function makeFilterBtn(label, onClick) {
   // Recent notes: notes IIFE data.js onload 후 호출
   window._onNotesReady = function (entries) {
     const ordered = [...entries].sort((a, b) => {
-      if (a.featured !== b.featured) return a.featured ? -1 : 1;
+      const aOrd = a.order !== undefined ? Number(a.order) : Infinity;
+      const bOrd = b.order !== undefined ? Number(b.order) : Infinity;
+      if (aOrd !== bOrd) return aOrd - bOrd;
       return b.date.localeCompare(a.date);
     });
     ordered.forEach(({ slug, title, date, tags, parent }) => {
@@ -296,6 +305,7 @@ function makeFilterBtn(label, onClick) {
       tags:     meta.tags   ? meta.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [],
       series:   meta.series || '',
       featured: meta.featured === 'true',
+      order:    meta.order,
     };
   }
 
@@ -596,11 +606,16 @@ function makeFilterBtn(label, onClick) {
     if (!window.BLOG) { grid.innerHTML = ''; return; }
 
     const entries = Object.entries(window.BLOG).map(([slug, raw]) => {
-      const { title, date, tags, series, featured } = parseFrontmatter(raw);
+      const { title, date, tags, series, featured, order } = parseFrontmatter(raw);
       const parent = [slug.split('/')[0]]; // 폴더명 = 상위 태그
       const body = stripMarkdownToSearchable(raw);
-      return { slug, title, date, parent, tags, series, featured, body };
-    }).sort((a, b) => b.date.localeCompare(a.date));
+      return { slug, title, date, parent, tags, series, featured, order, body };
+    }).sort((a, b) => {
+      const aOrd = a.order !== undefined ? Number(a.order) : Infinity;
+      const bOrd = b.order !== undefined ? Number(b.order) : Infinity;
+      if (aOrd !== bOrd) return aOrd - bOrd;
+      return b.date.localeCompare(a.date);
+    });
 
     if (typeof window._onNotesReady === 'function') window._onNotesReady(entries);
 

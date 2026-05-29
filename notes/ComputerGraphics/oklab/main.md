@@ -3,7 +3,7 @@ title: OKLab
 date: 2026-05-11
 tags: color
 draft: false
-featured: true
+order: 1
 ---
 
 https://bottosson.github.io/posts/oklab/
