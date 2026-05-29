@@ -1,6 +1,30 @@
 // Auto-synced from works/<slug>/main.md — do not edit directly.
 // Edit the corresponding .md file, then run: node works-sync.js
 window.WORKS = {
+  'Cliff': `---
+title: Rock Cliff
+category: Game Art
+thumbnail: thum.png
+date: 2026.05
+tools: Houdini, Zbrush, Substance Painter
+featured: false
+link : https://www.artstation.com/artwork/ZlNAZX
+draft: false
+---
+## Overview
+[HDA](../RockCliffGen/main.md)로 더미 데이터를 생성하여 Zbrush로 제작한 에셋 텍스쳐는 Substance Painter에서 진행했다.
+![alt text](ph02.png)
+![alt text](ph03.png)
+
+## Workflow
+### Decimation
+지브러시로 스컬프팅한 메쉬를 후디니로 불러와 최적화를 진행했다. Zbrush에서도 기능이 있지만 훨씬 빠른 연산으로 Houdini 에서 작업했다. 베이크용으로 제작한 로우 메쉬를 이용해 텍스쳐를 제작하고 한번 더 폴리곤을 정리해 주었다. 베이크용 로우 메쉬가 폴리곤이 너무 적으면 베이크에 문제가 생기는데 이 절차로 그런 에러를 확실히 줄일 수 있었다.
+![alt text](ph01.png)
+
+스컬프팅 이후에 메쉬가 꼬여 있는 흔적을 종종 볼 수 있는데 이대로 리메쉬를 진행하면 꼬인 면이 그대로 노출 되기 때문에 \`measure\`노드로 필터링 하여 면을 정리 했다.
+![](<2026-05-30 01-43-45.mp4>)
+`,
+
   'RockCliffGen': `---
 title: Rock Cliff
 category: Game Art
@@ -116,7 +140,7 @@ title: Desert Biom (PCG)
 category: Game Art
 thumbnail: image.png
 date: 2026.01
-tools: Unreal Engine, Houdini, Zbrush, Substance 3D
+tools: Unreal Engine, Houdini, Zbrush, Substance Designer
 featured: true
 link : https://www.artstation.com/artwork/Zlr0WG
 ---
@@ -278,7 +302,19 @@ B = Curvature
 \`\`\`
 ![alt text](layout03.png)
 
+## Unreal
 
+### Card Material
+![alt text](image-6.png)
+카드 메테리얼은 리얼한 나무의 느낌을 주기 위해서 중요한 요소이다.
+![alt text](image-2.png)
+잎의 wind세기 sss 색상 등을 조절 할 수 있게 해주었다. Houdini 에서 가공한 vertex color 를  wind offset 부분에서 사용 하였다. wind는 카드마다 포지션 마다 랜덤한 방향이 지정된다.
+![](<2026-05-29 21-51-28-1.mp4>)
+
+#### Foliage Fade
+카메라의 거리, 면의 방향 에 따라서 DitherTemporalAA 노드를 활용해 자연스러운 블렌딩을 구현했다.
+![alt text](image-7.png) | ![alt text](image-8.png) |
+--- | --- |
 
 # Result
 노드 구조에 대한 테스트. 노드 특성상 재활용이 가능하다는 큰 장점이 있는데, 원하는 잔가지 + 잎의 디자인을 제작했다면 일관성을 가지고 다른 가지에도 적용시킬 수 있다.

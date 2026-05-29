@@ -123,7 +123,19 @@ B = Curvature
 ```
 ![alt text](layout03.png)
 
+## Unreal
 
+### Card Material
+![alt text](image-6.png)
+카드 메테리얼은 리얼한 나무의 느낌을 주기 위해서 중요한 요소이다.
+![alt text](image-2.png)
+잎의 wind세기 sss 색상 등을 조절 할 수 있게 해주었다. Houdini 에서 가공한 vertex color 를  wind offset 부분에서 사용 하였다. wind는 카드마다 포지션 마다 랜덤한 방향이 지정된다.
+![](<2026-05-29 21-51-28-1.mp4>)
+
+#### Foliage Fade
+카메라의 거리, 면의 방향 에 따라서 DitherTemporalAA 노드를 활용해 자연스러운 블렌딩을 구현했다.
+![alt text](image-7.png) | ![alt text](image-8.png) |
+--- | --- |
 
 # Result
 노드 구조에 대한 테스트. 노드 특성상 재활용이 가능하다는 큰 장점이 있는데, 원하는 잔가지 + 잎의 디자인을 제작했다면 일관성을 가지고 다른 가지에도 적용시킬 수 있다.

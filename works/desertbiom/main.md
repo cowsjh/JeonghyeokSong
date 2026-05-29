@@ -3,7 +3,7 @@ title: Desert Biom (PCG)
 category: Game Art
 thumbnail: image.png
 date: 2026.01
-tools: Unreal Engine, Houdini, Zbrush, Substance 3D
+tools: Unreal Engine, Houdini, Zbrush, Substance Designer
 featured: true
 link : https://www.artstation.com/artwork/Zlr0WG
 ---
