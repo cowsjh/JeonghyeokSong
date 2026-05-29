@@ -1,5 +1,5 @@
 ---
-title: Rock Cliff
+title: Stylized Rock Cliff Generator HDA
 category: Game Art
 thumbnail: image.png
 date: 2026.05

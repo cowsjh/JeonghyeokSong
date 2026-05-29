@@ -2,7 +2,7 @@
 // Edit the corresponding .md file, then run: node works-sync.js
 window.WORKS = {
   'Cliff': `---
-title: Rock Cliff
+title: Cliff
 category: Game Art
 thumbnail: thum.png
 date: 2026.05
@@ -26,7 +26,7 @@ draft: false
 `,
 
   'RockCliffGen': `---
-title: Rock Cliff
+title: Stylized Rock Cliff Generator HDA
 category: Game Art
 thumbnail: image.png
 date: 2026.05

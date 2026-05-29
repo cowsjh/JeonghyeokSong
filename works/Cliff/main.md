@@ -1,5 +1,5 @@
 ---
-title: Rock Cliff
+title: Cliff
 category: Game Art
 thumbnail: thum.png
 date: 2026.05
