@@ -99,12 +99,16 @@ function makeFilterBtn(label, onClick) {
   if (!worksGrid || !notesGrid) return;
 
   // Featured works: 썸네일만, 호버 시 타이틀 오버레이
-  // 행 우선 순서 유지 + 이격 없는 마소니리: 짝수 인덱스 → col1, 홀수 → col2
+  // 마소니리: 각 카드를 현재 높이가 더 짧은 컬럼에 배치해 좌우 균형 유지
   const col1 = document.createElement('div');
   const col2 = document.createElement('div');
   col1.className = col2.className = 'featured-works-col';
   worksGrid.appendChild(col1);
   worksGrid.appendChild(col2);
+
+  const ratios = ['3 / 4', '4 / 3', '1 / 1'];
+  const cols = [col1, col2];
+  const colHeights = [0, 0]; // 너비를 1로 둔 상대 높이 누적값
 
   [...document.querySelectorAll('#tab-works .post-card[data-featured="true"]')]
     .sort((a, b) => {
@@ -118,12 +122,13 @@ function makeFilterBtn(label, onClick) {
       const title = card.querySelector('.post-title')?.textContent || '';
       const tools = (card.dataset.tools || '').split(',').map(t => t.trim()).filter(Boolean);
       const toolPills = tools.map(t => `<span class="featured-tool-tag">${t}</span>`).join('');
+      const ratio = ratios[i % ratios.length];
       const a = document.createElement('a');
       a.className = 'post-card post-card--featured';
       a.href = card.href;
       a.dataset.delay = i * 20;
       a.innerHTML = `
-        <div class="post-thumb">
+        <div class="post-thumb" style="aspect-ratio: ${ratio}">
           <img src="${img?.src || ''}" alt="${title}" loading="lazy">
           <div class="post-thumb-overlay">
             <h3 class="post-title">${title}</h3>
@@ -131,7 +136,10 @@ function makeFilterBtn(label, onClick) {
           </div>
         </div>
       `;
-      (i % 2 === 0 ? col1 : col2).appendChild(a);
+      const t = colHeights[0] <= colHeights[1] ? 0 : 1;
+      const [rw, rh] = ratio.split('/').map(Number);
+      colHeights[t] += rh / rw; // 너비 대비 카드 높이
+      cols[t].appendChild(a);
     });
   worksGrid.querySelectorAll('.post-card').forEach(c => {
     setTimeout(() => c.classList.add('visible'), Number(c.dataset.delay) || 0);
