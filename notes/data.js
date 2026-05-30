@@ -1357,7 +1357,7 @@ tags: optimization, PCG, GPU
 draft: false
 ---
 [Unreal Doc - Using PCG with GPU Processing](https://dev.epicgames.com/documentation/unreal-engine/using-pcg-with-gpu-processing-in-unreal-engine)
-
+[Unreal Engine 5.6 PCG - Ep 9 - Introduction to GPU](https://www.youtube.com/watch?v=0tXVLP3MWhE&t=434s)
 ---
 
 >[!important]
@@ -1398,12 +1398,15 @@ Points[i].MetadataEntry → 매핑 조회 → ValueArray[...]
 Kernel Type을 **Point Processor**로 둔다. 출력 점은 입력에서 자동 복사되므로 바꿀 속성만 \`Set\`하면 된다.
 
 \`\`\`hlsl
-float Density = In_GetDensity(In_DataIndex, ElementIndex);
-float3 Scale  = In_GetScale(In_DataIndex, ElementIndex);
+float dens = In_GetDensity(In_DataIndex, ElementIndex);
+float3 scale  = In_GetScale(In_DataIndex, ElementIndex);
 
-float Mul = lerp(0.2, 1.5, saturate(Density));
-Out_SetScale(Out_DataIndex, ElementIndex, Scale * Mul);
+float Mul = lerp(0.2, 1.5, saturate(dens));
+Out_SetScale(Out_DataIndex, ElementIndex, scale * Mul);
 \`\`\`
+
+>[!warning]
+>로컬 변수를 \`Density\`, \`Scale\`처럼 대문자로 쓰면 안 된다. PCG Custom HLSL에 사전 정의된 식별자와 충돌해 accessor 매크로가 깨지고, 엉뚱하게 \`In_DataIndex\`/\`ElementIndex\`가 undeclared라는 에러로 번진다. \`dens\`, \`scale\`처럼 겹치지 않는 이름을 쓴다.
 
 >[!tip]
 >accessor 함수의 정확한 이름은 Custom HLSL 노드 → \`Window > HLSL Source Editor\` → **Declarations 패널**에서 핀 설정 기준으로 자동 생성된다. 이게 버전별 정답 소스다.
