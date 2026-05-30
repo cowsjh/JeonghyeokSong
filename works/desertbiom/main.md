@@ -56,8 +56,8 @@ Unreal의 spline road 시스템을 이용해서 주변에 돌을 인스턴싱했
 블루프린트 노드의 교체와 전체적으로 노드 수를 줄이는 최적화도 진행했다. 아래는 같은 파라미터를 가진 최적화 전후의 차이이다.
 ![alt text](image-4.png)
 ![alt text](UnrealEditor_mPFYwplYyw.png)
-왼쪽이 기본 셋업, 오른쪽이 최적화 후 셋업
 ![alt text](image-10.png)
+왼쪽이 기본 셋업, 오른쪽이 최적화 후 셋업
 
 
 ## Result
