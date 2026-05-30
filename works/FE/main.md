@@ -63,8 +63,10 @@ worldposition, objectposition, normal, curvature, ao 등을 활용해서 개연�
 --- | --- | --- | --- |
 
 `VEX Material Builder`에서 VOP을 이용해 프로시쥬얼 텍스쳐 생성. worldposition, normal, curvature를 이용해 먼지가 쌓인 부분, 스크래치를 생성하고 노이즈로 도금이 벗겨져 녹슨 부분을 표현했다.
-![alt text](<image (1).png>) |![alt text](<image (2).png>)| ![alt text](image.png)|
+![alt text](image-1.png) | ![alt text](image-99.png) | ![alt text](image.png)| 
 --- | --- | --- |
+
+
 
 바리에이션에 적용한 모습
 ![alt text](houdini_vJHVFKLP8m.png) |![alt text](houdini_0N89gLKUaG.png)|
