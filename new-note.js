@@ -27,7 +27,8 @@ fs.writeFileSync(file, `---
 title:    ${title}
 date:     ${today}
 tags:     ${tags}
-featured: false
+featured:
+order:
 draft:    true
 ---
 `, 'utf8');
