@@ -164,15 +164,30 @@ Houdini에서 제작되었다.
 ![alt text](image-2.png)
 
 파라미터의 조합으로 다양한 컨셉을 구현할 수 있다. 
-![alt text](pcg01_trimmed.webm)
+![](<pcg01.mp4>)
+
 ### PCG_Rock
 
 큰 바위는 Zbrush 에서 작업 되었으며, 하나의 메쉬를 최대한으로 활용하고 싶었기 때문에 한 메쉬에서 3가지 정도의 실루엣이 나올 수 있게 디자인 했다. \`PCG_Biom\`을 응용해서 큰 바위 주변에 \`PCG_Biom\`과 같은 패턴의 메쉬들이 인스턴싱 될 수 있게 셋업 했다. 그 결과 landscape와 바위 메쉬의 경계선도 가릴 수 있게 되었고 더욱 자연스러운 느낌을 만들 수 있었다.
-![alt text](cinecameraactor4_trimmed.webm)
+![](<CineCameraActor4-1.mp4>)
 
 ### PCG_Road
 Unreal 의 spline road 시스템을 이용해서 주변에 돌을 인스턴싱 했다. 추가로 차 바퀴 자국 용 PCG 를 제작해서 기존에 있는 길의 패턴을 깨주는 용도로 사용했다. 도로의 텍스쳐는 Substance Designer에서 제작되었으며 Virtual Texture 를 이용해서 landscape와 블렌딩 시켜 주었다.
 ![alt text](image-3.png)
+
+### Material
+
+#### Big Rock
+바위는 씬에서 비교적 큰 오브젝트이기때문에 메테리얼을 따로 제작 해주었다. 버츄얼 텍스처링으로 랜드스케이프와 블렌딩 시켜 주었고 픽셀 노말을 이용하여 모래가 덮인 느낌을 구현 했다.
+![alt text](image-6.png) | ![alt text](image-7.png) | ![alt text](image-5.png) |
+--- | --- | --- |
+
+#### LandScape
+
+랜드스케이프의 기울기를 통해 여러장의 텍스쳐를 레이어링 하였다. 각 레이어의 텍스쳐 팩들은 메테리얼 펑션을 제작해 파라미터로 조작 가능하다.
+![alt text](image-8.png) | ![alt text](image-9.png) |
+--- | --- |
+
 
 ## Result
 ![alt text](image.png)
