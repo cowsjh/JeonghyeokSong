@@ -5,7 +5,7 @@
 const fs   = require('fs');
 const path = require('path');
 
-const [,, title, category, slug, tags] = process.argv;
+const [,, title, category, slug, tags, series] = process.argv;
 
 if (!title || !category || !slug || !tags) {
   console.error('Usage: node new-note.js "<title>" "<category>" "<slug>" "<tags>"');
@@ -27,6 +27,7 @@ fs.writeFileSync(file, `---
 title:    ${title}
 date:     ${today}
 tags:     ${tags}
+series:   ${series || ''}
 featured:
 order:
 draft:    true

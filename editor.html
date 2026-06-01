@@ -42,11 +42,38 @@
     border-radius: 6px; padding: 4px; z-index: 300; min-width: 120px; box-shadow: 0 4px 16px rgba(0,0,0,.4); }
   .ctx-menu.show { display: block; }
   .ctx-item { padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 4px; }
+  .ctx-item:hover { background: var(--panel); }
   .ctx-danger { color: #e98a8a; }
   .ctx-danger:hover { background: #4a2a2a; color: #fff; }
 
+  /* panel toggle buttons (topbar) */
+  .icon-btn { padding: 6px 9px; font-size: 14px; line-height: 1; }
+  .icon-btn.off { opacity: .5; }
+
+  /* tab bar (VSCode-style) */
+  .tabbar { display: flex; align-items: stretch; background: var(--bg); border-bottom: 1px solid var(--line);
+    flex-shrink: 0; overflow-x: auto; overflow-y: hidden; min-height: 34px; }
+  .tabbar:empty { display: none; }
+  .tab { display: flex; align-items: center; gap: 7px; padding: 0 10px 0 13px; font-size: 12.5px;
+    cursor: pointer; border-right: 1px solid var(--line); background: var(--panel);
+    color: var(--muted); white-space: nowrap; max-width: 220px; user-select: none; }
+  .tab:hover { background: var(--panel2); }
+  .tab.active { background: var(--bg); color: var(--text); }
+  .tab .tname { overflow: hidden; text-overflow: ellipsis; }
+  .tab .tx { font-size: 14px; line-height: 1; padding: 1px 4px; border-radius: 4px; color: var(--muted);
+    visibility: hidden; flex-shrink: 0; }
+  .tab:hover .tx, .tab.active .tx { visibility: visible; }
+  .tab .tx:hover { background: var(--line); color: var(--text); }
+  .tab.dirty .tname::after { content: ' ●'; color: var(--accent); }
+  .tab.dirty .tx { visibility: hidden; }
+  .tab.dirty:hover .tx { visibility: visible; }
+  .tab.dirty:hover .tname::after { content: ''; }
+
   /* 3-column layout */
   .main { flex: 1; display: flex; min-height: 0; }
+  .main.no-sidebar .sidebar { display: none; }
+  .main.no-preview .preview-pane { display: none; }
+  .main.no-preview .editor-pane { border-right: 0; }
   .sidebar {
     width: 240px; background: var(--panel); border-right: 1px solid var(--line);
     overflow-y: auto; flex-shrink: 0; padding: 8px;
@@ -78,6 +105,11 @@
   .pane-head { font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
     color: var(--muted); padding: 6px 12px; border-bottom: 1px solid var(--line); flex-shrink: 0;
     display: flex; align-items: center; gap: 8px; }
+  .pane-head .pane-btn { margin-left: auto; padding: 2px 7px; font-size: 13px; line-height: 1;
+    color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 5px; }
+  .pane-head .pane-btn:hover { color: var(--text); background: var(--panel2); border-color: var(--line); }
+  .pane-head .pane-btn.spin { animation: pane-spin .5s linear; }
+  @keyframes pane-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
   /* frontmatter form (edit view) */
   .fm-head { display: flex; align-items: center; gap: 6px; padding: 6px 14px; cursor: pointer;
@@ -157,6 +189,22 @@
     border-radius: 12px; cursor: pointer; color: var(--muted); }
   .chip:hover { color: var(--text); border-color: var(--accent); }
   .chips-hint { color: var(--muted); font-size: 11px; }
+  /* series input with a dropdown chevron inside, on the right */
+  .series-wrap { position: relative; }
+  .series-wrap input { width: 100%; padding-right: 30px; }
+  .series-toggle { position: absolute; top: 1px; right: 1px; bottom: 1px; width: 28px;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+    background: transparent; border: none; border-radius: 0 6px 6px 0;
+    color: var(--muted); font-size: 11px; line-height: 1; cursor: pointer; }
+  .series-toggle:hover { color: var(--text); }
+  .series-toggle.on { color: var(--accent); }
+  .series-list { position: absolute; top: calc(100% + 4px); right: 0; left: 0; z-index: 50;
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 4px;
+    max-height: 180px; overflow-y: auto; box-shadow: 0 4px 16px rgba(0,0,0,.4); display: none; }
+  .series-list.show { display: block; }
+  .series-list .sl-item { padding: 6px 10px; font-size: 12.5px; border-radius: 4px; cursor: pointer; }
+  .series-list .sl-item:hover { background: var(--panel); }
+  .series-list .sl-empty { padding: 6px 10px; font-size: 11.5px; color: var(--muted); }
 
   /* toast */
   #toast {
@@ -196,8 +244,10 @@
 <body>
 
 <div class="topbar">
+  <button id="toggleSidebar" class="icon-btn" title="Toggle list (Ctrl+B)">☰</button>
   <span class="title">✏️ Website Editor</span>
   <span class="status" id="statusText">…</span>
+  <button id="togglePreview" class="icon-btn" title="Toggle preview (Ctrl+\)">⊟</button>
   <button id="reviewBtn" disabled>Review</button>
   <button id="saveBtn" disabled>Save</button>
   <button id="publishBtn" class="primary">Deploy</button>
@@ -210,6 +260,7 @@
   </div>
 
   <div class="editor-pane">
+    <div class="tabbar" id="tabbar"></div>
     <div class="pane-head">
       <span id="editHead">Editor</span>
       <span id="dropHint" style="margin-left:auto; color:var(--muted)"></span>
@@ -224,7 +275,7 @@
   </div>
 
   <div class="preview-pane">
-    <div class="pane-head">Preview</div>
+    <div class="pane-head">Preview<button id="previewRefresh" class="pane-btn" title="Refresh preview">⟳</button></div>
     <iframe id="previewFrame" src="preview-frame.html"></iframe>
   </div>
 </div>
@@ -232,6 +283,7 @@
 <div id="toast"></div>
 
 <div id="ctxMenu" class="ctx-menu">
+  <div class="ctx-item" id="ctxCopyPath">Copy MD path</div>
   <div class="ctx-item ctx-danger" id="ctxDelete">Delete</div>
 </div>
 
@@ -261,11 +313,13 @@
 <script>
 const $ = s => document.querySelector(s);
 let DATA = null;          // /api/list result
-let current = null;       // { type, slug }
-let dirty = false;
+let current = null;       // active tab's { type, slug } (null when none open)
+let dirty = false;        // active tab's unsaved state
 let expanded = new Set(); // expanded category folder keys (type:category)
-let fmCurrent = null;     // frontmatter form state for the open file
+let fmCurrent = null;     // active tab's frontmatter form state
 let fmCollapsed = false;  // frontmatter section collapsed?
+let tabs = [];            // open documents: { type, slug, title, body, fm, dirty, fmCollapsed }
+let active = null;        // active tab object (null = create form / empty)
 
 // ─── utils ───
 function toast(msg, kind) {
@@ -302,6 +356,20 @@ window.addEventListener('message', e => {
     if (previewPending) { $('#previewFrame').contentWindow.postMessage(previewPending, '*'); previewPending = null; }
   }
 });
+// full reload of the preview iframe (re-fetches style.css, recovers a stuck preview)
+function refreshPreview() {
+  const frame = $('#previewFrame');
+  previewReady = false;
+  previewPending = current
+    ? { kind: 'preview', type: current.type, slug: current.slug, body: $('#editor').value }
+    : { kind: 'preview', type: 'work', slug: '', body: '' };
+  frame.src = 'preview-frame.html?' + Date.now();   // cache-bust → guaranteed reload
+}
+$('#previewRefresh').onclick = () => {
+  const b = $('#previewRefresh');
+  b.classList.remove('spin'); void b.offsetWidth; b.classList.add('spin');   // restart spin animation
+  refreshPreview();
+};
 
 // ─── markdown syntax highlight (editor overlay) ───
 function escapeHtml(s) { return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
@@ -498,19 +566,10 @@ function assembleContent() {
   return '---\n' + lines.join('\n') + '\n---\n\n' + $('#editor').value;
 }
 
-// ─── open a file ───
-async function openFile(type, slug) {
-  if (dirty && !confirm('You have unsaved changes. Discard and switch?')) return;
-  const res = await api('/api/file?type=' + type + '&slug=' + encodeURIComponent(slug));
-  if (res.error) return toast('Failed to load', 'err');
-  current = { type, slug };
-  $('#createForm').style.display = 'none';
-  $('#fmHead').style.display = '';
-  $('#fmForm').style.display = fmCollapsed ? 'none' : '';
-  $('#fmArrow').textContent = fmCollapsed ? '▸' : '▾';
-  $('#editorWrap').style.display = '';
-
-  const { fields, body } = splitFrontmatter(res.content);
+// ─── tabs ───
+// build frontmatter form state + body from raw main.md content
+function makeFm(type, content) {
+  const { fields, body } = splitFrontmatter(content);
   const values = {}; const present = [];
   fields.forEach(f => { if (!(f.key in values)) present.push(f.key); values[f.key] = f.value; });
   const known = type === 'work'
@@ -518,18 +577,116 @@ async function openFile(type, slug) {
     : ['title', 'date', 'tags', 'featured', 'order', 'draft'];
   const tagKey = type === 'work' ? 'tools' : 'tags';
   const extra = present.filter(k => !known.includes(k));
-  fmCurrent = { type, values, known, extra, tagKey, tags: (values[tagKey] || '').split(',').map(s => s.trim()).filter(Boolean) };
+  const fm = { type, values, known, extra, tagKey, tags: (values[tagKey] || '').split(',').map(s => s.trim()).filter(Boolean) };
+  return { fm, body: body.replace(/^\n+/, '') };
+}
+// sync frontmatter DOM inputs back into the active fm state (before switching away)
+function captureFmFromDom() {
+  if (!fmCurrent) return;
+  flushTagInput();
+  fmCurrent.known.concat(fmCurrent.extra).forEach(k => {
+    if (k === fmCurrent.tagKey) return;        // tags live in fmCurrent.tags
+    const el = document.getElementById('fm-' + k);
+    if (!el) return;
+    fmCurrent.values[k] = el.type === 'checkbox' ? (el.checked ? 'true' : 'false') : el.value;
+  });
+}
+// persist the live editor state into the active tab object
+function captureActive() {
+  if (!active) return;
+  if (active.create) { captureCreateForm(active); return; }
+  active.body = $('#editor').value;
+  captureFmFromDom();
+  active.fm = fmCurrent;
+  active.dirty = dirty;
+  active.fmCollapsed = fmCollapsed;
+}
+function showEditorView() {
+  $('#createForm').style.display = 'none';
+  $('#fmHead').style.display = '';
+  $('#fmForm').style.display = fmCollapsed ? 'none' : '';
+  $('#fmArrow').textContent = fmCollapsed ? '▸' : '▾';
+  $('#editorWrap').style.display = '';
+}
+function showEmptyState() {
+  active = null; current = null; fmCurrent = null; dirty = false;
+  $('#createForm').style.display = 'none';
+  $('#fmHead').style.display = 'none';
+  $('#fmForm').style.display = 'none';
+  $('#editorWrap').style.display = '';
+  const ed = $('#editor'); ed.value = ''; ed.disabled = true; updateHighlight();
+  $('#editHead').textContent = 'Editor';
+  $('#dropHint').textContent = '';
+  $('#saveBtn').disabled = $('#reviewBtn').disabled = $('#openBtn').disabled = true;
+  renderTabs(); renderSidebar(); renderPreview();
+}
+function activateTab(tab) {
+  if (active !== tab) captureActive();
+  active = tab;
+  if (tab.create) { showCreateView(); return; }
+  current = { type: tab.type, slug: tab.slug };
+  fmCurrent = tab.fm;
+  fmCollapsed = tab.fmCollapsed;
+  dirty = tab.dirty;
+  showEditorView();
   buildFmForm();
-
   const ed = $('#editor');
-  ed.disabled = false; ed.value = body.replace(/^\n+/, ''); updateHighlight();
-  $('#editHead').textContent = (type === 'work' ? 'works/' : 'notes/') + slug + '/main.md';
+  ed.disabled = false; ed.value = tab.body; updateHighlight();
+  $('#editHead').textContent = (tab.type === 'work' ? 'works/' : 'notes/') + tab.slug + '/main.md';
   $('#dropHint').textContent = 'Drag & drop or paste (Ctrl+V) to attach images/videos';
   $('#saveBtn').disabled = false;
   $('#reviewBtn').disabled = false;
   $('#openBtn').disabled = false;
-  dirty = false;
-  renderPreview(); renderSidebar();
+  renderTabs(); renderSidebar();
+  refreshPreview();   // full reload on every tab switch (keeps preview in sync)
+}
+function closeTab(tab, force) {
+  const live = active === tab ? dirty : tab.dirty;
+  if (!force && live && !confirm("'" + tab.title + "' has unsaved changes. Close anyway?")) return;
+  const idx = tabs.indexOf(tab);
+  if (idx < 0) return;
+  tabs.splice(idx, 1);
+  if (active === tab) {
+    active = null;
+    const next = tabs[idx] || tabs[idx - 1] || null;
+    if (next) activateTab(next); else showEmptyState();
+  } else {
+    renderTabs();
+  }
+}
+function renderTabs() {
+  const bar = $('#tabbar');
+  bar.innerHTML = '';
+  tabs.forEach(tab => {
+    const isActive = active === tab;
+    const label = tab.create ? ('New ' + (tab.state.type === 'work' ? 'Work' : 'Note')) : tab.title;
+    const el = document.createElement('div');
+    el.className = 'tab' + (isActive ? ' active' : '') + (!tab.create && (isActive ? dirty : tab.dirty) ? ' dirty' : '');
+    const name = document.createElement('span');
+    name.className = 'tname'; name.textContent = label; name.title = label;
+    el.appendChild(name);
+    const x = document.createElement('span');
+    x.className = 'tx'; x.textContent = '×'; x.title = 'Close';
+    x.onclick = e => { e.stopPropagation(); closeTab(tab); };
+    el.appendChild(x);
+    el.onclick = () => activateTab(tab);
+    if (!tab.create)
+      el.oncontextmenu = e => { e.preventDefault(); showContextMenu(e.clientX, e.clientY, tab.type, tab.slug); };
+    bar.appendChild(el);
+  });
+}
+
+// ─── open a file (reuse tab if already open) ───
+async function openFile(type, slug) {
+  const existing = tabs.find(t => t.type === type && t.slug === slug);
+  if (existing) return activateTab(existing);
+  const res = await api('/api/file?type=' + type + '&slug=' + encodeURIComponent(slug));
+  if (res.error) return toast('Failed to load', 'err');
+  const item = (type === 'work' ? DATA.works : DATA.notes).find(it => it.slug === slug);
+  const { fm, body } = makeFm(type, res.content);
+  const tab = { type, slug, title: item ? item.title : slug, body, fm, dirty: false, fmCollapsed };
+  tabs.push(tab);
+  activateTab(tab);
 }
 
 // ─── save ───
@@ -542,98 +699,162 @@ async function save() {
     body: JSON.stringify({ type: current.type, slug: current.slug, content: assembleContent() }),
   });
   $('#saveBtn').disabled = false;
-  if (res.ok) { dirty = false; toast('Saved + synced', 'ok'); refreshStatus(); loadList(true); }
-  else toast('Save failed:\n' + (res.output || res.error || ''), 'err');
+  if (res.ok) {
+    dirty = false;
+    if (active) {
+      active.dirty = false;
+      const tEl = $('#fm-title'); if (tEl && tEl.value.trim()) active.title = tEl.value.trim();
+    }
+    toast('Saved + synced', 'ok'); refreshStatus(); loadList(true); renderTabs();
+  } else toast('Save failed:\n' + (res.output || res.error || ''), 'err');
 }
 
-// ─── create form (preset: { type, category }) ───
+// ─── create form (lives in its own tab) ───
+function slugify(s, kebab) {
+  const t = s.trim().replace(/[^\w\s가-힣-]/g, '').trim();
+  return kebab ? t.toLowerCase().replace(/\s+/g, '-')
+               : t.replace(/\s+(.)/g, (_, c) => c.toUpperCase()).replace(/\s/g, '').replace(/^(.)/, (_, c) => c.toLowerCase());
+}
+// open (or focus) the single "new post" tab, applying any preset
 function showCreateForm(preset = {}) {
   if (!DATA) { toast('List not loaded. Open http://localhost:4000', 'err'); return; }
-  current = null;
+  let tab = tabs.find(t => t.create);
+  if (tab) captureCreateForm(tab);   // preserve typed values before applying preset
+  if (!tab) {
+    tab = { create: true, state: { type: 'work', title: '', slug: '', slugTouched: false, category: '', tags: '', series: '' } };
+    tabs.push(tab);
+  }
+  if (preset.type) tab.state.type = preset.type;
+  if (preset.category) tab.state.category = preset.category;
+  activateTab(tab);
+}
+// switch the panes into create mode and draw the form (called by activateTab)
+function showCreateView() {
+  current = null; fmCurrent = null; dirty = false;
   $('#fmHead').style.display = 'none';
   $('#fmForm').style.display = 'none';
   $('#editorWrap').style.display = 'none';
+  $('#createForm').style.display = '';
   $('#saveBtn').disabled = true;
   $('#reviewBtn').disabled = true;
   $('#openBtn').disabled = true;
   $('#dropHint').textContent = '';
   $('#editHead').textContent = 'New post';
-  renderPreview();
-  renderSidebar();
-
-  let type = preset.type || 'work';
-  let applied = false;   // preset.category applied once
+  renderTabs(); renderSidebar(); renderPreview();
+  drawCreateForm();
+}
+function captureCreateForm(tab) {
+  const st = tab.state, g = id => document.getElementById(id);
+  if (!g('cTitle')) return;          // form not currently rendered
+  st.title = g('cTitle').value; st.slug = g('cSlug').value;
+  st.category = g('cCat').value; st.tags = g('cTags').value;
+  if (g('cSeries')) st.series = g('cSeries').value;
+}
+function updateCreateChips() {
+  const type = active.state.type;
+  const cat = $('#cCat').value.trim();
+  const chipsEl = $('#tagChips');
+  const pool = tagsForCategory(type, cat);
+  if (!cat) { chipsEl.innerHTML = '<span class="chips-hint">Set a category to see tag suggestions</span>'; return; }
+  if (!pool.length) { chipsEl.innerHTML = '<span class="chips-hint">No existing tags in this category — type your own</span>'; return; }
+  chipsEl.innerHTML = pool.map(t => '<span class="chip">' + escAttr(t) + '</span>').join('');
+  chipsEl.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+    const inp = $('#cTags');
+    const arr = inp.value.split(',').map(s => s.trim()).filter(Boolean);
+    if (!arr.includes(c.textContent)) arr.push(c.textContent);
+    inp.value = arr.join(', ');
+  });
+}
+function drawCreateForm() {
+  const st = active.state;
+  const isWork = st.type === 'work';
+  const cats = isWork ? DATA.workCategories : DATA.noteCategories;
   const f = $('#createForm');
-  f.style.display = '';
-  const slugify = (s, kebab) => {
-    const t = s.trim().replace(/[^\w\s가-힣-]/g, '').trim();
-    return kebab ? t.toLowerCase().replace(/\s+/g, '-')
-                 : t.replace(/\s+(.)/g, (_, c) => c.toUpperCase()).replace(/\s/g, '').replace(/^(.)/, (_, c) => c.toLowerCase());
-  };
-  const render = () => {
-    const isWork = type === 'work';
-    const cats = isWork ? DATA.workCategories : DATA.noteCategories;
-    f.innerHTML = `
-      <h2>New ${isWork ? 'Work' : 'Note'}</h2>
-      <div class="field"><label>Type</label>
-        <span class="seg">
-          <button id="tW" class="${isWork ? 'on' : ''}">Work</button>
-          <button id="tN" class="${!isWork ? 'on' : ''}">Note</button>
-        </span>
+  f.innerHTML = `
+    <h2>New ${isWork ? 'Work' : 'Note'}</h2>
+    <div class="field"><label>Type</label>
+      <span class="seg">
+        <button id="tW" class="${isWork ? 'on' : ''}">Work</button>
+        <button id="tN" class="${!isWork ? 'on' : ''}">Note</button>
+      </span>
+    </div>
+    <div class="field"><label>Title</label><input id="cTitle" value="${escAttr(st.title)}"></div>
+    <div class="field"><label>Slug (folder name)</label><input id="cSlug" value="${escAttr(st.slug)}"></div>
+    <div class="field"><label>Category</label>
+      <input id="cCat" list="catList" value="${escAttr(st.category)}">
+      <datalist id="catList">${cats.map(c => '<option value="' + escAttr(c) + '">').join('')}</datalist>
+    </div>
+    <div class="field"><label>${isWork ? 'Tools (comma separated)' : 'Tags (comma separated)'}</label>
+      <input id="cTags" value="${escAttr(st.tags)}">
+      <div class="chips" id="tagChips"></div>
+    </div>
+    ${isWork ? '' : `<div class="field"><label>Series (optional)</label>
+      <div class="series-wrap">
+        <input id="cSeries" value="${escAttr(st.series)}" placeholder="Series name">
+        <button type="button" id="cSeriesToggle" class="series-toggle" title="Existing series">▾</button>
+        <div class="series-list" id="cSeriesList"></div>
       </div>
-      <div class="field"><label>Title</label><input id="cTitle"></div>
-      <div class="field"><label>Slug (folder name)</label><input id="cSlug"></div>
-      <div class="field"><label>Category</label>
-        <input id="cCat" list="catList">
-        <datalist id="catList">${cats.map(c => '<option value="' + escAttr(c) + '">').join('')}</datalist>
-      </div>
-      <div class="field"><label>${isWork ? 'Tools (comma separated)' : 'Tags (comma separated)'}</label>
-        <input id="cTags">
-        <div class="chips" id="tagChips"></div>
-      </div>
-      <div class="row" style="display:flex; gap:8px;">
-        <button class="primary" id="cCreate">Create</button>
-      </div>`;
-    $('#tW').onclick = () => { type = 'work'; render(); };
-    $('#tN').onclick = () => { type = 'note'; render(); };
-    const titleEl = $('#cTitle'), slugEl = $('#cSlug');
-    let slugTouched = false;
-    slugEl.oninput = () => slugTouched = true;
-    titleEl.oninput = () => { if (!slugTouched) slugEl.value = slugify(titleEl.value, isWork); };
-    const updateChips = () => {
-      const cat = $('#cCat').value.trim();
-      const chipsEl = $('#tagChips');
-      const pool = tagsForCategory(type, cat);
-      if (!cat) { chipsEl.innerHTML = '<span class="chips-hint">Set a category to see tag suggestions</span>'; return; }
-      if (!pool.length) { chipsEl.innerHTML = '<span class="chips-hint">No existing tags in this category — type your own</span>'; return; }
-      chipsEl.innerHTML = pool.map(t => '<span class="chip">' + escAttr(t) + '</span>').join('');
-      chipsEl.querySelectorAll('.chip').forEach(c => c.onclick = () => {
-        const inp = $('#cTags');
-        const arr = inp.value.split(',').map(s => s.trim()).filter(Boolean);
-        if (!arr.includes(c.textContent)) arr.push(c.textContent);
-        inp.value = arr.join(', ');
-      });
-    };
-    $('#cCat').oninput = updateChips;
-    if (!applied && preset.category) { $('#cCat').value = preset.category; applied = true; }
-    updateChips();
-    $('#cCreate').onclick = doCreate;
-  };
-  const doCreate = async () => {
-    const title = $('#cTitle').value.trim();
-    const slug = $('#cSlug').value.trim();
-    const category = $('#cCat').value.trim();
-    const tags = $('#cTags').value.trim();
-    if (!title || !slug || !category) return toast('Title, slug and category are required', 'err');
-    const body = { type, title, slug, category };
-    if (type === 'work') body.tools = tags; else body.tags = tags;
-    const res = await api('/api/create', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    </div>`}
+    <div class="row" style="display:flex; gap:8px;">
+      <button class="primary" id="cCreate">Create</button>
+    </div>`;
+  $('#tW').onclick = () => { captureCreateForm(active); active.state.type = 'work'; renderTabs(); drawCreateForm(); };
+  $('#tN').onclick = () => { captureCreateForm(active); active.state.type = 'note'; renderTabs(); drawCreateForm(); };
+  const titleEl = $('#cTitle'), slugEl = $('#cSlug');
+  slugEl.oninput = () => { st.slugTouched = true; };
+  titleEl.oninput = () => { if (!st.slugTouched) slugEl.value = slugify(titleEl.value, isWork); };
+  $('#cCat').oninput = updateCreateChips;
+  updateCreateChips();
+  if (!isWork) wireSeriesList();
+  $('#cCreate').onclick = doCreate;
+}
+// dropdown of existing series names, toggled from the button on the right of the input
+function wireSeriesList() {
+  const btn = $('#cSeriesToggle'), list = $('#cSeriesList'), inp = $('#cSeries');
+  const fill = () => {
+    const all = (DATA.noteSeries || []);
+    list.innerHTML = all.length
+      ? all.map(s => '<div class="sl-item">' + escAttr(s) + '</div>').join('')
+      : '<div class="sl-empty">No series yet — type a new one</div>';
+    list.querySelectorAll('.sl-item').forEach((el, i) => el.onclick = () => {
+      inp.value = all[i]; active.state.series = all[i];
+      list.classList.remove('show'); btn.classList.remove('on');
     });
-    if (res.ok) { toast('Created', 'ok'); await loadList(true); openFile(type, res.slug); refreshStatus(); }
-    else toast('Create failed:\n' + (res.error || ''), 'err');
   };
-  render();
+  btn.onclick = e => {
+    e.stopPropagation();
+    const open = list.classList.toggle('show');
+    btn.classList.toggle('on', open);
+    if (open) fill();
+  };
+}
+// close the series dropdown when clicking elsewhere (registered once, below)
+function closeSeriesList() {
+  const list = document.getElementById('cSeriesList'), btn = document.getElementById('cSeriesToggle');
+  if (list) list.classList.remove('show');
+  if (btn) btn.classList.remove('on');
+}
+async function doCreate() {
+  const st = active.state;
+  captureCreateForm(active);
+  const type = st.type;
+  const title = st.title.trim(), slug = st.slug.trim(), category = st.category.trim();
+  if (!title || !slug || !category) return toast('Title, slug and category are required', 'err');
+  const body = { type, title, slug, category };
+  if (type === 'work') body.tools = st.tags.trim();
+  else { body.tags = st.tags.trim(); body.series = (st.series || '').trim(); }
+  const res = await api('/api/create', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  if (res.ok) {
+    const ct = active; const idx = tabs.indexOf(ct);
+    active = null;                 // drop create tab; skip its capture on next activate
+    if (idx >= 0) tabs.splice(idx, 1);
+    toast('Created', 'ok');
+    await loadList(true);
+    await openFile(type, res.slug);
+    refreshStatus();
+  } else toast('Create failed:\n' + (res.error || ''), 'err');
 }
 
 // ─── attach images/videos (drag & drop + paste) ───
@@ -663,7 +884,7 @@ async function attachFile(file, paste) {
   const s = ta.selectionStart;
   ta.value = ta.value.slice(0, s) + md + ta.value.slice(ta.selectionEnd);
   ta.selectionStart = ta.selectionEnd = s + md.length;
-  dirty = true; updateHighlight(); renderPreview();
+  markDirty(); updateHighlight(); renderPreview();
   toast('Attached: ' + res.name, 'ok');
 }
 
@@ -673,15 +894,43 @@ ta.addEventListener('drop', async e => {
   e.preventDefault(); ta.classList.remove('dragover');
   for (const file of [...e.dataTransfer.files]) await attachFile(file, false);
 });
+// relative path from the current file's folder to a target path (slash-separated)
+function relPath(fromDir, toPath) {
+  const f = fromDir.split('/').filter(Boolean);
+  const t = toPath.split('/').filter(Boolean);
+  let i = 0;
+  while (i < f.length && i < t.length && f[i] === t[i]) i++;
+  const rel = f.slice(i).map(() => '..').concat(t.slice(i)).join('/');
+  return rel || toPath;
+}
+// turn a pasted "works/…/main.md" or "notes/…/main.md" path into a relative reference link
+function insertMdReference(type, slug, path) {
+  const list = type === 'work' ? DATA.works : DATA.notes;
+  const item = list && list.find(it => it.slug === slug);
+  const text = item ? item.title : slug;
+  const fromDir = (current.type === 'work' ? 'works/' : 'notes/') + current.slug;
+  const rel = relPath(fromDir, path);
+  const md = '[' + text + '](' + rel + ')';
+  const s = ta.selectionStart;
+  ta.value = ta.value.slice(0, s) + md + ta.value.slice(ta.selectionEnd);
+  ta.selectionStart = s + 1; ta.selectionEnd = s + 1 + text.length;   // select link text for quick editing
+  markDirty(); updateHighlight(); renderPreview();
+}
 ta.addEventListener('paste', async e => {
   const cd = e.clipboardData;
   if (!cd) return;
   const files = [...cd.files];
   if (!files.length) for (const it of cd.items) if (it.kind === 'file') { const f = it.getAsFile(); if (f) files.push(f); }
   const media = files.filter(f => /^(image|video)\//.test(f.type) || MEDIA_RE.test(f.name || ''));
-  if (!media.length) return;  // plain text paste falls through
-  e.preventDefault();
-  for (const file of media) await attachFile(file, true);
+  if (media.length) {
+    e.preventDefault();
+    for (const file of media) await attachFile(file, true);
+    return;
+  }
+  // plain-text paste of a copied MD path → auto reference template
+  const txt = (cd.getData('text/plain') || '').trim();
+  const m = txt.match(/^(works|notes)\/(.+)\/main\.md$/);
+  if (m && current) { e.preventDefault(); insertMdReference(m[1] === 'works' ? 'work' : 'note', m[2], txt); }
 });
 
 // ─── status ───
@@ -765,16 +1014,8 @@ async function deletePage(type, slug) {
   const res = await api('/api/delete-page?type=' + type + '&slug=' + encodeURIComponent(slug), { method: 'POST' });
   if (!res.ok) { toast('Delete failed: ' + (res.error || ''), 'err'); return; }
   toast('Deleted', 'ok');
-  if (current && current.type === type && current.slug === slug) {
-    current = null; dirty = false;
-    $('#fmHead').style.display = 'none';
-    $('#fmForm').style.display = 'none';
-    const ed = $('#editor'); ed.value = ''; ed.disabled = true; updateHighlight();
-    $('#editHead').textContent = 'Editor';
-    $('#dropHint').textContent = '';
-    renderPreview();
-    $('#saveBtn').disabled = $('#reviewBtn').disabled = $('#openBtn').disabled = true;
-  }
+  const tab = tabs.find(t => t.type === type && t.slug === slug);
+  if (tab) closeTab(tab, true);   // force-close, skip dirty prompt
   loadList(); refreshStatus();
 }
 let ctxTarget = null;
@@ -786,8 +1027,25 @@ function showContextMenu(x, y, type, slug) {
 }
 function hideContextMenu() { $('#ctxMenu').classList.remove('show'); }
 document.addEventListener('click', hideContextMenu);
+document.addEventListener('click', closeSeriesList);
 document.addEventListener('scroll', hideContextMenu, true);
 $('#ctxDelete').onclick = () => { const t = ctxTarget; if (t) deletePage(t.type, t.slug); };
+$('#ctxCopyPath').onclick = () => {
+  const t = ctxTarget; if (!t) return;
+  const path = (t.type === 'work' ? 'works/' : 'notes/') + t.slug + '/main.md';
+  navigator.clipboard.writeText(path)
+    .then(() => toast('Copied: ' + path, 'ok'), () => toast('Copy failed', 'err'));
+};
+
+// ─── collapsible panels (list / preview) ───
+$('#toggleSidebar').onclick = () => {
+  const m = $('.main'); const off = m.classList.toggle('no-sidebar');
+  $('#toggleSidebar').classList.toggle('off', off);
+};
+$('#togglePreview').onclick = () => {
+  const m = $('.main'); const off = m.classList.toggle('no-preview');
+  $('#togglePreview').classList.toggle('off', off);
+};
 $('#reviewBtn').onclick = () => { $('#reviewBg').classList.add('show'); runReview(); };
 $('#reviewRefresh').onclick = runReview;
 $('#reviewClose').onclick = () => $('#reviewBg').classList.remove('show');
@@ -829,14 +1087,22 @@ $('#fmHead').onclick = () => {
   $('#fmForm').style.display = fmCollapsed ? 'none' : '';
   $('#fmArrow').textContent = fmCollapsed ? '▸' : '▾';
 };
-$('#fmForm').addEventListener('input', () => { dirty = true; });
-$('#fmForm').addEventListener('change', () => { dirty = true; });
-ta.addEventListener('input', () => { dirty = true; updateHighlight(); renderPreview(); });
+function markDirty() {
+  if (!dirty && active) { dirty = true; active.dirty = true; renderTabs(); }
+  else dirty = true;
+}
+$('#fmForm').addEventListener('input', markDirty);
+$('#fmForm').addEventListener('change', markDirty);
+ta.addEventListener('input', () => { markDirty(); updateHighlight(); renderPreview(); });
 ta.addEventListener('scroll', () => { const hl = $('#highlight'); hl.scrollTop = ta.scrollTop; hl.scrollLeft = ta.scrollLeft; });
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); if (current) save(); }
+  else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') { e.preventDefault(); $('#toggleSidebar').onclick(); }
+  else if ((e.ctrlKey || e.metaKey) && e.key === '\\') { e.preventDefault(); $('#togglePreview').onclick(); }
 });
-window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('beforeunload', e => {
+  if (dirty || tabs.some(t => t !== active && t.dirty)) { e.preventDefault(); e.returnValue = ''; }
+});
 
 loadList(); refreshStatus();
 </script>

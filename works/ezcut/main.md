@@ -4,7 +4,10 @@ category: Tool
 thumbnail: works/ezcut/image.png
 date: 2026.04
 tools: AI, python
-
+featured: false
+order: 
+draft: false
+link: 
 ---
 
 ## Overview
@@ -28,3 +31,5 @@ tools: AI, python
 ### 설정
 간단한 아웃풋 설정이 가능하다.
 ![alt text](image-1.png)
+
+[Deferred Rendering](../../Game/game-optimization-02/main.md#deferred-rendering)

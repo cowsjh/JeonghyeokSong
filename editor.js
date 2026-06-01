@@ -78,6 +78,7 @@ function buildList() {
 
   const notes = [];
   const noteCategories = new Set();
+  const noteSeries = new Set();
 
   if (fs.existsSync(NOTES_DIR)) {
     for (const parent of fs.readdirSync(NOTES_DIR, { withFileTypes: true })) {
@@ -90,11 +91,14 @@ function buildList() {
         if (!fs.existsSync(md)) continue;
         const meta = parseFrontmatter(fs.readFileSync(md, 'utf8'));
         const tags = (meta.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+        const series = (meta.series || '').trim();
+        if (series) noteSeries.add(series);
         notes.push({
           slug: `${parent.name}/${child.name}`,
           title: meta.title || child.name,
           category: parent.name,
           tags,
+          series,
           draft: meta.draft === 'true',
         });
       }
@@ -108,6 +112,7 @@ function buildList() {
     works, notes,
     workCategories: [...workCategories].sort(),
     noteCategories: [...noteCategories].sort(),
+    noteSeries: [...noteSeries].sort(),
   };
 }
 
@@ -280,7 +285,7 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: r.ok, output: (r.stdout + r.stderr).trim() });
     }
 
-    // POST /api/create  { type, title, slug, category, tools|tags }
+    // POST /api/create  { type, title, slug, category, tools|tags, series }
     if (req.method === 'POST' && p === '/api/create') {
       const b = JSON.parse((await readBody(req)).toString('utf8'));
       let r, slug;
@@ -289,7 +294,7 @@ const server = http.createServer(async (req, res) => {
         r = await run('node', ['new-work.js', b.title, b.slug, b.category, b.tools || '']);
       } else {
         slug = `${b.category}/${b.slug}`;
-        r = await run('node', ['new-note.js', b.title, b.category, b.slug, b.tags || '']);
+        r = await run('node', ['new-note.js', b.title, b.category, b.slug, b.tags || '', b.series || '']);
       }
       if (!r.ok) return sendJson(res, 400, { error: (r.stdout + r.stderr).trim() });
       return sendJson(res, 200, { ok: true, slug, output: (r.stdout + r.stderr).trim() });
