@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Website Editor</title>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   :root {
@@ -141,15 +140,7 @@
   .tk-quote { color: #8a90a0; font-style: italic; }
   .tk-list  { color: #f78c6c; }
   .tk-key   { color: #c792ea; }
-  .preview { flex: 1; overflow-y: auto; padding: 16px 22px; }
-  .preview img, .preview video { max-width: 100%; border-radius: 6px; }
-  .preview pre { background: var(--panel); padding: 12px; border-radius: 6px; overflow-x: auto; }
-  .preview code { background: var(--panel); padding: 2px 5px; border-radius: 4px; }
-  .preview pre code { background: none; padding: 0; }
-  .preview h1, .preview h2 { border-bottom: 1px solid var(--line); padding-bottom: .25em; }
-  .preview blockquote { border-left: 3px solid var(--line); margin: 0; padding-left: 14px; color: var(--muted); }
-  .preview table { border-collapse: collapse; }
-  .preview th, .preview td { border: 1px solid var(--line); padding: 5px 9px; }
+  #previewFrame { flex: 1; width: 100%; border: 0; background: var(--bg); }
 
   /* create form */
   .create-form { padding: 22px; max-width: 520px; overflow-y: auto; }
@@ -234,7 +225,7 @@
 
   <div class="preview-pane">
     <div class="pane-head">Preview</div>
-    <div class="preview" id="preview"></div>
+    <iframe id="previewFrame" src="preview-frame.html"></iframe>
   </div>
 </div>
 
@@ -291,20 +282,26 @@ function escAttr(s) {
   return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// ─── preview render ───
-function pathPrefix() {
-  if (!current) return '';
-  return (current.type === 'work' ? 'works/' : 'notes/') + current.slug + '/';
+// ─── preview (rendered by preview-frame.html — identical to the live site) ───
+let previewReady = false, previewPending = null, previewTimer = null;
+function postPreview() {
+  const frame = $('#previewFrame');
+  const msg = current
+    ? { kind: 'preview', type: current.type, slug: current.slug, body: $('#editor').value }
+    : { kind: 'preview', type: 'work', slug: '', body: '' };
+  if (previewReady && frame.contentWindow) frame.contentWindow.postMessage(msg, '*');
+  else previewPending = msg;
 }
 function renderPreview() {
-  const body = $('#editor').value;   // body only (frontmatter lives in the form)
-  let html = marked.parse(body, { breaks: true });
-  const prefix = pathPrefix();
-  html = html.replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, '$1' + prefix);
-  html = html.replace(/<img([^>]*?)src="([^"]+\.mp4)"([^>]*)>/g,
-    '<video src="$2" controls muted style="max-width:100%"></video>');
-  $('#preview').innerHTML = html;
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(postPreview, 200);
 }
+window.addEventListener('message', e => {
+  if (e.data && e.data.kind === 'preview-ready') {
+    previewReady = true;
+    if (previewPending) { $('#previewFrame').contentWindow.postMessage(previewPending, '*'); previewPending = null; }
+  }
+});
 
 // ─── markdown syntax highlight (editor overlay) ───
 function escapeHtml(s) { return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
@@ -561,7 +558,7 @@ function showCreateForm(preset = {}) {
   $('#openBtn').disabled = true;
   $('#dropHint').textContent = '';
   $('#editHead').textContent = 'New post';
-  $('#preview').innerHTML = '';
+  renderPreview();
   renderSidebar();
 
   let type = preset.type || 'work';
@@ -775,7 +772,7 @@ async function deletePage(type, slug) {
     const ed = $('#editor'); ed.value = ''; ed.disabled = true; updateHighlight();
     $('#editHead').textContent = 'Editor';
     $('#dropHint').textContent = '';
-    $('#preview').innerHTML = '';
+    renderPreview();
     $('#saveBtn').disabled = $('#reviewBtn').disabled = $('#openBtn').disabled = true;
   }
   loadList(); refreshStatus();

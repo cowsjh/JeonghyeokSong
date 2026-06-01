@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<!-- Editor preview frame: renders markdown exactly like the live site.
+     Loaded in an iframe by editor.html; receives the body via postMessage.
+     Transform functions are copied from work.html / blog.html. -->
+<script>
+  MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    startup: { typeset: false }
+  };
+</script>
+<link rel="stylesheet" href="style.css">
+<link id="hljs-theme" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+<style>
+  html, body { margin: 0; background: var(--bg); }
+  body { padding: 16px 22px; }
+</style>
+</head>
+<body>
+<div class="md-body" id="mdb"></div>
+<script>
+// ── shared ──────────────────────────────────────
+const ALERT_TYPES = { NOTE: 'Note', TIP: 'Tip', IMPORTANT: 'Important', WARNING: 'Warning', CAUTION: 'Caution' };
+function convertAlerts(html) {
+  return html.replace(
+    /<blockquote>\s*<p>\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\n?([\s\S]*?)<\/blockquote>/gi,
+    (_, type, inner) => {
+      const key = type.toUpperCase();
+      const content = '<p>' + inner.trimStart();
+      return `<div class="md-alert md-alert-${key.toLowerCase()}"><div class="md-alert-title">${ALERT_TYPES[key]}</div>${content}</div>`;
+    }
+  );
+}
+function resolvePath(base, rel) {
+  const parts = base.split('/');
+  parts.pop();
+  rel.split('/').forEach(seg => {
+    if (seg === '..') parts.pop();
+    else if (seg !== '.') parts.push(seg);
+  });
+  return parts.join('/');
+}
+
+// ── work pipeline ───────────────────────────────
+function convertImgToVideo(html) {
+  return html.replace(
+    /<img\s+([^>]*?)src="([^"]+\.(?:mp4|webm|mov))"([^>]*)>/gi,
+    (_, pre, src, post) => {
+      const attrs = (pre + post).match(/title="[^"]*"/i);
+      const titleAttr = attrs ? ' ' + attrs[0] : '';
+      return `<video src="${src}#t=0.001" autoplay muted loop playsinline${titleAttr}></video>`;
+    }
+  );
+}
+function mdPathToWorkSlug(href, id) {
+  if (/^https?:\/\//.test(href)) return null;
+  let path;
+  if (href.startsWith('works/') || href.startsWith('/works/')) path = href.replace(/^\//, '');
+  else path = resolvePath('works/' + id + '/', href);
+  let slug = path.replace(/^works\//, '').replace(/\.md$/, '');
+  const parts = slug.split('/');
+  if (parts.length >= 2 && (parts[parts.length - 1] === 'main' || parts[parts.length - 1] === parts[parts.length - 2]))
+    slug = parts.slice(0, -1).join('/');
+  return slug;
+}
+function convertMdLinks(html, id) {
+  return html.replace(/<a href="([^"#]+\.md)(#[^"]*)?"/gi, (m, path, hash) => {
+    const slug = mdPathToWorkSlug(path, id);
+    if (!slug) return m;
+    return `<a href="work.html?id=${encodeURIComponent(slug)}${hash || ''}"`;
+  });
+}
+function renderWork(body, id) {
+  body = body.replace(
+    /^[ \t]*(https?:\/\/(?:www\.youtube\.com\/watch\?(?:\S*&)?v=|youtu\.be\/)([A-Za-z0-9_-]{11})\S*)[ \t]*$/gm,
+    (_, _url, vid) =>
+      `<div class="yt-embed"><iframe src="https://www.youtube.com/embed/${vid}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
+  );
+  let html = marked.parse(body);
+  html = convertAlerts(html).replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, `$1works/${id}/`);
+  html = convertImgToVideo(html);
+  html = convertMdLinks(html, id);
+  return html;
+}
+
+// ── note pipeline ───────────────────────────────
+function protectMath(text) {
+  const segs = [];
+  let out = text;
+  out = out.replace(/\$\$([\s\S]*?)\$\$/g, (_, m) => { segs.push({ d: true, m }); return `\x02M${segs.length - 1}\x03`; });
+  out = out.replace(/\$([^\n$]+?)\$/g, (_, m) => { segs.push({ d: false, m }); return `\x02M${segs.length - 1}\x03`; });
+  return { out, segs };
+}
+function restoreMath(html, segs) {
+  return html.replace(/\x02M(\d+)\x03/g, (_, i) => {
+    const { d, m } = segs[parseInt(i)];
+    return d ? `$$${m}$$` : `$${m}$`;
+  });
+}
+function mdPathToSlug(href, id) {
+  let path;
+  if (/^https?:\/\//.test(href)) return null;
+  if (href.startsWith('notes/') || href.startsWith('/notes/')) path = href.replace(/^\//, '');
+  else path = resolvePath('notes/' + id + '/', href);
+  let slug = path.replace(/^notes\//, '').replace(/\.md$/, '');
+  const parts = slug.split('/');
+  if (parts.length >= 2 && (parts[parts.length - 1] === 'main' || parts[parts.length - 1] === parts[parts.length - 2]))
+    slug = parts.slice(0, -1).join('/');
+  return slug;
+}
+function makeRenderer(id) {
+  const r = new marked.Renderer();
+  r.image = function (hrefOrToken, title, text) {
+    let href, t, tx;
+    if (hrefOrToken && typeof hrefOrToken === 'object') { href = hrefOrToken.href; t = hrefOrToken.title; tx = hrefOrToken.text; }
+    else { href = hrefOrToken; t = title; tx = text; }
+    const src = /^https?:\/\/|^\//.test(href) ? href : `notes/${id}/${href}`;
+    if (/\.(mp4|webm|mov)$/i.test(href))
+      return `<video src="${src}#t=0.001" autoplay muted loop playsinline${t ? ` title="${t}"` : ''}></video>`;
+    return `<img src="${src}" alt="${tx || ''}"${t ? ` title="${t}"` : ''} loading="lazy">`;
+  };
+  r.link = function (hrefOrToken, title, text) {
+    let href, t, tx;
+    if (hrefOrToken && typeof hrefOrToken === 'object') { href = hrefOrToken.href; t = hrefOrToken.title; tx = hrefOrToken.text; }
+    else { href = hrefOrToken; t = title; tx = text; }
+    if (href) {
+      const mdMatch = href.match(/^([^#]+\.md)(#.*)?$/);
+      if (mdMatch) {
+        const slug = mdPathToSlug(mdMatch[1], id);
+        if (slug) {
+          const hash = mdMatch[2] || '';
+          return `<a href="blog.html?id=${encodeURIComponent(slug)}${hash}"${t ? ` title="${t}"` : ''}>${tx}</a>`;
+        }
+      }
+    }
+    const external = /^https?:\/\//.test(href);
+    return `<a href="${href}"${t ? ` title="${t}"` : ''}${external ? ' target="_blank" rel="noopener"' : ''}>${tx}</a>`;
+  };
+  r.code = function (token) {
+    const code = typeof token === 'object' ? token.text : token;
+    const lang = typeof token === 'object' ? token.lang : arguments[1];
+    if (typeof hljs === 'undefined') {
+      const esc = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `<pre><code class="language-${lang || 'plaintext'}">${esc}</code></pre>`;
+    }
+    const language = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
+    const highlighted = hljs.highlight(code, { language }).value;
+    return `<pre><code class="hljs language-${language}">${highlighted}</code></pre>`;
+  };
+  return r;
+}
+function renderNote(body, id) {
+  const { out, segs } = protectMath(body);
+  let html = marked.parse(out, { renderer: makeRenderer(id), breaks: true });
+  html = restoreMath(html, segs);
+  html = convertAlerts(html);
+  return html;
+}
+
+// ── message bridge ──────────────────────────────
+let last = null;
+function doRender(d) {
+  last = d;
+  const mdb = document.getElementById('mdb');
+  mdb.innerHTML = d.type === 'work' ? renderWork(d.body || '', d.slug) : renderNote(d.body || '', d.slug);
+  if (window.MathJax && MathJax.typesetPromise) {
+    try { MathJax.typesetClear([mdb]); } catch (e) {}
+    MathJax.typesetPromise([mdb]).catch(() => {});
+  }
+}
+window.addEventListener('message', e => { if (e.data && e.data.kind === 'preview') doRender(e.data); });
+// re-typeset once MathJax has finished loading
+window.addEventListener('load', () => {
+  if (last && window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([document.getElementById('mdb')]).catch(() => {});
+});
+parent.postMessage({ kind: 'preview-ready' }, '*');
+</script>
+</body>
+</html>
