@@ -138,7 +138,7 @@ link:
 간단한 아웃풋 설정이 가능하다.
 ![alt text](image-1.png)
 
-[Deferred Rendering](../../Game/game-optimization-02/main.md#deferred-rendering)`,
+[Culling](../../notes/Game/culling/main.md#precomputed-visibility-volumes)`,
 
   'desertbiom': `---
 title: Desert Biom (PCG)
