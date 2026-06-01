@@ -4,9 +4,10 @@
 
 'use strict';
 
-const http = require('http');
-const fs   = require('fs');
-const path = require('path');
+const http  = require('http');
+const https = require('https');
+const fs    = require('fs');
+const path  = require('path');
 const { execFile, exec } = require('child_process');
 
 const ROOT = __dirname;
@@ -118,6 +119,92 @@ function listMedia(dir) {
     .sort();
 }
 
+// ─── 검수: main.md의 이미지 참조 추출 (<>로 감싼 공백 파일명 포함) ───
+function extractImageRefs(text) {
+  const refs = [];
+  const re = /!\[[^\]]*\]\(\s*(<[^>]+>|[^)\s]+)/g;
+  let m;
+  while ((m = re.exec(text))) {
+    let u = m[1];
+    if (u.startsWith('<') && u.endsWith('>')) u = u.slice(1, -1);
+    refs.push(u.trim());
+  }
+  return refs;
+}
+
+// ─── 검수: URL 생존 확인 (헤더만 받고 본문 버림, 리다이렉트 추적) ───
+// state: 'ok'(살아있음) | 'blocked'(봇 차단 등 — 브라우저에선 정상일 수 있음) | 'bad'(죽음/도달불가)
+function urlState(sc) {
+  if (sc >= 200 && sc < 400) return 'ok';
+  if ([401, 403, 405, 429].includes(sc)) return 'blocked';
+  return 'bad';
+}
+function checkUrl(u, redirectsLeft = 3) {
+  return new Promise(resolve => {
+    let target;
+    try { target = new URL(u); } catch { return resolve({ url: u, status: 0, state: 'bad' }); }
+    if (target.protocol !== 'http:' && target.protocol !== 'https:')
+      return resolve({ url: u, status: 0, state: 'bad' });
+    const lib = target.protocol === 'https:' ? https : http;
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,*/*',
+    };
+    const req = lib.get(u, { timeout: 8000, headers }, r => {
+      const sc = r.statusCode;
+      if ([301, 302, 303, 307, 308].includes(sc) && r.headers.location && redirectsLeft > 0) {
+        r.destroy();
+        let next; try { next = new URL(r.headers.location, u).href; } catch { return resolve({ url: u, status: sc, state: 'bad' }); }
+        return resolve(checkUrl(next, redirectsLeft - 1));
+      }
+      r.destroy();
+      resolve({ url: u, status: sc, state: urlState(sc) });
+    });
+    req.on('timeout', () => { req.destroy(); resolve({ url: u, status: 0, state: 'bad' }); });
+    req.on('error',   () => resolve({ url: u, status: 0, state: 'bad' }));
+  });
+}
+
+// ─── 검수: 현재 글의 이미지·frontmatter·동영상·링크 종합 검사 ───
+async function reviewContent(type, content, dir) {
+  const meta = parseFrontmatter(content);
+
+  // 1) 이미지 누락·잉여
+  const refs = extractImageRefs(content).filter(r => !/^(https?:|data:)/i.test(r));
+  if (type === 'work' && meta.thumbnail && !meta.thumbnail.includes('/')) refs.push(meta.thumbnail);
+  const refsSet = new Set(refs);
+  const media   = listMedia(dir);
+  const missing = [...refsSet].filter(r => !fs.existsSync(path.join(dir, r)));
+  const orphan  = media.filter(f => !refsSet.has(f));
+
+  // 2) frontmatter 필수 필드
+  const required = type === 'work'
+    ? ['title', 'category', 'thumbnail', 'date', 'tools']
+    : ['title', 'date', 'tags'];
+  const fmMissing = required.filter(k => !meta[k] || !String(meta[k]).trim());
+  const fmNotes = [];
+  if (meta.draft === 'true') fmNotes.push('draft: true — excluded from sync, not published to the site');
+
+  // 3) 동영상 50MB 초과
+  const videos = media.filter(f => /\.(mp4|webm|mov)$/i.test(f)).map(f => {
+    const mb = fs.statSync(path.join(dir, f)).size / (1024 * 1024);
+    return { name: f, sizeMB: Math.round(mb * 10) / 10, ok: mb <= 50 };
+  });
+
+  // 4) 링크 생존
+  const urls = new Set();
+  if (meta.link && /^https?:/i.test(meta.link)) urls.add(meta.link.trim());
+  for (const m of content.matchAll(/https?:\/\/[^\s)<>"'\]]+/g)) urls.add(m[0].replace(/[.,]+$/, ''));
+  const links = await Promise.all([...urls].map(u => checkUrl(u)));
+
+  return {
+    images: { missing, orphan },
+    frontmatter: { missing: fmMissing, notes: fmNotes },
+    videos,
+    links,
+  };
+}
+
 // ─── child_process 헬퍼 (Promise) ───
 function run(cmd, args, opts = {}) {
   return new Promise(resolve => {
@@ -219,6 +306,70 @@ const server = http.createServer(async (req, res) => {
       const data = await readBody(req);
       fs.writeFileSync(path.join(rp.dir, name), data);
       return sendJson(res, 200, { ok: true, name });
+    }
+
+    // GET /api/review?type=&slug=
+    if (req.method === 'GET' && p === '/api/review') {
+      const type = url.searchParams.get('type');
+      const slug = url.searchParams.get('slug');
+      const rp = resolvePaths(type, slug);
+      if (!rp || !fs.existsSync(rp.md)) return sendJson(res, 404, { error: 'not found' });
+      const report = await reviewContent(type, fs.readFileSync(rp.md, 'utf8'), rp.dir);
+      return sendJson(res, 200, report);
+    }
+
+    // POST /api/delete?type=&slug=&name=  (잉여 파일 삭제)
+    if (req.method === 'POST' && p === '/api/delete') {
+      const type = url.searchParams.get('type');
+      const slug = url.searchParams.get('slug');
+      const name = path.basename(url.searchParams.get('name') || '');
+      const rp = resolvePaths(type, slug);
+      if (!rp || !name) return sendJson(res, 400, { error: 'bad request' });
+      const target = path.join(rp.dir, name);
+      if (fs.existsSync(target)) fs.unlinkSync(target);
+      return sendJson(res, 200, { ok: true });
+    }
+
+    // POST /api/delete-page?type=&slug=  (글 폴더 통째 삭제 + sync)
+    if (req.method === 'POST' && p === '/api/delete-page') {
+      const type = url.searchParams.get('type');
+      const slug = url.searchParams.get('slug');
+      const rp = resolvePaths(type, slug);
+      if (!rp || !fs.existsSync(rp.dir)) return sendJson(res, 404, { error: 'not found' });
+      fs.rmSync(rp.dir, { recursive: true, force: true });
+      const script = type === 'work' ? 'works-sync.js' : 'blog-sync.js';
+      const r = await run('node', [script]);
+      return sendJson(res, 200, { ok: true, output: (r.stdout + r.stderr).trim() });
+    }
+
+    // POST /api/compress?type=&slug=&name=  (mp4 → 1080p h264 재인코딩, 원본 덮어쓰기)
+    if (req.method === 'POST' && p === '/api/compress') {
+      const type = url.searchParams.get('type');
+      const slug = url.searchParams.get('slug');
+      const name = path.basename(url.searchParams.get('name') || '');
+      const rp = resolvePaths(type, slug);
+      if (!rp || !name) return sendJson(res, 400, { error: 'bad request' });
+      const input = path.join(rp.dir, name);
+      if (!fs.existsSync(input)) return sendJson(res, 404, { error: 'file not found' });
+      const tmp = path.join(rp.dir, '__compress_' + Date.now() + '.mp4');
+      const before = fs.statSync(input).size;
+      const r = await run('ffmpeg', [
+        '-y', '-i', input,
+        '-vf', 'scale=-2:min(1080\\,ih)',          // 1080p로 다운스케일(업스케일 안 함)
+        '-c:v', 'libx264', '-crf', '23', '-preset', 'medium', '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart',
+        tmp,
+      ], { maxBuffer: 1024 * 1024 * 20 });
+      if (!r.ok || !fs.existsSync(tmp)) {
+        if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+        const msg = /ENOENT/.test(r.stderr) ? 'ffmpeg not found (check PATH)' : 'ffmpeg compression failed';
+        return sendJson(res, 500, { error: msg, output: (r.stderr || r.stdout || '').slice(-1500) });
+      }
+      fs.copyFileSync(tmp, input);   // 원본 덮어쓰기
+      fs.unlinkSync(tmp);
+      const after = fs.statSync(input).size;
+      const mb = b => Math.round(b / 1048576 * 10) / 10;
+      return sendJson(res, 200, { ok: true, beforeMB: mb(before), afterMB: mb(after) });
     }
 
     // GET /api/status

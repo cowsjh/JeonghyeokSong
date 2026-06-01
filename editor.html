@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,11 +12,18 @@
     --text: #e6e6ea; --muted: #9a9aa5; --accent: #6ea8fe; --accent2: #4a8cff;
     --ok: #4caf50; --danger: #e05656;
   }
+  /* custom scrollbar */
+  * { scrollbar-width: thin; scrollbar-color: #43434d transparent; }
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #43434d; border-radius: 6px; border: 3px solid var(--bg); background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: #56566280; background: #565662; border: 3px solid var(--bg); background-clip: padding-box; }
+  ::-webkit-scrollbar-corner { background: transparent; }
   body {
     margin: 0; font-family: 'Segoe UI', system-ui, sans-serif;
     background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column;
   }
-  /* 상단바 */
+  /* topbar */
   .topbar {
     display: flex; align-items: center; gap: 12px; padding: 8px 14px;
     background: var(--panel); border-bottom: 1px solid var(--line); flex-shrink: 0;
@@ -31,15 +38,27 @@
   button.primary { background: var(--accent2); border-color: var(--accent2); color: #fff; }
   button.primary:hover { background: #3a7cf0; }
   button:disabled { opacity: .45; cursor: not-allowed; }
+  /* right-click context menu */
+  .ctx-menu { position: fixed; display: none; background: var(--panel2); border: 1px solid var(--line);
+    border-radius: 6px; padding: 4px; z-index: 300; min-width: 120px; box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+  .ctx-menu.show { display: block; }
+  .ctx-item { padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 4px; }
+  .ctx-danger { color: #e98a8a; }
+  .ctx-danger:hover { background: #4a2a2a; color: #fff; }
 
-  /* 3단 레이아웃 */
+  /* 3-column layout */
   .main { flex: 1; display: flex; min-height: 0; }
   .sidebar {
     width: 240px; background: var(--panel); border-right: 1px solid var(--line);
     overflow-y: auto; flex-shrink: 0; padding: 8px;
   }
-  .sidebar .group { font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
-    color: var(--muted); margin: 14px 6px 4px; }
+  .sidebar .group { display: flex; align-items: center; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--muted); margin: 14px 6px 4px; }
+  .sidebar .group .glabel { flex: 1; }
+  .sidebar .add { opacity: 0; cursor: pointer; padding: 0 5px; font-size: 16px; line-height: 1;
+    color: var(--muted); border-radius: 4px; flex-shrink: 0; }
+  .sidebar .group:hover .add, .sidebar .folder:hover .add { opacity: 1; }
+  .sidebar .add:hover { color: var(--accent); background: var(--panel2); }
   .sidebar .item {
     padding: 6px 8px; border-radius: 5px; cursor: pointer; font-size: 13px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -60,12 +79,68 @@
   .pane-head { font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
     color: var(--muted); padding: 6px 12px; border-bottom: 1px solid var(--line); flex-shrink: 0;
     display: flex; align-items: center; gap: 8px; }
-  textarea {
-    flex: 1; width: 100%; resize: none; border: none; outline: none;
-    background: var(--bg); color: var(--text); padding: 14px;
+
+  /* frontmatter form (edit view) */
+  .fm-head { display: flex; align-items: center; gap: 6px; padding: 6px 14px; cursor: pointer;
+    font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted);
+    background: var(--panel); border-bottom: 1px solid var(--line); user-select: none; flex-shrink: 0; }
+  .fm-head:hover { color: var(--text); }
+  .fm-head .fm-arrow { font-size: 10px; width: 10px; }
+  .fm-form { padding: 10px 14px 6px; border-bottom: 1px solid var(--line); flex-shrink: 0;
+    max-height: 44%; overflow-y: auto; background: var(--panel); }
+  .fm-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .fm-row > label.k { width: 78px; font-size: 11px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .4px; flex-shrink: 0; }
+  .fm-row input[type=text] { flex: 1; padding: 5px 8px; background: var(--bg); border: 1px solid var(--line);
+    border-radius: 5px; color: var(--text); font-size: 12.5px; }
+  /* custom toggle switch */
+  .toggle { display: inline-flex; align-items: center; cursor: pointer; }
+  .toggle input { display: none; }
+  .toggle .track { width: 36px; height: 19px; border-radius: 10px; background: var(--line);
+    position: relative; transition: background .15s; flex-shrink: 0; }
+  .toggle .track::after { content: ''; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px;
+    border-radius: 50%; background: #c8c8d0; transition: transform .15s, background .15s; }
+  .toggle input:checked + .track { background: var(--accent2); }
+  .toggle input:checked + .track::after { transform: translateX(17px); background: #fff; }
+  .order-inline { display: inline-flex; align-items: center; gap: 6px; margin-left: 16px; }
+  .order-inline .oi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .order-inline input { width: 70px; padding: 5px 8px; background: var(--bg); border: 1px solid var(--line);
+    border-radius: 5px; color: var(--text); font-size: 12.5px; }
+  .tag-box { flex: 1; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 4px 5px;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 5px; }
+  .tagchip { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 4px 2px 8px;
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; }
+  .tagchip .x { cursor: pointer; color: var(--muted); font-size: 13px; line-height: 1; padding: 0 2px; }
+  .tagchip .x:hover { color: var(--danger); }
+  .tag-input { flex: 1; min-width: 70px; border: none; background: transparent; color: var(--text);
+    outline: none; font-size: 12px; padding: 2px; }
+  .fm-sugg { margin: -2px 0 9px 86px; display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* editor: transparent textarea over highlight layer */
+  .editor-wrap { position: relative; flex: 1; min-height: 0; }
+  .editor-wrap textarea, .md-highlight {
+    position: absolute; inset: 0; margin: 0; padding: 14px; border: 0;
     font-family: 'Consolas', 'Courier New', monospace; font-size: 13.5px; line-height: 1.6;
+    white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word; tab-size: 2;
+    overflow-y: auto;
   }
-  textarea.dragover { background: #2a3340; outline: 2px dashed var(--accent); outline-offset: -6px; }
+  .editor-wrap textarea {
+    background: transparent; color: transparent; caret-color: var(--text);
+    resize: none; outline: none; z-index: 2;
+  }
+  .editor-wrap textarea::placeholder { color: var(--muted); }
+  .editor-wrap textarea.dragover { outline: 2px dashed var(--accent); outline-offset: -6px; }
+  .md-highlight { z-index: 1; pointer-events: none; color: var(--text); background: var(--bg); }
+  /* markdown token colors */
+  .tk-head  { color: #82aaff; font-weight: 600; }
+  .tk-img   { color: #c3e88d; }
+  .tk-link  { color: #82aaff; }
+  .tk-bold  { color: #ffcb6b; font-weight: 600; }
+  .tk-code, .tk-codei { color: #f78c6c; }
+  .tk-hr    { color: #5c6370; }
+  .tk-quote { color: #8a90a0; font-style: italic; }
+  .tk-list  { color: #f78c6c; }
+  .tk-key   { color: #c792ea; }
   .preview { flex: 1; overflow-y: auto; padding: 16px 22px; }
   .preview img, .preview video { max-width: 100%; border-radius: 6px; }
   .preview pre { background: var(--panel); padding: 12px; border-radius: 6px; overflow-x: auto; }
@@ -76,8 +151,8 @@
   .preview table { border-collapse: collapse; }
   .preview th, .preview td { border: 1px solid var(--line); padding: 5px 9px; }
 
-  /* 새 글 폼 */
-  .create-form { padding: 22px; max-width: 520px; }
+  /* create form */
+  .create-form { padding: 22px; max-width: 520px; overflow-y: auto; }
   .create-form h2 { margin-top: 0; font-size: 18px; }
   .field { margin-bottom: 14px; }
   .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
@@ -92,9 +167,7 @@
   .chip:hover { color: var(--text); border-color: var(--accent); }
   .chips-hint { color: var(--muted); font-size: 11px; }
 
-  .placeholder { color: var(--muted); padding: 40px; text-align: center; margin: auto; }
-
-  /* 토스트 */
+  /* toast */
   #toast {
     position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
     background: var(--panel2); border: 1px solid var(--line); border-radius: 8px;
@@ -105,7 +178,7 @@
   #toast.ok { border-color: #3a7a3a; }
   #toast.err { border-color: var(--danger); }
 
-  /* 배포 모달 */
+  /* modal */
   .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none;
     align-items: center; justify-content: center; z-index: 200; }
   .modal-bg.show { display: flex; }
@@ -117,6 +190,16 @@
   .modal .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
   .modal .gitlog { font-family: monospace; font-size: 11.5px; color: var(--muted);
     white-space: pre-wrap; margin-top: 12px; max-height: 160px; overflow-y: auto; }
+  /* review result */
+  .review-body { max-height: 60vh; overflow-y: auto; font-size: 13px; }
+  .rv-sec { margin-bottom: 14px; }
+  .rv-sec h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+  .rv-ok { color: #6cc070; }
+  .rv-bad { color: var(--danger); }
+  .rv-warn { color: #e0b050; }
+  .rv-item { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+  .rv-item .u { flex: 1; word-break: break-all; font-family: monospace; font-size: 12px; }
+  .rv-item button { padding: 2px 8px; font-size: 11px; }
 </style>
 </head>
 <body>
@@ -124,53 +207,76 @@
 <div class="topbar">
   <span class="title">✏️ Website Editor</span>
   <span class="status" id="statusText">…</span>
-  <button id="saveBtn" disabled>저장</button>
-  <button id="publishBtn" class="primary">배포</button>
+  <button id="reviewBtn" disabled>Review</button>
+  <button id="saveBtn" disabled>Save</button>
+  <button id="publishBtn" class="primary">Deploy</button>
+  <button id="openBtn" disabled>Open</button>
 </div>
 
 <div class="main">
   <div class="sidebar">
-    <button style="width:100%" id="newBtn">+ 새 글</button>
     <div id="sidebarList"></div>
   </div>
 
   <div class="editor-pane">
     <div class="pane-head">
-      <span id="editHead">편집</span>
+      <span id="editHead">Editor</span>
       <span id="dropHint" style="margin-left:auto; color:var(--muted)"></span>
     </div>
-    <textarea id="editor" placeholder="왼쪽에서 글을 선택하거나 '+ 새 글'을 누르세요." spellcheck="false" disabled></textarea>
+    <div class="fm-head" id="fmHead" style="display:none"><span class="fm-arrow" id="fmArrow">▾</span>Frontmatter</div>
+    <div class="fm-form" id="fmForm" style="display:none"></div>
+    <div class="editor-wrap" id="editorWrap">
+      <pre class="md-highlight" id="highlight" aria-hidden="true"></pre>
+      <textarea id="editor" placeholder="Select a post on the left, or hover Works/Notes and click + to create one." spellcheck="false" disabled></textarea>
+    </div>
     <div class="create-form" id="createForm" style="display:none"></div>
   </div>
 
   <div class="preview-pane">
-    <div class="pane-head">미리보기</div>
+    <div class="pane-head">Preview</div>
     <div class="preview" id="preview"></div>
   </div>
 </div>
 
 <div id="toast"></div>
 
+<div id="ctxMenu" class="ctx-menu">
+  <div class="ctx-item ctx-danger" id="ctxDelete">Delete</div>
+</div>
+
 <div class="modal-bg" id="modalBg">
   <div class="modal">
-    <h3>배포 (커밋 · 푸시)</h3>
-    <input id="commitMsg" placeholder="커밋 메시지" value="update content">
+    <h3>Deploy (commit &middot; push)</h3>
+    <input id="commitMsg" placeholder="Commit message" value="update content">
     <div class="gitlog" id="gitlog"></div>
     <div class="row">
-      <button id="modalCancel">취소</button>
-      <button id="modalPush" class="primary">푸시</button>
+      <button id="modalCancel">Cancel</button>
+      <button id="modalPush" class="primary">Push</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="reviewBg">
+  <div class="modal" style="width:560px">
+    <h3>Review</h3>
+    <div class="review-body" id="reviewBody">Checking…</div>
+    <div class="row">
+      <button id="reviewRefresh">Re-check</button>
+      <button id="reviewClose" class="primary">Close</button>
     </div>
   </div>
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
-let DATA = null;          // /api/list 결과
+let DATA = null;          // /api/list result
 let current = null;       // { type, slug }
 let dirty = false;
-let expanded = new Set(); // 펼쳐진 카테고리 폴더 키 (type:category)
+let expanded = new Set(); // expanded category folder keys (type:category)
+let fmCurrent = null;     // frontmatter form state for the open file
+let fmCollapsed = false;  // frontmatter section collapsed?
 
-// ─── 유틸 ───
+// ─── utils ───
 function toast(msg, kind) {
   const t = $('#toast');
   t.textContent = msg; t.className = 'show ' + (kind || '');
@@ -181,26 +287,52 @@ async function api(path, opts) {
   const ct = r.headers.get('content-type') || '';
   return ct.includes('json') ? r.json() : r.text();
 }
+function escAttr(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
-// ─── 미리보기 렌더 ───
+// ─── preview render ───
 function pathPrefix() {
   if (!current) return '';
   return (current.type === 'work' ? 'works/' : 'notes/') + current.slug + '/';
 }
 function renderPreview() {
-  const raw = $('#editor').value;
-  const body = raw.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');  // frontmatter 제거
+  const body = $('#editor').value;   // body only (frontmatter lives in the form)
   let html = marked.parse(body, { breaks: true });
   const prefix = pathPrefix();
-  // 상대 이미지 경로 prefix
   html = html.replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, '$1' + prefix);
-  // .mp4 이미지를 video로
   html = html.replace(/<img([^>]*?)src="([^"]+\.mp4)"([^>]*)>/g,
     '<video src="$2" controls muted style="max-width:100%"></video>');
   $('#preview').innerHTML = html;
 }
 
-// ─── 카테고리에 현존하는 태그만 집계 ───
+// ─── markdown syntax highlight (editor overlay) ───
+function escapeHtml(s) { return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+function highlightInline(s) {
+  s = s.replace(/(!\[[^\]]*\]\([^)]*\))/g, '<span class="tk-img">$1</span>');
+  s = s.replace(/(^|[^!])(\[[^\]]*\]\([^)]*\))/g, '$1<span class="tk-link">$2</span>');
+  s = s.replace(/(\*\*[^*]+\*\*|__[^_]+__)/g, '<span class="tk-bold">$1</span>');
+  s = s.replace(/(`[^`]+`)/g, '<span class="tk-codei">$1</span>');
+  return s;
+}
+function highlightMarkdown(src) {
+  let fence = false;
+  return src.split('\n').map(line => {
+    const esc = escapeHtml(line);
+    if (/^\s*```/.test(line)) { fence = !fence; return '<span class="tk-code">' + esc + '</span>'; }
+    if (fence) return '<span class="tk-code">' + esc + '</span>';
+    if (/^---\s*$/.test(line)) return '<span class="tk-hr">' + esc + '</span>';
+    if (/^#{1,6}\s/.test(line)) return '<span class="tk-head">' + esc + '</span>';
+    if (/^>\s?/.test(line)) return '<span class="tk-quote">' + highlightInline(esc) + '</span>';
+    const h = esc.replace(/^(\s*)([-*+]|\d+\.)(\s)/, (_, sp, mk, sfx) => sp + '<span class="tk-list">' + mk + '</span>' + sfx);
+    return highlightInline(h);
+  }).join('\n');
+}
+function updateHighlight() {
+  $('#highlight').innerHTML = highlightMarkdown($('#editor').value) + '\n';
+}
+
+// ─── existing tags within a category ───
 function tagsForCategory(type, cat) {
   if (!cat) return [];
   const items = type === 'work' ? DATA.works : DATA.notes;
@@ -210,15 +342,17 @@ function tagsForCategory(type, cat) {
   return [...set].sort();
 }
 
-// ─── 사이드바 (카테고리 폴더 그룹) ───
+// ─── sidebar (category folders) ───
 function renderSidebar() {
   const el = $('#sidebarList');
   el.innerHTML = '';
   const block = (label, items, type) => {
-    const h = document.createElement('div'); h.className = 'group'; h.textContent = label;
+    const h = document.createElement('div'); h.className = 'group';
+    h.innerHTML = '<span class="glabel">' + label + '</span><span class="add" title="New ' + label.slice(0, -1) + '">+</span>';
+    h.querySelector('.add').onclick = e => { e.stopPropagation(); showCreateForm({ type }); };
     el.appendChild(h);
     const byCat = {};
-    items.forEach(it => { const c = it.category || '(기타)'; (byCat[c] = byCat[c] || []).push(it); });
+    items.forEach(it => { const c = it.category || '(none)'; (byCat[c] = byCat[c] || []).push(it); });
     Object.keys(byCat).sort().forEach(cat => {
       const key = type + ':' + cat;
       const hasCurrent = current && current.type === type && byCat[cat].some(it => it.slug === current.slug);
@@ -226,10 +360,16 @@ function renderSidebar() {
       const folder = document.createElement('div');
       folder.className = 'folder';
       folder.innerHTML = '<span class="arrow">' + (open ? '▾' : '▸') + '</span>' +
-        '<span class="fname">' + cat + '</span><span class="count">' + byCat[cat].length + '</span>';
+        '<span class="fname">' + cat + '</span>' +
+        '<span class="add" title="New in ' + cat + '">+</span>' +
+        '<span class="count">' + byCat[cat].length + '</span>';
       folder.onclick = () => {
         if (expanded.has(key)) expanded.delete(key); else expanded.add(key);
         renderSidebar();
+      };
+      folder.querySelector('.add').onclick = e => {
+        e.stopPropagation();
+        showCreateForm({ type, category: cat === '(none)' ? '' : cat });
       };
       el.appendChild(folder);
       if (open) byCat[cat].forEach(it => {
@@ -238,6 +378,7 @@ function renderSidebar() {
         d.textContent = it.title;
         if (it.draft) { const s = document.createElement('span'); s.className = 'draft'; s.textContent = 'draft'; d.appendChild(s); }
         d.onclick = () => openFile(type, it.slug);
+        d.oncontextmenu = e => { e.preventDefault(); showContextMenu(e.clientX, e.clientY, type, it.slug); };
         el.appendChild(d);
       });
     });
@@ -246,47 +387,185 @@ function renderSidebar() {
   block('Notes', DATA.notes, 'note');
 }
 
-// ─── 파일 열기 ───
+// ─── frontmatter parsing / form ───
+function splitFrontmatter(content) {
+  const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if (!m) return { fields: [], body: content };
+  const fields = [];
+  m[1].split('\n').forEach(line => {
+    const idx = line.indexOf(':');
+    if (idx > 0) fields.push({ key: line.slice(0, idx).trim(), value: line.slice(idx + 1).trim() });
+  });
+  return { fields, body: m[2] };
+}
+function fmCategory() {
+  if (!fmCurrent) return '';
+  if (fmCurrent.type === 'work') { const el = $('#fm-category'); return el ? el.value.trim() : ''; }
+  return current ? current.slug.split('/')[0] : '';   // note category = parent folder
+}
+function renderTagSuggestions() {
+  const sugg = $('#fm-tags-sugg'); if (!sugg) return;
+  const cat = fmCategory();
+  const pool = tagsForCategory(fmCurrent.type, cat).filter(t => !fmCurrent.tags.includes(t));
+  sugg.innerHTML = pool.length
+    ? pool.map(t => '<span class="chip">' + escAttr(t) + '</span>').join('')
+    : '<span class="chips-hint">' + (cat ? 'No other tags in this category' : 'Set a category to see tag suggestions') + '</span>';
+  sugg.querySelectorAll('.chip').forEach(c => c.onclick = () => addTag(c.textContent));
+}
+function renderTagEditor(focus) {
+  const box = $('#fm-tags-box'); if (!box) return;
+  box.innerHTML = fmCurrent.tags.map((t, i) =>
+    '<span class="tagchip">' + escAttr(t) + '<span class="x" data-i="' + i + '">×</span></span>').join('') +
+    '<input id="fm-tags-input" class="tag-input" placeholder="add tag…">';
+  box.querySelectorAll('.tagchip .x').forEach(x => x.onclick = () => {
+    fmCurrent.tags.splice(+x.getAttribute('data-i'), 1); dirty = true; renderTagEditor(); renderTagSuggestions();
+  });
+  const inp = $('#fm-tags-input');
+  inp.onkeydown = e => {
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(inp.value, true); }
+    else if (e.key === 'Backspace' && !inp.value && fmCurrent.tags.length) {
+      fmCurrent.tags.pop(); dirty = true; renderTagEditor(true); renderTagSuggestions();
+    }
+  };
+  // commit typed-but-not-entered text when focus leaves
+  inp.onblur = () => { if (inp.value.trim()) addTag(inp.value, false); };
+  if (focus) inp.focus();
+  renderTagSuggestions();
+}
+function addTag(v, refocus = true) {
+  v = (v || '').trim().replace(/,+$/, '').trim();
+  if (v && !fmCurrent.tags.includes(v)) { fmCurrent.tags.push(v); dirty = true; renderTagEditor(refocus); renderTagSuggestions(); }
+  else { const inp = $('#fm-tags-input'); if (inp) { inp.value = ''; if (refocus) inp.focus(); } }
+}
+// commit any pending tag-input text into fmCurrent.tags
+function flushTagInput() {
+  const inp = $('#fm-tags-input');
+  if (inp && inp.value.trim()) addTag(inp.value, false);
+}
+function buildFmForm() {
+  const { type, values, known, extra, tagKey } = fmCurrent;
+  const cats = type === 'work' ? DATA.workCategories : DATA.noteCategories;
+  const textRow = k => '<div class="fm-row"><label class="k">' + k + '</label>' +
+    '<input type="text" id="fm-' + k + '" value="' + escAttr(values[k] || '') + '"></div>';
+  const toggle = (id, on) => '<label class="toggle"><input type="checkbox" id="' + id + '"' +
+    (on ? ' checked' : '') + '><span class="track"></span></label>';
+  let html = '';
+  known.forEach(k => {
+    if (k === 'draft' || k === 'featured' || k === 'order') return;   // rendered separately below
+    if (k === tagKey) {
+      html += '<div class="fm-row"><label class="k">' + k + '</label><div class="tag-box" id="fm-tags-box"></div></div>' +
+              '<div class="fm-sugg" id="fm-tags-sugg"></div>';
+    } else if (k === 'category') {
+      html += '<div class="fm-row"><label class="k">category</label>' +
+        '<input type="text" id="fm-category" list="fmCatList" value="' + escAttr(values.category || '') + '"></div>' +
+        '<datalist id="fmCatList">' + cats.map(c => '<option value="' + escAttr(c) + '">').join('') + '</datalist>';
+    } else {
+      html += textRow(k);
+    }
+  });
+  extra.forEach(k => html += textRow(k));
+  // featured toggle — order appears inline on the same row when toggled on
+  if (known.includes('featured')) {
+    const on = values.featured === 'true';
+    html += '<div class="fm-row"><label class="k">featured</label>' + toggle('fm-featured', on) +
+      '<span class="order-inline" id="fmOrderWrap"' + (on ? '' : ' style="display:none"') + '>' +
+      '<span class="oi-label">order</span><input type="text" id="fm-order" value="' + escAttr(values.order || '') + '"></span>' +
+      '</div>';
+  }
+  // draft toggle at the very bottom
+  if (known.includes('draft')) {
+    html += '<div class="fm-row"><label class="k">draft</label>' + toggle('fm-draft', values.draft === 'true') + '</div>';
+  }
+  const form = $('#fmForm');
+  form.innerHTML = html;
+  const catEl = $('#fm-category');
+  if (catEl) catEl.oninput = () => renderTagSuggestions();
+  const featEl = $('#fm-featured');
+  if (featEl) featEl.onchange = () => { $('#fmOrderWrap').style.display = featEl.checked ? '' : 'none'; };
+  renderTagEditor();
+}
+// reassemble main.md from the form + body textarea
+function assembleContent() {
+  const order = fmCurrent.known.concat(fmCurrent.extra);
+  const lines = order.map(k => {
+    let v;
+    if (k === fmCurrent.tagKey) v = fmCurrent.tags.join(', ');
+    else {
+      const el = document.getElementById('fm-' + k);
+      if (!el) v = fmCurrent.values[k] || '';
+      else if (el.type === 'checkbox') v = el.checked ? 'true' : 'false';
+      else v = el.value;
+    }
+    return k + ': ' + v;
+  });
+  return '---\n' + lines.join('\n') + '\n---\n\n' + $('#editor').value;
+}
+
+// ─── open a file ───
 async function openFile(type, slug) {
-  if (dirty && !confirm('저장하지 않은 변경이 있습니다. 이동할까요?')) return;
+  if (dirty && !confirm('You have unsaved changes. Discard and switch?')) return;
   const res = await api('/api/file?type=' + type + '&slug=' + encodeURIComponent(slug));
-  if (res.error) return toast('불러오기 실패', 'err');
+  if (res.error) return toast('Failed to load', 'err');
   current = { type, slug };
   $('#createForm').style.display = 'none';
-  const ta = $('#editor');
-  ta.style.display = ''; ta.disabled = false; ta.value = res.content;
+  $('#fmHead').style.display = '';
+  $('#fmForm').style.display = fmCollapsed ? 'none' : '';
+  $('#fmArrow').textContent = fmCollapsed ? '▸' : '▾';
+  $('#editorWrap').style.display = '';
+
+  const { fields, body } = splitFrontmatter(res.content);
+  const values = {}; const present = [];
+  fields.forEach(f => { if (!(f.key in values)) present.push(f.key); values[f.key] = f.value; });
+  const known = type === 'work'
+    ? ['title', 'category', 'thumbnail', 'date', 'tools', 'featured', 'order', 'draft', 'link']
+    : ['title', 'date', 'tags', 'featured', 'order', 'draft'];
+  const tagKey = type === 'work' ? 'tools' : 'tags';
+  const extra = present.filter(k => !known.includes(k));
+  fmCurrent = { type, values, known, extra, tagKey, tags: (values[tagKey] || '').split(',').map(s => s.trim()).filter(Boolean) };
+  buildFmForm();
+
+  const ed = $('#editor');
+  ed.disabled = false; ed.value = body.replace(/^\n+/, ''); updateHighlight();
   $('#editHead').textContent = (type === 'work' ? 'works/' : 'notes/') + slug + '/main.md';
-  $('#dropHint').textContent = '이미지를 끌어다 놓으면 업로드됩니다';
+  $('#dropHint').textContent = 'Drag & drop or paste (Ctrl+V) to attach images/videos';
   $('#saveBtn').disabled = false;
+  $('#reviewBtn').disabled = false;
+  $('#openBtn').disabled = false;
   dirty = false;
   renderPreview(); renderSidebar();
 }
 
-// ─── 저장 ───
+// ─── save ───
 async function save() {
   if (!current) return;
+  flushTagInput();   // capture tag text typed without pressing Enter
   $('#saveBtn').disabled = true;
   const res = await api('/api/save', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: current.type, slug: current.slug, content: $('#editor').value }),
+    body: JSON.stringify({ type: current.type, slug: current.slug, content: assembleContent() }),
   });
   $('#saveBtn').disabled = false;
-  if (res.ok) { dirty = false; toast('저장 + sync 완료', 'ok'); refreshStatus(); loadList(true); }
-  else toast('저장 실패:\n' + (res.output || res.error || ''), 'err');
+  if (res.ok) { dirty = false; toast('Saved + synced', 'ok'); refreshStatus(); loadList(true); }
+  else toast('Save failed:\n' + (res.output || res.error || ''), 'err');
 }
 
-// ─── 새 글 폼 ───
-function showCreateForm() {
-  if (!DATA) { toast('목록을 불러오지 못했습니다. http://localhost:4000 으로 여세요', 'err'); return; }
+// ─── create form (preset: { type, category }) ───
+function showCreateForm(preset = {}) {
+  if (!DATA) { toast('List not loaded. Open http://localhost:4000', 'err'); return; }
   current = null;
-  $('#editor').style.display = 'none';
+  $('#fmHead').style.display = 'none';
+  $('#fmForm').style.display = 'none';
+  $('#editorWrap').style.display = 'none';
   $('#saveBtn').disabled = true;
+  $('#reviewBtn').disabled = true;
+  $('#openBtn').disabled = true;
   $('#dropHint').textContent = '';
-  $('#editHead').textContent = '새 글';
+  $('#editHead').textContent = 'New post';
   $('#preview').innerHTML = '';
   renderSidebar();
 
-  let type = 'work';
+  let type = preset.type || 'work';
+  let applied = false;   // preset.category applied once
   const f = $('#createForm');
   f.style.display = '';
   const slugify = (s, kebab) => {
@@ -298,25 +577,25 @@ function showCreateForm() {
     const isWork = type === 'work';
     const cats = isWork ? DATA.workCategories : DATA.noteCategories;
     f.innerHTML = `
-      <h2>새 ${isWork ? 'Work' : 'Note'}</h2>
-      <div class="field"><label>유형</label>
+      <h2>New ${isWork ? 'Work' : 'Note'}</h2>
+      <div class="field"><label>Type</label>
         <span class="seg">
           <button id="tW" class="${isWork ? 'on' : ''}">Work</button>
           <button id="tN" class="${!isWork ? 'on' : ''}">Note</button>
         </span>
       </div>
-      <div class="field"><label>제목</label><input id="cTitle" placeholder="Project Title"></div>
-      <div class="field"><label>슬러그 (폴더명)</label><input id="cSlug" placeholder="auto"></div>
-      <div class="field"><label>카테고리</label>
-        <input id="cCat" list="catList" placeholder="${isWork ? 'Game Art' : 'Houdini'}">
-        <datalist id="catList">${cats.map(c => '<option value="' + c + '">').join('')}</datalist>
+      <div class="field"><label>Title</label><input id="cTitle"></div>
+      <div class="field"><label>Slug (folder name)</label><input id="cSlug"></div>
+      <div class="field"><label>Category</label>
+        <input id="cCat" list="catList">
+        <datalist id="catList">${cats.map(c => '<option value="' + escAttr(c) + '">').join('')}</datalist>
       </div>
-      <div class="field"><label>${isWork ? '툴 (쉼표 구분)' : '태그 (쉼표 구분)'}</label>
-        <input id="cTags" placeholder="${isWork ? 'Houdini, Unreal Engine' : 'VEX, TIP'}">
+      <div class="field"><label>${isWork ? 'Tools (comma separated)' : 'Tags (comma separated)'}</label>
+        <input id="cTags">
         <div class="chips" id="tagChips"></div>
       </div>
       <div class="row" style="display:flex; gap:8px;">
-        <button class="primary" id="cCreate">생성</button>
+        <button class="primary" id="cCreate">Create</button>
       </div>`;
     $('#tW').onclick = () => { type = 'work'; render(); };
     $('#tN').onclick = () => { type = 'note'; render(); };
@@ -328,9 +607,9 @@ function showCreateForm() {
       const cat = $('#cCat').value.trim();
       const chipsEl = $('#tagChips');
       const pool = tagsForCategory(type, cat);
-      if (!cat) { chipsEl.innerHTML = '<span class="chips-hint">카테고리를 선택하면 해당 태그가 표시됩니다</span>'; return; }
-      if (!pool.length) { chipsEl.innerHTML = '<span class="chips-hint">이 카테고리엔 기존 태그가 없습니다 — 직접 입력하세요</span>'; return; }
-      chipsEl.innerHTML = pool.map(t => '<span class="chip">' + t + '</span>').join('');
+      if (!cat) { chipsEl.innerHTML = '<span class="chips-hint">Set a category to see tag suggestions</span>'; return; }
+      if (!pool.length) { chipsEl.innerHTML = '<span class="chips-hint">No existing tags in this category — type your own</span>'; return; }
+      chipsEl.innerHTML = pool.map(t => '<span class="chip">' + escAttr(t) + '</span>').join('');
       chipsEl.querySelectorAll('.chip').forEach(c => c.onclick = () => {
         const inp = $('#cTags');
         const arr = inp.value.split(',').map(s => s.trim()).filter(Boolean);
@@ -339,6 +618,7 @@ function showCreateForm() {
       });
     };
     $('#cCat').oninput = updateChips;
+    if (!applied && preset.category) { $('#cCat').value = preset.category; applied = true; }
     updateChips();
     $('#cCreate').onclick = doCreate;
   };
@@ -347,84 +627,215 @@ function showCreateForm() {
     const slug = $('#cSlug').value.trim();
     const category = $('#cCat').value.trim();
     const tags = $('#cTags').value.trim();
-    if (!title || !slug || !category) return toast('제목·슬러그·카테고리는 필수입니다', 'err');
+    if (!title || !slug || !category) return toast('Title, slug and category are required', 'err');
     const body = { type, title, slug, category };
     if (type === 'work') body.tools = tags; else body.tags = tags;
     const res = await api('/api/create', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     });
-    if (res.ok) { toast('생성 완료', 'ok'); await loadList(true); openFile(type, res.slug); refreshStatus(); }
-    else toast('생성 실패:\n' + (res.error || ''), 'err');
+    if (res.ok) { toast('Created', 'ok'); await loadList(true); openFile(type, res.slug); refreshStatus(); }
+    else toast('Create failed:\n' + (res.error || ''), 'err');
   };
   render();
 }
 
-// ─── 이미지 드래그앤드롭 ───
+// ─── attach images/videos (drag & drop + paste) ───
 const ta = $('#editor');
+const MEDIA_RE = /\.(png|jpe?g|gif|webp|avif|mp4|webm|mov)$/i;
+function extFromType(type) {
+  return ({ 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp',
+    'image/avif': 'avif', 'video/mp4': 'mp4', 'video/webm': 'webm' })[type] || (type && type.split('/')[1]) || 'bin';
+}
+async function attachFile(file, paste) {
+  if (!current) { toast('Open or create a post first', 'err'); return; }
+  let name = file.name || '';
+  // pasted screenshots are always image.png → unique name to avoid overwriting existing files
+  if (paste && (!name || /^image\.(png|jpe?g|gif|webp)$/i.test(name))) {
+    const ts = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
+    const ext = (name.match(/\.([a-z0-9]+)$/i) || [])[1] || extFromType(file.type);
+    name = 'paste-' + ts + '.' + ext;
+  }
+  if (!name) return;
+  const buf = await file.arrayBuffer();
+  const q = '?type=' + current.type + '&slug=' + encodeURIComponent(current.slug) + '&name=' + encodeURIComponent(name);
+  const res = await api('/api/upload' + q, { method: 'POST', body: buf });
+  if (!res.ok) { toast('Upload failed', 'err'); return; }
+  // wrap in <> when the filename has spaces, otherwise markdown breaks
+  const ref = /\s/.test(res.name) ? '<' + res.name + '>' : res.name;
+  const md = '![](' + ref + ')\n';
+  const s = ta.selectionStart;
+  ta.value = ta.value.slice(0, s) + md + ta.value.slice(ta.selectionEnd);
+  ta.selectionStart = ta.selectionEnd = s + md.length;
+  dirty = true; updateHighlight(); renderPreview();
+  toast('Attached: ' + res.name, 'ok');
+}
+
 ta.addEventListener('dragover', e => { e.preventDefault(); ta.classList.add('dragover'); });
 ta.addEventListener('dragleave', () => ta.classList.remove('dragover'));
 ta.addEventListener('drop', async e => {
   e.preventDefault(); ta.classList.remove('dragover');
-  if (!current) return toast('먼저 글을 저장/선택하세요', 'err');
-  const files = [...e.dataTransfer.files];
-  for (const file of files) {
-    const buf = await file.arrayBuffer();
-    const q = '?type=' + current.type + '&slug=' + encodeURIComponent(current.slug) + '&name=' + encodeURIComponent(file.name);
-    const res = await api('/api/upload' + q, { method: 'POST', body: buf });
-    if (res.ok) {
-      const md = '![](' + res.name + ')\n';
-      const s = ta.selectionStart;
-      ta.value = ta.value.slice(0, s) + md + ta.value.slice(ta.selectionEnd);
-      ta.selectionStart = ta.selectionEnd = s + md.length;
-      dirty = true; renderPreview();
-      toast('업로드: ' + res.name, 'ok');
-    } else toast('업로드 실패', 'err');
-  }
+  for (const file of [...e.dataTransfer.files]) await attachFile(file, false);
+});
+ta.addEventListener('paste', async e => {
+  const cd = e.clipboardData;
+  if (!cd) return;
+  const files = [...cd.files];
+  if (!files.length) for (const it of cd.items) if (it.kind === 'file') { const f = it.getAsFile(); if (f) files.push(f); }
+  const media = files.filter(f => /^(image|video)\//.test(f.type) || MEDIA_RE.test(f.name || ''));
+  if (!media.length) return;  // plain text paste falls through
+  e.preventDefault();
+  for (const file of media) await attachFile(file, true);
 });
 
-// ─── 상태 ───
+// ─── status ───
 async function refreshStatus() {
   const s = await api('/api/status');
-  const parts = [];
-  parts.push('변경 ' + s.changed + '건');
-  if (s.unpushed != null) parts.push('미푸시 ' + s.unpushed + '건');
+  const parts = [s.changed + ' changed'];
+  if (s.unpushed != null) parts.push(s.unpushed + ' unpushed');
   $('#statusText').textContent = parts.join(' · ');
 }
 
-// ─── 배포 모달 ───
+// ─── review modal ───
+function renderReview(r) {
+  const body = $('#reviewBody');
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  let h = '';
+
+  h += '<div class="rv-sec"><h4>Images — missing</h4>' +
+    (r.images.missing.length
+      ? r.images.missing.map(n => '<div class="rv-item rv-bad">✗ <span class="u">' + esc(n) + '</span> (referenced but not in folder)</div>').join('')
+      : '<div class="rv-ok">✓ none</div>') + '</div>';
+  h += '<div class="rv-sec"><h4>Images — unused</h4>' +
+    (r.images.orphan.length
+      ? r.images.orphan.map(n => '<div class="rv-item rv-warn">• <span class="u">' + esc(n) + '</span>' +
+          '<button data-del="' + esc(n) + '">Delete</button></div>').join('')
+      : '<div class="rv-ok">✓ none</div>') + '</div>';
+
+  h += '<div class="rv-sec"><h4>Frontmatter</h4>' +
+    (r.frontmatter.missing.length
+      ? r.frontmatter.missing.map(f => '<div class="rv-item rv-bad">✗ <span class="u">' + esc(f) + '</span> missing/empty</div>').join('')
+      : '<div class="rv-ok">✓ all required fields present</div>') +
+    r.frontmatter.notes.map(n => '<div class="rv-item rv-warn">⚠ ' + esc(n) + '</div>').join('') + '</div>';
+
+  h += '<div class="rv-sec"><h4>Video size (≤ 50MB)</h4>' +
+    (r.videos.length
+      ? r.videos.map(v => '<div class="rv-item ' + (v.ok ? 'rv-ok' : 'rv-bad') + '">' + (v.ok ? '✓' : '✗') +
+          ' <span class="u">' + esc(v.name) + '</span> ' + v.sizeMB + 'MB' +
+          '<button data-compress="' + esc(v.name) + '">Compress</button></div>').join('')
+      : '<div class="rv-ok">no videos</div>') + '</div>';
+
+  const lcls = { ok: 'rv-ok', blocked: 'rv-warn', bad: 'rv-bad' };
+  const lmark = { ok: '✓', blocked: '⚠', bad: '✗' };
+  const lnote = { ok: '', blocked: ' (blocked — may be fine in a browser)', bad: ' (unreachable)' };
+  h += '<div class="rv-sec"><h4>Links</h4>' +
+    (r.links.length
+      ? r.links.map(l => '<div class="rv-item ' + lcls[l.state] + '">' + lmark[l.state] +
+          ' <span class="u">' + esc(l.url) + '</span> ' + (l.status || 'no response') + lnote[l.state] + '</div>').join('')
+      : '<div class="rv-ok">no links</div>') + '</div>';
+
+  body.innerHTML = h;
+  body.querySelectorAll('[data-del]').forEach(btn => btn.onclick = async () => {
+    const name = btn.getAttribute('data-del');
+    btn.disabled = true;
+    await api('/api/delete?type=' + current.type + '&slug=' + encodeURIComponent(current.slug) + '&name=' + encodeURIComponent(name), { method: 'POST' });
+    toast('Deleted: ' + name, 'ok');
+    runReview();
+  });
+  body.querySelectorAll('[data-compress]').forEach(btn => btn.onclick = async () => {
+    const name = btn.getAttribute('data-compress');
+    btn.disabled = true; btn.textContent = 'Compressing…';
+    const res = await api('/api/compress?type=' + current.type + '&slug=' + encodeURIComponent(current.slug) + '&name=' + encodeURIComponent(name), { method: 'POST' });
+    if (res.ok) { toast('Compressed: ' + res.beforeMB + 'MB → ' + res.afterMB + 'MB', 'ok'); refreshStatus(); runReview(); }
+    else { toast('Compress failed: ' + (res.error || ''), 'err'); btn.disabled = false; btn.textContent = 'Compress'; }
+  });
+}
+async function runReview() {
+  if (!current) return;
+  $('#reviewBody').textContent = 'Checking… (link checks may take a few seconds)';
+  const r = await api('/api/review?type=' + current.type + '&slug=' + encodeURIComponent(current.slug));
+  if (r.error) { $('#reviewBody').textContent = 'Review failed: ' + r.error; return; }
+  renderReview(r);
+}
+$('#openBtn').onclick = () => {
+  if (!current) return;
+  const url = (current.type === 'work' ? 'work.html?id=' : 'blog.html?id=') + encodeURIComponent(current.slug);
+  window.open(url, '_blank');
+};
+
+// ─── delete (right-click a list item) ───
+async function deletePage(type, slug) {
+  if (!confirm("Delete '" + slug + "'?\nThe folder and all its images will be permanently removed.")) return;
+  const res = await api('/api/delete-page?type=' + type + '&slug=' + encodeURIComponent(slug), { method: 'POST' });
+  if (!res.ok) { toast('Delete failed: ' + (res.error || ''), 'err'); return; }
+  toast('Deleted', 'ok');
+  if (current && current.type === type && current.slug === slug) {
+    current = null; dirty = false;
+    $('#fmHead').style.display = 'none';
+    $('#fmForm').style.display = 'none';
+    const ed = $('#editor'); ed.value = ''; ed.disabled = true; updateHighlight();
+    $('#editHead').textContent = 'Editor';
+    $('#dropHint').textContent = '';
+    $('#preview').innerHTML = '';
+    $('#saveBtn').disabled = $('#reviewBtn').disabled = $('#openBtn').disabled = true;
+  }
+  loadList(); refreshStatus();
+}
+let ctxTarget = null;
+function showContextMenu(x, y, type, slug) {
+  ctxTarget = { type, slug };
+  const m = $('#ctxMenu');
+  m.style.left = x + 'px'; m.style.top = y + 'px';
+  m.classList.add('show');
+}
+function hideContextMenu() { $('#ctxMenu').classList.remove('show'); }
+document.addEventListener('click', hideContextMenu);
+document.addEventListener('scroll', hideContextMenu, true);
+$('#ctxDelete').onclick = () => { const t = ctxTarget; if (t) deletePage(t.type, t.slug); };
+$('#reviewBtn').onclick = () => { $('#reviewBg').classList.add('show'); runReview(); };
+$('#reviewRefresh').onclick = runReview;
+$('#reviewClose').onclick = () => $('#reviewBg').classList.remove('show');
+
+// ─── deploy modal ───
 $('#publishBtn').onclick = () => { $('#gitlog').textContent = ''; $('#modalBg').classList.add('show'); };
 $('#modalCancel').onclick = () => $('#modalBg').classList.remove('show');
 $('#modalPush').onclick = async () => {
-  $('#modalPush').disabled = true; $('#gitlog').textContent = '배포 중…';
+  $('#modalPush').disabled = true; $('#gitlog').textContent = 'Deploying…';
   const res = await api('/api/publish', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message: $('#commitMsg').value }),
   });
   $('#modalPush').disabled = false;
   $('#gitlog').textContent = res.output || res.error || '';
-  if (res.ok) { toast('배포 완료', 'ok'); refreshStatus(); }
-  else toast('배포 실패 (로그 확인)', 'err');
+  if (res.ok) { toast('Deployed', 'ok'); refreshStatus(); }
+  else toast('Deploy failed (see log)', 'err');
 };
 
-// ─── 초기화 ───
+// ─── init ───
 async function loadList(keep) {
   try {
     DATA = await api('/api/list');
   } catch (e) {
     $('#sidebarList').innerHTML =
       '<div style="padding:12px;color:var(--danger);font-size:12px;line-height:1.6">' +
-      '⚠ 서버에 연결할 수 없습니다.<br><br>' +
-      '주소창에 <b>http://localhost:4000</b> 을 입력해<br>여세요. ' +
-      '(파일을 더블클릭해서 열면 동작하지 않습니다)<br><br>' +
-      '서버가 꺼져 있으면 터미널에서<br><code>node editor.js</code> 를 실행하세요.</div>';
-    toast('서버 연결 실패 — http://localhost:4000 으로 여세요', 'err');
+      '⚠ Cannot reach the server.<br><br>' +
+      'Type <b>http://localhost:4000</b> in the address bar. ' +
+      '(Double-clicking the file will not work.)<br><br>' +
+      'If the server is off, run<br><code>node editor.js</code> in a terminal.</div>';
+    toast('Connection failed — open http://localhost:4000', 'err');
     return;
   }
   renderSidebar();
 }
-$('#newBtn').onclick = showCreateForm;
 $('#saveBtn').onclick = save;
-ta.addEventListener('input', () => { dirty = true; renderPreview(); });
+$('#fmHead').onclick = () => {
+  fmCollapsed = !fmCollapsed;
+  $('#fmForm').style.display = fmCollapsed ? 'none' : '';
+  $('#fmArrow').textContent = fmCollapsed ? '▸' : '▾';
+};
+$('#fmForm').addEventListener('input', () => { dirty = true; });
+$('#fmForm').addEventListener('change', () => { dirty = true; });
+ta.addEventListener('input', () => { dirty = true; updateHighlight(); renderPreview(); });
+ta.addEventListener('scroll', () => { const hl = $('#highlight'); hl.scrollTop = ta.scrollTop; hl.scrollLeft = ta.scrollLeft; });
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); if (current) save(); }
 });
