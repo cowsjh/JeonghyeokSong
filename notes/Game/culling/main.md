@@ -29,7 +29,7 @@ tags: optimization
 
 ## Frunstum, Occlusion
 
-![alt text](image.png) | ![alt text](image-1.png) |
+![alt text](image.webp) | ![alt text](image-1.webp) |
 --- | --- |
 Frustum | Frustum + Occlusion
 
@@ -52,7 +52,7 @@ Volume -> Cull Distance Volume
 ```
 
 여러 Cull Distance Pair를 만들어 다양한 크기의 오브젝트를 컬링한다.
-![alt text](examplescenecdvvalues.png)
+![alt text](examplescenecdvvalues.webp)
 
 - 약 200 유닛 오브젝트 + 카메라 거리 1000 유닛 이상 컬링됩니다.
 - 약 500 유닛 오브젝트 + 카메라 거리 2000 유닛 이상 컬링됩니다.
@@ -74,6 +74,6 @@ build > light
 
 Show > Advanced > Precomputed Visibility 
 ```
-![alt text](image-2.png)
+![alt text](image-2.webp)
 >[!tip]
 >r.ShowRelevantPrecomputedVisibilityCells 을 사용하면 카메라 가까이에 있는 셀만 표시된다.

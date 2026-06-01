@@ -15,7 +15,7 @@ series: Game Optimization
 
 ---
 
-![](image-3.png)
+![](image-3.webp)
 
 병목 현상이 일어날 수 있는 단계:
 
@@ -52,8 +52,8 @@ series: Game Optimization
     - No Transparent support
     - 다양한 쉐이더는 문제가 될 수 있다.
 
-![엔진은 두 방법을 같이 쓴다. opaque - Deferred, transparent - Forward](image-4.png)
+![엔진은 두 방법을 같이 쓴다. opaque - Deferred, transparent - Forward](image-4.webp)
 
-![Shader Complexity 디버그 모드에서 Transparent 메테리얼을 가진 오브젝트가 분홍색으로 보이는 모습](image-5.png)
+![Shader Complexity 디버그 모드에서 Transparent 메테리얼을 가진 오브젝트가 분홍색으로 보이는 모습](image-5.webp)
 
 엔진에서 Transparent 쉐이더는 라이트 까지 같이 계산 하기 때문에 비교적으로 비싸게 나오지만, 실제론 그렇지 않은 경우가 있다.

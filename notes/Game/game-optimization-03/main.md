@@ -9,7 +9,7 @@ series: Game Optimization
 
 ---
 
-![](image-6.png)
+![](image-6.webp)
 
 1. 하드웨어의 기준을 정하기
     - 타겟 기기 - 모바일, 콘솔, PC
@@ -20,7 +20,7 @@ series: Game Optimization
     - UI, 에셋, …
 4. 실시간 Budget 추적 하기
 
-![](image-7.png)
+![](image-7.webp)
 
 ## 퍼포먼스 측정
 

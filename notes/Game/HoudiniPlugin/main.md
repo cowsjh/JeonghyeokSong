@@ -21,7 +21,7 @@ Unreal Plugin : `C:\Program Files\Epic Games\UE_X.Y\Engine\Plugins\Runtime`
 3. `HoudiniEngineForUnreal-ContentExamples\Plugins\Runtime` HoudiniEngineExample 복사
 4. `C:\Program Files\Epic Games\UE_X.Y\Engine\Plugins\Runtime` 또는 개인 프로젝트 `Plugins\Runtime` 에 붙여 넣기
 5.`Menu` > `Edit` > `Plugins` > `HoudiniEngineExamples` - 재시작
-    ![alt text](image-1.png)
+    ![alt text](image-1.webp)
 6. `Menu` > `Houdini Engine` > `Browse Contents Examples...`
 
 ## Sync

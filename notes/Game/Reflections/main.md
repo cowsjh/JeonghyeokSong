@@ -38,7 +38,7 @@ Project Setting > Reflection Capture Resolution
 기본적으로 큰 것들을 여러개 배치해 원하는 지역을 덮고 반사성이 높은 객체에 작은 것들을 배치한다.
 겹치는 개수만큼 블렌딩 연산을 하기 때문에 염두해두고 배치 한다.
 
-![alt text](image.png)
+![alt text](image.webp)
 
 ### Planar Reflections
 
@@ -65,5 +65,5 @@ reflection capture는 레벨을 로딩할 때 발생한다. 캡쳐할 것이 많
 ### Skylight
 
 skylight 에도 reflection 캡쳐가 존재한다.
-![alt text](image-1.png)
+![alt text](image-1.webp)
 150000 유닛 을 클립 하고 캡쳐 하기때문에 스카이 큐브맵만 캡쳐한다. 오브젝트 주위에 reflection capture 액터가 없다면 skylight의 큐브맵을 reflection으로 사용 하게 된다.

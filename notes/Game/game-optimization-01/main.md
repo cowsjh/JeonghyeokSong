@@ -11,7 +11,7 @@ series: Game Optimization
 
 최적화는 성능을 측정하는 것에서 부터 시작 한다.
 
-![](image-1.png)
+![](image-1.webp)
 
 ### 최적화에는 크게 두가지가 존재
 
@@ -24,6 +24,6 @@ series: Game Optimization
     - 병목현상 분석
     - 전체적인 성능 향상
 
-![](image-2.png)
+![](image-2.webp)
 
 최적화는 모든 과정에서 진행 되어야 한다.

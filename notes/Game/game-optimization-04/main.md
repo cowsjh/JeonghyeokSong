@@ -14,7 +14,7 @@ series: Game Optimization
 
 **CPU, GPU bound**
 - 퍼포먼스의 차이로 한쪽의 프로세서가 다른 한쪽의 진행을 기다리며 나타나는 병목 현상.
-![alt text](image.png)
+![alt text](image.webp)
 
 GPU bound 확인 법
 ```
@@ -23,14 +23,14 @@ GPU bound 확인 법
 3. 창 해상도를 줄인다.
 4. 성능이 향상된다면 GPU bound
 ```
-![alt text](msedge_RnoiCNYD0B.png)
+![alt text](msedge_RnoiCNYD0B.webp)
 
 editor 밖에서 standalone 모드로 실행하는 법
 ```
 툴바에서 Platforms -> Window -> Package Project
 ```
 
-![alt text](msedge_BdaTdiTdet.png)
+![alt text](msedge_BdaTdiTdet.webp)
 ```
 Frame : 전체 프레임 처리 시간.
 Game : CPU의 게임 스레드 에서 게임 로직을 처리하는데 걸리는 시간
@@ -45,17 +45,17 @@ shader 에서 적용 되는 **World Position Offset**
 ```
 View mode -> Nanite Visulization -> EvaluateWPO
 ```
-![alt text](image-1.png)
+![alt text](image-1.webp)
 
 ### pixel programing
 빨간 색이 연산 많은 곳
 ```
 View mode -> Nanite Visulization -> Pixel Programmable
 ```
-![alt text](image-4.png)
+![alt text](image-4.webp)
 
 
-![alt text](UnrealEditor_UhOoaNTdPB.png)|![alt text](UnrealEditor_QcnFdLc06o.png) |![alt text](image-3.png)|
+![alt text](UnrealEditor_UhOoaNTdPB.webp)|![alt text](UnrealEditor_QcnFdLc06o.webp) |![alt text](image-3.webp)|
 --- | WPO 최적화 | PDO off |
 
 쉐이더 단계 에서 최적화를 했는데 Draw 콜이 왜 낮아지나 싶지만,

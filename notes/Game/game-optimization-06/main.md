@@ -12,7 +12,7 @@ draft: flase
 ---
 ## GPU Bound
 GPU 병목이 발견 될시 지오메트리 또는 쉐이더(포스트 프로세싱) 두가지의 방향을 잡을 수 있다. 먼저 현재 하드웨어가 처리 할 수 있는 폴리곤 카운트를 기준으로 둘중 하나를 확인해 보면 된다.
-![alt text](image.png)
+![alt text](image.webp)
 
 ## GPU Bound with High Polygon Count
 

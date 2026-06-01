@@ -17,7 +17,7 @@ DitherTemporalAA 는 **시간적 데이터**를 기반으로 생성되고 패턴
 ```
 Detail -> Blend Node -> Masked
 ```
-![alt text](image.png)
+![alt text](image.webp)
 
 ### Use case
 

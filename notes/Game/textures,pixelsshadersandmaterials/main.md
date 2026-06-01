@@ -22,7 +22,7 @@ tags: optimization, Unreal Engine
 - 모든 사본 이미지는 텍스쳐에 저장된다.
 
 밉맵이 없다면 먼 거리의 텍스쳐는 노이즈 처럼 보이는 현상이 일어난다. 폴리곤의 오버쉐이딩 같은 느낌. 밉맵은 블렌딩되어 적용된다.
-![alt text](image.png) | ![alt text](msedge_5WwuiHeqQO.png) |
+![alt text](image.webp) | ![alt text](msedge_5WwuiHeqQO.webp) |
 --- | --- |
 mipmap 적용, 미적용 | 블렌딩 적용 방식 |
 

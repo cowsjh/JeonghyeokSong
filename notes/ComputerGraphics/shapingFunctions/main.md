@@ -99,7 +99,7 @@ float triangle = abs(frac(t * freq) * 2.0 - 1.0);
 ```
 ---
 ## Sine-based
-![alt text](image-1.png)
+![alt text](image-1.webp)
 $$
 f(t) = \sin(\pi t)
 $$

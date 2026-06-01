@@ -14,5 +14,5 @@ Profiling 프로그램
 
 ### Dev Build
 먼저 Unreal Editor 에서 Development 모드로 빌드를 진행한다.
-![](paste-20260601114522.png)
+![](paste-20260601114522.webp)
 

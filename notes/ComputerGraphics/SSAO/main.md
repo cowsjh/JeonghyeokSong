@@ -19,4 +19,4 @@ SSAO는 [Deferred Rendering](../../Game/game-optimization-02/main.md#deferred-re
 ### Unreal Engine 4
 샘플을 단일 점으로 쓰지 않고, 두 점을 한 쌍으로 연산한다. 샘플을 실제 표면에 투영하여 기준 점에서부터 두 벡터의 각도를 계산한다.
 적은 수의 샘플로 좋은 AO를 얻을 수 있다.
-![alt text](image.png)
+![alt text](image.webp)

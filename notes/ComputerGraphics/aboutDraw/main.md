@@ -10,7 +10,7 @@ tags: optimization, Rendering
 ## Draw ?
 
 Draw 는 CPU 가 GPU 에게 특정한 오브젝트를 화면에 렌더 하는것을 명령하고 그리는 것 언리얼은 기본적으로 수많은 렌더 패스를 수행한다. 지오메트리가 아니더라도 하늘, 대기 산란, post-processing, 에디터 UI 등 화면상 렌더되는 것은 전부 포함 된다.
-![alt text](image.png)
+![alt text](image.webp)
 
 ## Draw call ?
 CPU가 GPU API에게 무엇을 어떻게 그릴지 알려주는 것. 각 드로우 콜에는 텍스쳐, 셰이더 및 버퍼에 대한 정보가 있음.

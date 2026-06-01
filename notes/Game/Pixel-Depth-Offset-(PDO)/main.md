@@ -14,7 +14,7 @@ Pixel Depth Offset (PDO) 는 depth buffer 에 적용 되는 픽셀의 Depth 값�
 ## Use Case
 
 통상적으로 [DitherTemporalAA](../DitherTemporalAA/DitherTemporalAA.md) 노드와 함께 사용하며 겹쳐있는 메쉬를 블렌딩 할때 쓴다.
-![alt text](UnrealEditor_mY40lC1jo5.png)
+![alt text](UnrealEditor_mY40lC1jo5.webp)
 
 
 

@@ -22,7 +22,7 @@ tags: Unreal Engine, Rendering, shading
     - `DirectX` > `HLSL`
 
 Shader Complexity 뷰에서 봤을 때 하단 바를 보면 현재 십자선을 기준으로 PS(Pixel Shader) VS(Vertex Shader) 의 복잡도를 보여준다.
-![alt text](image-3.png)
+![alt text](image-3.webp)
 
 복잡한 PS는 pixel 단계에서 연산이 되기 때문에 pixel 에 적게 노출 되는, 멀리 있는 오브젝트에 있는 편이 낫다.
 
@@ -48,7 +48,7 @@ Window > Shader Code > HLSL Code
 USF 템플릿 경로 : `C:\Program Files\Epic Games\UE_5.6\Engine\Shaders\Private`
 
 이것들이 전부 제공하는 템플릿이고 사용자가 원하는 쉐이딩 모델 템플릿을 추가 해서 늘릴 수도 있다.
-![alt text](image-1.png)
+![alt text](image-1.webp)
 
 ## Materials
 머티리얼은 대부분 Physical Based Rendering (PBR) 기반의 통합된 쉐이딩 파이프라인을 가진다.
@@ -58,8 +58,8 @@ USF 템플릿 경로 : `C:\Program Files\Epic Games\UE_5.6\Engine\Shaders\Privat
 2. 일관적이고 예측 가능한 파이프 라인 구축 가능.
 3. G-buffer 상속에 대한 제약
 PBR은 거의 모든 재질이 roughness 와 metalic으로 조절이 가능하다.
-![alt text](image-2.png)
+![alt text](image-2.webp)
 
 
 stats 창을 보면 shader 가 얼마나 연산하는지 알수 있다 보통 100~300
-![alt text](image-4.png)
+![alt text](image-4.webp)

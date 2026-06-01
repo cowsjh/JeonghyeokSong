@@ -202,7 +202,7 @@ SSAO는 [Deferred Rendering](../../Game/game-optimization-02/main.md#deferred-re
 ### Unreal Engine 4
 샘플을 단일 점으로 쓰지 않고, 두 점을 한 쌍으로 연산한다. 샘플을 실제 표면에 투영하여 기준 점에서부터 두 벡터의 각도를 계산한다.
 적은 수의 샘플로 좋은 AO를 얻을 수 있다.
-![alt text](image.png)`,
+![alt text](image.webp)`,
 
   'ComputerGraphics/aboutDraw': `---
 title: Draw Call
@@ -216,7 +216,7 @@ tags: optimization, Rendering
 ## Draw ?
 
 Draw 는 CPU 가 GPU 에게 특정한 오브젝트를 화면에 렌더 하는것을 명령하고 그리는 것 언리얼은 기본적으로 수많은 렌더 패스를 수행한다. 지오메트리가 아니더라도 하늘, 대기 산란, post-processing, 에디터 UI 등 화면상 렌더되는 것은 전부 포함 된다.
-![alt text](image.png)
+![alt text](image.webp)
 
 ## Draw call ?
 CPU가 GPU API에게 무엇을 어떻게 그릴지 알려주는 것. 각 드로우 콜에는 텍스쳐, 셰이더 및 버퍼에 대한 정보가 있음.
@@ -519,7 +519,7 @@ float triangle = abs(frac(t * freq) * 2.0 - 1.0);
 \`\`\`
 ---
 ## Sine-based
-![alt text](image-1.png)
+![alt text](image-1.webp)
 $$
 f(t) = \\sin(\\pi t)
 $$
@@ -646,7 +646,7 @@ DitherTemporalAA 는 **시간적 데이터**를 기반으로 생성되고 패턴
 \`\`\`
 Detail -> Blend Node -> Masked
 \`\`\`
-![alt text](image.png)
+![alt text](image.webp)
 
 ### Use case
 
@@ -713,7 +713,7 @@ Unreal Plugin : \`C:\\Program Files\\Epic Games\\UE_X.Y\\Engine\\Plugins\\Runtim
 3. \`HoudiniEngineForUnreal-ContentExamples\\Plugins\\Runtime\` HoudiniEngineExample 복사
 4. \`C:\\Program Files\\Epic Games\\UE_X.Y\\Engine\\Plugins\\Runtime\` 또는 개인 프로젝트 \`Plugins\\Runtime\` 에 붙여 넣기
 5.\`Menu\` > \`Edit\` > \`Plugins\` > \`HoudiniEngineExamples\` - 재시작
-    ![alt text](image-1.png)
+    ![alt text](image-1.webp)
 6. \`Menu\` > \`Houdini Engine\` > \`Browse Contents Examples...\`
 
 ## Sync
@@ -739,7 +739,7 @@ Pixel Depth Offset (PDO) 는 depth buffer 에 적용 되는 픽셀의 Depth 값�
 ## Use Case
 
 통상적으로 [DitherTemporalAA](../DitherTemporalAA/DitherTemporalAA.md) 노드와 함께 사용하며 겹쳐있는 메쉬를 블렌딩 할때 쓴다.
-![alt text](UnrealEditor_mY40lC1jo5.png)
+![alt text](UnrealEditor_mY40lC1jo5.webp)
 
 
 
@@ -786,7 +786,7 @@ Project Setting > Reflection Capture Resolution
 기본적으로 큰 것들을 여러개 배치해 원하는 지역을 덮고 반사성이 높은 객체에 작은 것들을 배치한다.
 겹치는 개수만큼 블렌딩 연산을 하기 때문에 염두해두고 배치 한다.
 
-![alt text](image.png)
+![alt text](image.webp)
 
 ### Planar Reflections
 
@@ -813,7 +813,7 @@ reflection capture는 레벨을 로딩할 때 발생한다. 캡쳐할 것이 많
 ### Skylight
 
 skylight 에도 reflection 캡쳐가 존재한다.
-![alt text](image-1.png)
+![alt text](image-1.webp)
 150000 유닛 을 클립 하고 캡쳐 하기때문에 스카이 큐브맵만 캡쳐한다. 오브젝트 주위에 reflection capture 액터가 없다면 skylight의 큐브맵을 reflection으로 사용 하게 된다.`,
 
   'Game/ShadersAndMaterials': `---
@@ -840,7 +840,7 @@ tags: Unreal Engine, Rendering, shading
     - \`DirectX\` > \`HLSL\`
 
 Shader Complexity 뷰에서 봤을 때 하단 바를 보면 현재 십자선을 기준으로 PS(Pixel Shader) VS(Vertex Shader) 의 복잡도를 보여준다.
-![alt text](image-3.png)
+![alt text](image-3.webp)
 
 복잡한 PS는 pixel 단계에서 연산이 되기 때문에 pixel 에 적게 노출 되는, 멀리 있는 오브젝트에 있는 편이 낫다.
 
@@ -866,7 +866,7 @@ Window > Shader Code > HLSL Code
 USF 템플릿 경로 : \`C:\\Program Files\\Epic Games\\UE_5.6\\Engine\\Shaders\\Private\`
 
 이것들이 전부 제공하는 템플릿이고 사용자가 원하는 쉐이딩 모델 템플릿을 추가 해서 늘릴 수도 있다.
-![alt text](image-1.png)
+![alt text](image-1.webp)
 
 ## Materials
 머티리얼은 대부분 Physical Based Rendering (PBR) 기반의 통합된 쉐이딩 파이프라인을 가진다.
@@ -876,11 +876,11 @@ USF 템플릿 경로 : \`C:\\Program Files\\Epic Games\\UE_5.6\\Engine\\Shaders\
 2. 일관적이고 예측 가능한 파이프 라인 구축 가능.
 3. G-buffer 상속에 대한 제약
 PBR은 거의 모든 재질이 roughness 와 metalic으로 조절이 가능하다.
-![alt text](image-2.png)
+![alt text](image-2.webp)
 
 
 stats 창을 보면 shader 가 얼마나 연산하는지 알수 있다 보통 100~300
-![alt text](image-4.png)
+![alt text](image-4.webp)
 `,
 
   'Game/culling': `---
@@ -914,7 +914,7 @@ tags: optimization
 
 ## Frunstum, Occlusion
 
-![alt text](image.png) | ![alt text](image-1.png) |
+![alt text](image.webp) | ![alt text](image-1.webp) |
 --- | --- |
 Frustum | Frustum + Occlusion
 
@@ -937,7 +937,7 @@ Volume -> Cull Distance Volume
 \`\`\`
 
 여러 Cull Distance Pair를 만들어 다양한 크기의 오브젝트를 컬링한다.
-![alt text](examplescenecdvvalues.png)
+![alt text](examplescenecdvvalues.webp)
 
 - 약 200 유닛 오브젝트 + 카메라 거리 1000 유닛 이상 컬링됩니다.
 - 약 500 유닛 오브젝트 + 카메라 거리 2000 유닛 이상 컬링됩니다.
@@ -959,7 +959,7 @@ build > light
 
 Show > Advanced > Precomputed Visibility 
 \`\`\`
-![alt text](image-2.png)
+![alt text](image-2.webp)
 >[!tip]
 >r.ShowRelevantPrecomputedVisibilityCells 을 사용하면 카메라 가까이에 있는 셀만 표시된다.
 `,
@@ -1027,7 +1027,7 @@ series: Game Optimization
 
 최적화는 성능을 측정하는 것에서 부터 시작 한다.
 
-![](image-1.png)
+![](image-1.webp)
 
 ### 최적화에는 크게 두가지가 존재
 
@@ -1040,7 +1040,7 @@ series: Game Optimization
     - 병목현상 분석
     - 전체적인 성능 향상
 
-![](image-2.png)
+![](image-2.webp)
 
 최적화는 모든 과정에서 진행 되어야 한다.
 `,
@@ -1062,7 +1062,7 @@ series: Game Optimization
 
 ---
 
-![](image-3.png)
+![](image-3.webp)
 
 병목 현상이 일어날 수 있는 단계:
 
@@ -1099,9 +1099,9 @@ series: Game Optimization
     - No Transparent support
     - 다양한 쉐이더는 문제가 될 수 있다.
 
-![엔진은 두 방법을 같이 쓴다. opaque - Deferred, transparent - Forward](image-4.png)
+![엔진은 두 방법을 같이 쓴다. opaque - Deferred, transparent - Forward](image-4.webp)
 
-![Shader Complexity 디버그 모드에서 Transparent 메테리얼을 가진 오브젝트가 분홍색으로 보이는 모습](image-5.png)
+![Shader Complexity 디버그 모드에서 Transparent 메테리얼을 가진 오브젝트가 분홍색으로 보이는 모습](image-5.webp)
 
 엔진에서 Transparent 쉐이더는 라이트 까지 같이 계산 하기 때문에 비교적으로 비싸게 나오지만, 실제론 그렇지 않은 경우가 있다.
 `,
@@ -1117,7 +1117,7 @@ series: Game Optimization
 
 ---
 
-![](image-6.png)
+![](image-6.webp)
 
 1. 하드웨어의 기준을 정하기
     - 타겟 기기 - 모바일, 콘솔, PC
@@ -1128,7 +1128,7 @@ series: Game Optimization
     - UI, 에셋, …
 4. 실시간 Budget 추적 하기
 
-![](image-7.png)
+![](image-7.webp)
 
 ## 퍼포먼스 측정
 
@@ -1172,7 +1172,7 @@ series: Game Optimization
 
 **CPU, GPU bound**
 - 퍼포먼스의 차이로 한쪽의 프로세서가 다른 한쪽의 진행을 기다리며 나타나는 병목 현상.
-![alt text](image.png)
+![alt text](image.webp)
 
 GPU bound 확인 법
 \`\`\`
@@ -1181,14 +1181,14 @@ GPU bound 확인 법
 3. 창 해상도를 줄인다.
 4. 성능이 향상된다면 GPU bound
 \`\`\`
-![alt text](msedge_RnoiCNYD0B.png)
+![alt text](msedge_RnoiCNYD0B.webp)
 
 editor 밖에서 standalone 모드로 실행하는 법
 \`\`\`
 툴바에서 Platforms -> Window -> Package Project
 \`\`\`
 
-![alt text](msedge_BdaTdiTdet.png)
+![alt text](msedge_BdaTdiTdet.webp)
 \`\`\`
 Frame : 전체 프레임 처리 시간.
 Game : CPU의 게임 스레드 에서 게임 로직을 처리하는데 걸리는 시간
@@ -1203,17 +1203,17 @@ shader 에서 적용 되는 **World Position Offset**
 \`\`\`
 View mode -> Nanite Visulization -> EvaluateWPO
 \`\`\`
-![alt text](image-1.png)
+![alt text](image-1.webp)
 
 ### pixel programing
 빨간 색이 연산 많은 곳
 \`\`\`
 View mode -> Nanite Visulization -> Pixel Programmable
 \`\`\`
-![alt text](image-4.png)
+![alt text](image-4.webp)
 
 
-![alt text](UnrealEditor_UhOoaNTdPB.png)|![alt text](UnrealEditor_QcnFdLc06o.png) |![alt text](image-3.png)|
+![alt text](UnrealEditor_UhOoaNTdPB.webp)|![alt text](UnrealEditor_QcnFdLc06o.webp) |![alt text](image-3.webp)|
 --- | WPO 최적화 | PDO off |
 
 쉐이더 단계 에서 최적화를 했는데 Draw 콜이 왜 낮아지나 싶지만,
@@ -1292,7 +1292,7 @@ draft: flase
 ---
 ## GPU Bound
 GPU 병목이 발견 될시 지오메트리 또는 쉐이더(포스트 프로세싱) 두가지의 방향을 잡을 수 있다. 먼저 현재 하드웨어가 처리 할 수 있는 폴리곤 카운트를 기준으로 둘중 하나를 확인해 보면 된다.
-![alt text](image.png)
+![alt text](image.webp)
 
 ## GPU Bound with High Polygon Count
 
@@ -1435,16 +1435,16 @@ stat RHI - 드로우 콜
 \`ctrl\`+\`shift\`+\`,\`
 
 GPU time
-![alt text](image.png)
+![alt text](image.webp)
 
 
 ## RenderDoc
 
 RenderDoc 은 렌더뷰를 캡쳐해 화면에 그려지기 까지의 그 과정을 볼 수 있는 profiling 툴이다.
-![alt text](image-copy.png)
+![alt text](image-copy.webp)
 
 렌더링 패스를 크게 나누면 이와 같다.
-![alt text](image-1-copy.png)
+![alt text](image-1-copy.webp)
 
 ### 설치
 
@@ -1458,7 +1458,7 @@ project setting - RenderDoc - auto attached 체크
 
 ### 설치
 세팅
-![](paste-20260601114410.png)
+![](paste-20260601114410.webp)
 [PIX 다운로드](https://devblogs.microsoft.com/pix/download/)`,
 
   'Game/textures,pixelsshadersandmaterials': `---
@@ -1485,7 +1485,7 @@ tags: optimization, Unreal Engine
 - 모든 사본 이미지는 텍스쳐에 저장된다.
 
 밉맵이 없다면 먼 거리의 텍스쳐는 노이즈 처럼 보이는 현상이 일어난다. 폴리곤의 오버쉐이딩 같은 느낌. 밉맵은 블렌딩되어 적용된다.
-![alt text](image.png) | ![alt text](msedge_5WwuiHeqQO.png) |
+![alt text](image.webp) | ![alt text](msedge_5WwuiHeqQO.webp) |
 --- | --- |
 mipmap 적용, 미적용 | 블렌딩 적용 방식 |
 
