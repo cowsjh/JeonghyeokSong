@@ -911,12 +911,14 @@ footer {
   font-family: var(--font-sans);
   font-size: 2.26rem;
   font-weight: 700;
+  letter-spacing: 0.1em;
   color: var(--text);
   margin: 48px 0 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
 }
 .md-body h2 {
+  font-size: 2.5rem;
   margin-top: 96px;
 }
 
@@ -925,7 +927,6 @@ footer {
   font-size: 1.66rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--text);
   margin: 64px 0 10px;
 }
@@ -935,7 +936,6 @@ footer {
   font-size: 1.3rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--text);
   margin: 56px 0 8px;
 }
@@ -944,8 +944,7 @@ footer {
   font-family: var(--font-sans);
   font-size: 1.05rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--text);
   margin: 48px 0 6px;
 }
