@@ -17,7 +17,7 @@ const WORKS_DIR = path.join(ROOT, 'works');
 const NOTES_DIR = path.join(ROOT, 'notes');
 
 // Deploy/status only consider content — not editor tools or config files.
-const CONTENT_PATHS = ['works/', 'notes/', 'gallery/', 'index.html'];
+const CONTENT_PATHS = ['works/', 'notes/', 'index.html'];
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',

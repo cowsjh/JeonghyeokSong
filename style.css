@@ -1188,139 +1188,6 @@ footer {
 /* scroll offset for fixed nav */
 .md-body h1, .md-body h2, .md-body h3 { scroll-margin-top: calc(var(--nav-h) + 24px); }
 
-/* ─── Gallery grid ──────────────────────────────────── */
-.gallery-grid {
-  columns: 4;
-  column-gap: 5px;
-}
-
-.gallery-item {
-  break-inside: avoid;
-  display: block;
-  margin-bottom: 5px;
-  overflow: hidden;
-  cursor: pointer;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.gallery-item.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.gallery-item img {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: auto 4/3;
-  transform: scale(1.5);
-  transform-origin: center;
-  transition: transform 0.3s ease, filter 0.3s ease;
-}
-
-.gallery-item:hover img {
-  transform: scale(1.56);
-  filter: brightness(0.9);
-}
-
-.gallery-category-label {
-  display: none; /* 필요 시 hover overlay로 활용 가능 */
-}
-
-/* ─── Lightbox ───────────────────────────────────────── */
-.lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 9000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
-.lightbox.open {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.lightbox-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.88);
-  cursor: zoom-out;
-}
-
-.lightbox-img {
-  position: relative;
-  z-index: 1;
-  max-width: min(92vw, 1400px);
-  max-height: 90vh;
-  object-fit: contain;
-  border-radius: 2px;
-  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6);
-  user-select: none;
-  transition: opacity 0.18s ease;
-}
-
-.lightbox-img.loading {
-  opacity: 0;
-}
-
-.lightbox-caption {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-  font-size: 0.78rem;
-  color: rgba(255,255,255,0.6);
-  letter-spacing: 0.05em;
-  pointer-events: none;
-}
-
-.lightbox-close,
-.lightbox-prev,
-.lightbox-next {
-  position: absolute;
-  z-index: 2;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1.6rem;
-  cursor: pointer;
-  padding: 12px;
-  transition: color 0.2s;
-  line-height: 1;
-}
-
-.lightbox-close:hover,
-.lightbox-prev:hover,
-.lightbox-next:hover {
-  color: #fff;
-}
-
-.lightbox-close {
-  top: 16px;
-  right: 20px;
-  font-size: 2rem;
-}
-
-.lightbox-prev {
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.lightbox-next {
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
 /* ─── Hamburger button (hidden on desktop) ───────────── */
 .nav-hamburger { display: none; }
 
@@ -1331,7 +1198,6 @@ footer {
 @media (max-width: 960px) {
   .posts-grid { grid-template-columns: repeat(2, 1fr); gap: 5px; }
   .notes-grid { grid-template-columns: repeat(2, 1fr); }
-  .gallery-grid { columns: 3; }
 }
 
 @media (max-width: 640px) {
@@ -1352,7 +1218,6 @@ footer {
   .posts-grid .post-desc { font-size: 0.64rem; margin-top: 2px; }
   .posts-grid .featured-tool-tag { font-size: 0.55rem; }
   .posts-grid .post-card--featured .post-thumb-overlay .post-title { font-size: 0.82rem; }
-  .gallery-grid { columns: 2; }
   .contact-links { flex-direction: column; }
   .contact-item { width: 100%; }
 

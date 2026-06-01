@@ -30,7 +30,6 @@ Static HTML/CSS/JS portfolio. No build system.
 |---|---|
 | `works/*/main.md` | `node works-sync.js` |
 | `notes/**/main.md` | `node blog-sync.js` |
-| `gallery/<category>/` | `node gallery-sync.js` |
 
 > `data.js` / `index.html` 카드는 직접 편집 금지 — sync 스크립트가 생성
 
@@ -80,24 +79,12 @@ draft:    false            # true → sync 제외
 
 ---
 
-## Gallery
-
-```
-gallery/<category>/image.jpg  →  node gallery-sync.js
-```
-
-지원 확장자: `.jpg` `.jpeg` `.png` `.webp` `.gif` `.avif`
-
----
-
 ## 이미지 검수 (sync 직후 자동 실행)
 
 `works-sync.js` 또는 `blog-sync.js` 실행 직후, 이번 sync로 변경된 work/note의 `main.md`에 대해 자동 실행:
 
 - **누락** — `main.md`의 `![](파일명)` + (works의 경우 frontmatter `thumbnail:`) 값이 폴더에 실제로 존재하는지 확인. 없으면 파일 추가 또는 참조 제거.
 - **잉여** — 폴더의 이미지 중 `main.md`에서 참조되지 않는 것 → 묻지 말고 자동 삭제 후 다음으로 진행.
-
-> Gallery(`gallery-sync.js`)는 폴더 스캔 방식이라 참조가 없으므로 이미지 검수 대상 아님.
 
 ---
 
@@ -127,8 +114,6 @@ Notes 관련 커밋 전, 해당 note의 `main.md`에 대해 순서대로 자동 
 
 ### 2. 문법 검수
 `/grammar-check` 스킬로 문법·맞춤법·흐름 검수. 수정 제안 반영 후 커밋 진행.
-
-> Gallery는 폴더 스캔 방식이므로 이미지 체크 불필요.
 
 ---
 
