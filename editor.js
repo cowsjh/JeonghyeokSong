@@ -193,13 +193,7 @@ async function reviewContent(type, content, dir) {
   const fmNotes = [];
   if (meta.draft === 'true') fmNotes.push('draft: true — excluded from sync, not published to the site');
 
-  // 3) 동영상 50MB 초과
-  const videos = media.filter(f => /\.(mp4|webm|mov)$/i.test(f)).map(f => {
-    const mb = fs.statSync(path.join(dir, f)).size / (1024 * 1024);
-    return { name: f, sizeMB: Math.round(mb * 10) / 10, ok: mb <= 50 };
-  });
-
-  // 4) 변환 권장: PNG/JPG → WebP, GIF → WebM
+  // 3) 변환 권장: PNG/JPG → WebP, GIF → WebM
   const convertible = media
     .filter(f => /\.(png|jpe?g|gif)$/i.test(f))
     .map(f => {
@@ -207,7 +201,7 @@ async function reviewContent(type, content, dir) {
       return { name: f, sizeMB: Math.round(mb * 100) / 100, target: /\.gif$/i.test(f) ? 'WebM' : 'WebP' };
     });
 
-  // 5) 링크 생존
+  // 4) 링크 생존
   const urls = new Set();
   if (meta.link && /^https?:/i.test(meta.link)) urls.add(meta.link.trim());
   for (const m of content.matchAll(/https?:\/\/[^\s)<>"'\]]+/g)) urls.add(m[0].replace(/[.,]+$/, ''));
@@ -216,7 +210,6 @@ async function reviewContent(type, content, dir) {
   return {
     images: { missing, orphan },
     frontmatter: { missing: fmMissing, notes: fmNotes },
-    videos,
     convertible,
     links,
   };
@@ -357,36 +350,6 @@ const server = http.createServer(async (req, res) => {
       const script = type === 'work' ? 'works-sync.js' : 'blog-sync.js';
       const r = await run('node', [script]);
       return sendJson(res, 200, { ok: true, output: (r.stdout + r.stderr).trim() });
-    }
-
-    // POST /api/compress?type=&slug=&name=  (mp4 → 1080p h264 재인코딩, 원본 덮어쓰기)
-    if (req.method === 'POST' && p === '/api/compress') {
-      const type = url.searchParams.get('type');
-      const slug = url.searchParams.get('slug');
-      const name = path.basename(url.searchParams.get('name') || '');
-      const rp = resolvePaths(type, slug);
-      if (!rp || !name) return sendJson(res, 400, { error: 'bad request' });
-      const input = path.join(rp.dir, name);
-      if (!fs.existsSync(input)) return sendJson(res, 404, { error: 'file not found' });
-      const tmp = path.join(rp.dir, '__compress_' + Date.now() + '.mp4');
-      const before = fs.statSync(input).size;
-      const r = await run('ffmpeg', [
-        '-y', '-i', input,
-        '-vf', 'scale=-2:min(1080\\,ih)',          // 1080p로 다운스케일(업스케일 안 함)
-        '-c:v', 'libx264', '-crf', '23', '-preset', 'medium', '-pix_fmt', 'yuv420p',
-        '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart',
-        tmp,
-      ], { maxBuffer: 1024 * 1024 * 20 });
-      if (!r.ok || !fs.existsSync(tmp)) {
-        if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
-        const msg = /ENOENT/.test(r.stderr) ? 'ffmpeg not found (check PATH)' : 'ffmpeg compression failed';
-        return sendJson(res, 500, { error: msg, output: (r.stderr || r.stdout || '').slice(-1500) });
-      }
-      fs.copyFileSync(tmp, input);   // 원본 덮어쓰기
-      fs.unlinkSync(tmp);
-      const after = fs.statSync(input).size;
-      const mb = b => Math.round(b / 1048576 * 10) / 10;
-      return sendJson(res, 200, { ok: true, beforeMB: mb(before), afterMB: mb(after) });
     }
 
     // POST /api/convert?type=&slug=&name=  (png/jpg → WebP, gif → WebM, main.md 참조 갱신 + 원본 삭제)
