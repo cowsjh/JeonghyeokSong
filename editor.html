@@ -1010,6 +1010,12 @@ function renderReview(r) {
           '<button data-compress="' + esc(v.name) + '">Compress</button></div>').join('')
       : '<div class="rv-ok">no videos</div>') + '</div>';
 
+  h += '<div class="rv-sec"><h4>Convert → WebP / WebM</h4>' +
+    (r.convertible && r.convertible.length
+      ? r.convertible.map(c => '<div class="rv-item rv-warn">• <span class="u">' + esc(c.name) + '</span> ' + c.sizeMB + 'MB → ' + c.target +
+          '<button data-convert="' + esc(c.name) + '">Convert</button></div>').join('')
+      : '<div class="rv-ok">✓ none (all WebP/WebM)</div>') + '</div>';
+
   const lcls = { ok: 'rv-ok', blocked: 'rv-warn', bad: 'rv-bad' };
   const lmark = { ok: '✓', blocked: '⚠', bad: '✗' };
   const lnote = { ok: '', blocked: ' (blocked — may be fine in a browser)', bad: ' (unreachable)' };
@@ -1033,6 +1039,20 @@ function renderReview(r) {
     const res = await api('/api/compress?type=' + current.type + '&slug=' + encodeURIComponent(current.slug) + '&name=' + encodeURIComponent(name), { method: 'POST' });
     if (res.ok) { toast('Compressed: ' + res.beforeMB + 'MB → ' + res.afterMB + 'MB', 'ok'); refreshStatus(); runReview(); }
     else { toast('Compress failed: ' + (res.error || ''), 'err'); btn.disabled = false; btn.textContent = 'Compress'; }
+  });
+  body.querySelectorAll('[data-convert]').forEach(btn => btn.onclick = async () => {
+    const name = btn.getAttribute('data-convert');
+    btn.disabled = true; btn.textContent = 'Converting…';
+    const res = await api('/api/convert?type=' + current.type + '&slug=' + encodeURIComponent(current.slug) + '&name=' + encodeURIComponent(name), { method: 'POST' });
+    if (res.ok) {
+      toast('Converted: ' + name + ' → ' + res.newName + ' (' + res.beforeMB + 'MB → ' + res.afterMB + 'MB)', 'ok');
+      // 서버가 main.md 참조를 갱신했으므로, 편집 버퍼의 파일명 참조도 동일하게 치환 (미저장 편집 보존)
+      const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp('([(</:\\s])' + esc, 'g');
+      const ed = $('#editor'); ed.value = ed.value.replace(re, '$1' + res.newName);
+      const thumb = $('#fm-thumbnail'); if (thumb && thumb.value.endsWith(name)) thumb.value = thumb.value.slice(0, -name.length) + res.newName;
+      updateHighlight(); renderPreview(); refreshStatus(); runReview();
+    } else { toast('Convert failed: ' + (res.error || ''), 'err'); btn.disabled = false; btn.textContent = 'Convert'; }
   });
 }
 async function runReview() {

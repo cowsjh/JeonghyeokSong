@@ -199,7 +199,15 @@ async function reviewContent(type, content, dir) {
     return { name: f, sizeMB: Math.round(mb * 10) / 10, ok: mb <= 50 };
   });
 
-  // 4) 링크 생존
+  // 4) 변환 권장: PNG/JPG → WebP, GIF → WebM
+  const convertible = media
+    .filter(f => /\.(png|jpe?g|gif)$/i.test(f))
+    .map(f => {
+      const mb = fs.statSync(path.join(dir, f)).size / (1024 * 1024);
+      return { name: f, sizeMB: Math.round(mb * 100) / 100, target: /\.gif$/i.test(f) ? 'WebM' : 'WebP' };
+    });
+
+  // 5) 링크 생존
   const urls = new Set();
   if (meta.link && /^https?:/i.test(meta.link)) urls.add(meta.link.trim());
   for (const m of content.matchAll(/https?:\/\/[^\s)<>"'\]]+/g)) urls.add(m[0].replace(/[.,]+$/, ''));
@@ -209,6 +217,7 @@ async function reviewContent(type, content, dir) {
     images: { missing, orphan },
     frontmatter: { missing: fmMissing, notes: fmNotes },
     videos,
+    convertible,
     links,
   };
 }
@@ -378,6 +387,42 @@ const server = http.createServer(async (req, res) => {
       const after = fs.statSync(input).size;
       const mb = b => Math.round(b / 1048576 * 10) / 10;
       return sendJson(res, 200, { ok: true, beforeMB: mb(before), afterMB: mb(after) });
+    }
+
+    // POST /api/convert?type=&slug=&name=  (png/jpg → WebP, gif → WebM, main.md 참조 갱신 + 원본 삭제)
+    if (req.method === 'POST' && p === '/api/convert') {
+      const type = url.searchParams.get('type');
+      const slug = url.searchParams.get('slug');
+      const name = path.basename(url.searchParams.get('name') || '');
+      const rp = resolvePaths(type, slug);
+      if (!rp || !name) return sendJson(res, 400, { error: 'bad request' });
+      const input = path.join(rp.dir, name);
+      if (!fs.existsSync(input)) return sendJson(res, 404, { error: 'file not found' });
+      const ext = path.extname(name).toLowerCase();
+      const isGif = ext === '.gif';
+      if (!isGif && !/\.(png|jpe?g)$/i.test(name)) return sendJson(res, 400, { error: 'not a convertible image' });
+      const newName = name.slice(0, -ext.length) + (isGif ? '.webm' : '.webp');
+      const output = path.join(rp.dir, newName);
+      const before = fs.statSync(input).size;
+      const args = isGif
+        ? ['-y', '-nostdin', '-i', input, '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0',
+           '-pix_fmt', 'yuv420p', '-deadline', 'good', '-cpu-used', '2', '-row-mt', '1', output]
+        : ['-y', '-nostdin', '-i', input, '-c:v', 'libwebp', '-lossless', '0', '-quality', '82', output];
+      const r = await run('ffmpeg', args, { maxBuffer: 1024 * 1024 * 20 });
+      if (!r.ok || !fs.existsSync(output)) {
+        if (fs.existsSync(output)) fs.unlinkSync(output);
+        const msg = /ENOENT/.test(r.stderr) ? 'ffmpeg not found (check PATH)' : 'ffmpeg conversion failed';
+        return sendJson(res, 500, { error: msg, output: (r.stderr || r.stdout || '').slice(-1500) });
+      }
+      // main.md 본문/frontmatter의 파일명 참조 갱신 ( ](name) · ](<name>) · thumbnail: …/name )
+      let md = fs.readFileSync(rp.md, 'utf8');
+      const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      md = md.replace(new RegExp('(^|[(</:\\s])' + esc, 'g'), '$1' + newName);
+      fs.writeFileSync(rp.md, md);
+      fs.unlinkSync(input);   // 원본 삭제
+      const after = fs.statSync(output).size;
+      const mb = b => Math.round(b / 1048576 * 100) / 100;
+      return sendJson(res, 200, { ok: true, newName, beforeMB: mb(before), afterMB: mb(after) });
     }
 
     // POST /api/open-vscode?type=&slug=
