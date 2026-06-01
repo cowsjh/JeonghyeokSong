@@ -1,7 +1,7 @@
 ---
 title: Desert Biom (PCG)
 category: Game Art
-thumbnail: image.png
+thumbnail: image.webp
 date: 2026.01
 tools: Unreal Engine, Houdini, Zbrush, Substance Designer
 featured: true
@@ -24,7 +24,7 @@ Houdini에서 제작되었다.
 가장 많이 쓰이고 베이스가 되는 셋업이다.
 기본 요소로는 돌, 부쉬, 풀, 나무, 마른 나무 가지 - 총 5개로 구성되어 있다.
 
-![alt text](image-2.png)
+![alt text](image-2.webp)
 
 파라미터의 조합으로 다양한 컨셉을 구현할 수 있다. 
 ![](<pcg01.mp4>)
@@ -36,30 +36,30 @@ Houdini에서 제작되었다.
 
 ### PCG_Road
 Unreal의 spline road 시스템을 이용해서 주변에 돌을 인스턴싱했다. 추가로 차 바퀴 자국용 PCG를 제작해서 기존에 있는 길의 패턴을 깨주는 용도로 사용했다. 도로의 텍스쳐는 Substance Designer에서 제작되었으며 Virtual Texture를 이용해서 landscape와 블렌딩 시켜 주었다.
-![alt text](image-3.png)
+![alt text](image-3.webp)
 
 ### Material
 
 #### Big Rock
 바위는 씬에서 비교적 큰 오브젝트이기 때문에 메테리얼을 따로 제작해 주었다. 버츄얼 텍스처링으로 랜드스케이프와 블렌딩시켜 주었고 픽셀 노말을 이용하여 모래가 덮인 느낌을 구현했다.
-![alt text](image-6.png) | ![alt text](image-7.png) | ![alt text](image-5.png) |
+![alt text](image-6.webp) | ![alt text](image-7.webp) | ![alt text](image-5.webp) |
 --- | --- | --- |
 
 #### LandScape
 
 랜드스케이프의 기울기를 통해 여러 장의 텍스쳐를 레이어링하였다. 각 레이어의 텍스쳐 팩들은 메테리얼 펑션을 제작해 파라미터로 조작 가능하다.
-![alt text](image-8.png) | ![alt text](image-9.png) |
+![alt text](image-8.webp) | ![alt text](image-9.webp) |
 --- | --- |
 
 ### Optimization
 셋업을 마친 후에 PCG 내부에서 `Profiling` 탭을 이용한 노드 프로파일링을 진행했다. `Scale by Density` 노드가 상당 부분 연산 시간을 잡아먹는 것을 볼 수 있다. `Density` 어트리뷰트를 이용해서 스케일을 조정하는 노드이다. `Scale by Density`는 `PointBodyLoop`가 내장되어 있어 포인트가 많을 경우 연산 시간이 많이 늘어난다. 때문에 간단한 연산은 네이티브 노드들로 교체하는 것이 가장 좋다.
 블루프린트 노드의 교체와 전체적으로 노드 수를 줄이는 최적화도 진행했다. 아래는 같은 파라미터를 가진 최적화 전후의 차이이다.
-![alt text](image-4.png)
-![alt text](UnrealEditor_mPFYwplYyw.png)
-![alt text](image-10.png)
+![alt text](image-4.webp)
+![alt text](UnrealEditor_mPFYwplYyw.webp)
+![alt text](image-10.webp)
 왼쪽이 기본 셋업, 오른쪽이 최적화 후 셋업
 
 
 ## Result
-![alt text](image.png)
-![alt text](image-1.png)
+![alt text](image.webp)
+![alt text](image-1.webp)
