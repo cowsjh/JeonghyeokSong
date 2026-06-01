@@ -15,7 +15,7 @@ draft: false
 
 ## Multi-Sample AA (MSAA)
 Forward Rendering 방식에서 기하학적 가장자리(폴리곤 엣지) 부분만 처리 하여 SSAA 의 절충안으로 사용 되었다.
-![alt text](image.png)
+![alt text](image.webp)
 - 현대의 deferred rendering 에서는 호환 되지 않는다.
 - 비에 젖거나 메탈 같은 특정한 쉐이딩에는 효과가 적다.
 
@@ -31,12 +31,12 @@ Deferred rendering 에 맞춰 개발된 포스트 프로세싱 단계의 안티 
 
 ### 단점
 높은 FPS 에서는 효과가 좋지만 낮은 FPS 에서는 고스팅 현상 및 지터링 오류가 쉽게 일어난다.
-![alt text](image-4.png)
+![alt text](image-4.webp)
 
 해상도와 거리에 대한 의존성 - 저해상도로 플레이할 수록 블러링과 고스팅 현상이 심해짐
-![alt text](image-1.png)
-![alt text](image-2.png)
-![alt text](image-3.png)
+![alt text](image-1.webp)
+![alt text](image-2.webp)
+![alt text](image-3.webp)
 
 
 

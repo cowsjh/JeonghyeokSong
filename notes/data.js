@@ -286,10 +286,10 @@ $Lab$(CIELAB)은 이러한 문제점을 개선하여 만들어진 색공간이�
 
 gradient로 보면 색공간의 밝기 처리가 확연하게 차이 난다.
 **RGB gradient**
-![alt text](image-1.png)
-![alt text](image-2.png)
+![alt text](image-1.webp)
+![alt text](image-2.webp)
 **OKLab gradient**
-![alt text](image.png)
+![alt text](image.webp)
 
 ## $OKLab$, $OKLCh$
 
@@ -369,15 +369,15 @@ $
 C = 1 - Min(R,G,B)/Max(R,G,B)
 $
 
-![alt text](image-3.png)
+![alt text](image-3.webp)
 명도의 차이가 거의 없이 Tint color가 적용된 모습.
-![alt text](image-6.png) |![alt text](image-4.png) |
+![alt text](image-6.webp) |![alt text](image-4.webp) |
 --- | --- |
-![alt text](image-7.png) | ![alt text](image-7.png) |
+![alt text](image-7.webp) | ![alt text](image-7.webp) |
 
 ## Result
 
-![alt text](image-10.png)`,
+![alt text](image-10.webp)`,
 
   'ComputerGraphics/rasterizingandovershading': `---
 title: Rasterizing and Overshading
@@ -400,7 +400,7 @@ tags: Rendering
 주황색 - 연산되는 픽셀
 
 이와 같은 원리로 근접한 폴리곤에서 overshading이 발생한다.
-![alt text](image-2.png)|![alt text](image-3.png)
+![alt text](image-2.webp)|![alt text](image-3.webp)
 --- | --- |
 추가 폴리곤 영역 | 빨간부분 - overshading |
 
@@ -409,14 +409,14 @@ tags: Rendering
 view mode - OptimizationViewMode - Quad Overdraw
 \`\`\`
 폴리곤이 작게 몰려있는 픽셀에서 overshading 이 많이 발생 한다.
-![alt text](image-4.png)
+![alt text](image-4.webp)
 
 1. 밀도가 높은 곳이 높은 비용을 가진다.
 2. 거리가 멀어지면 밀도가 높아진다.
 3. 아주 얇거나 작은 트라이 폴리곤은 overshading을 유발한다.
 
 3번의 이유로 이러한 폴리곤을 가진 모델링은 좋지 않다.
-![alt text](image-5.png)`,
+![alt text](image-5.webp)`,
 
   'ComputerGraphics/shapingFunctions': `---
 title: Shaping Functions
@@ -577,7 +577,7 @@ draft: false
 
 ## Multi-Sample AA (MSAA)
 Forward Rendering 방식에서 기하학적 가장자리(폴리곤 엣지) 부분만 처리 하여 SSAA 의 절충안으로 사용 되었다.
-![alt text](image.png)
+![alt text](image.webp)
 - 현대의 deferred rendering 에서는 호환 되지 않는다.
 - 비에 젖거나 메탈 같은 특정한 쉐이딩에는 효과가 적다.
 
@@ -593,12 +593,12 @@ Deferred rendering 에 맞춰 개발된 포스트 프로세싱 단계의 안티 
 
 ### 단점
 높은 FPS 에서는 효과가 좋지만 낮은 FPS 에서는 고스팅 현상 및 지터링 오류가 쉽게 일어난다.
-![alt text](image-4.png)
+![alt text](image-4.webp)
 
 해상도와 거리에 대한 의존성 - 저해상도로 플레이할 수록 블러링과 고스팅 현상이 심해짐
-![alt text](image-1.png)
-![alt text](image-2.png)
-![alt text](image-3.png)
+![alt text](image-1.webp)
+![alt text](image-2.webp)
+![alt text](image-3.webp)
 
 
 
@@ -1247,12 +1247,12 @@ series: Game Optimization
 \`\`\`
 콘솔 -> r.VisualizeOccludedPrimitives 1 
 \`\`\`
-![alt text](image.png)
+![alt text](image.webp)
 
 ## Level Layout
 
 레벨 단계에서 특정 위치에선 특정 레이아웃만 보이게 계획한다면 컬링 시 큰 도움이 된다. 큰 맵에선 단일 트리거로 한 번에 컬링할 수 있다.
-![alt text](image-1.png)
+![alt text](image-1.webp)
 
 ## Early Distance Culling
 화면에 비치는 오브젝트가 얼마나 작은지, 또는 카메라와의 거리에 따라 컬링해 주는 기법. 한 화면상의 2픽셀 정도 오브젝트도 1의 드로우콜을 발생시키기 때문에 필터링해 주는 것이다.

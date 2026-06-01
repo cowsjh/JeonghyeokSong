@@ -17,10 +17,10 @@ $Lab$(CIELAB)은 이러한 문제점을 개선하여 만들어진 색공간이�
 
 gradient로 보면 색공간의 밝기 처리가 확연하게 차이 난다.
 **RGB gradient**
-![alt text](image-1.png)
-![alt text](image-2.png)
+![alt text](image-1.webp)
+![alt text](image-2.webp)
 **OKLab gradient**
-![alt text](image.png)
+![alt text](image.webp)
 
 ## $OKLab$, $OKLCh$
 
@@ -100,12 +100,12 @@ $
 C = 1 - Min(R,G,B)/Max(R,G,B)
 $
 
-![alt text](image-3.png)
+![alt text](image-3.webp)
 명도의 차이가 거의 없이 Tint color가 적용된 모습.
-![alt text](image-6.png) |![alt text](image-4.png) |
+![alt text](image-6.webp) |![alt text](image-4.webp) |
 --- | --- |
-![alt text](image-7.png) | ![alt text](image-7.png) |
+![alt text](image-7.webp) | ![alt text](image-7.webp) |
 
 ## Result
 
-![alt text](image-10.png)
+![alt text](image-10.webp)

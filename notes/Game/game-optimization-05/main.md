@@ -24,12 +24,12 @@ series: Game Optimization
 ```
 콘솔 -> r.VisualizeOccludedPrimitives 1 
 ```
-![alt text](image.png)
+![alt text](image.webp)
 
 ## Level Layout
 
 레벨 단계에서 특정 위치에선 특정 레이아웃만 보이게 계획한다면 컬링 시 큰 도움이 된다. 큰 맵에선 단일 트리거로 한 번에 컬링할 수 있다.
-![alt text](image-1.png)
+![alt text](image-1.webp)
 
 ## Early Distance Culling
 화면에 비치는 오브젝트가 얼마나 작은지, 또는 카메라와의 거리에 따라 컬링해 주는 기법. 한 화면상의 2픽셀 정도 오브젝트도 1의 드로우콜을 발생시키기 때문에 필터링해 주는 것이다.

@@ -19,7 +19,7 @@ tags: Rendering
 주황색 - 연산되는 픽셀
 
 이와 같은 원리로 근접한 폴리곤에서 overshading이 발생한다.
-![alt text](image-2.png)|![alt text](image-3.png)
+![alt text](image-2.webp)|![alt text](image-3.webp)
 --- | --- |
 추가 폴리곤 영역 | 빨간부분 - overshading |
 
@@ -28,11 +28,11 @@ tags: Rendering
 view mode - OptimizationViewMode - Quad Overdraw
 ```
 폴리곤이 작게 몰려있는 픽셀에서 overshading 이 많이 발생 한다.
-![alt text](image-4.png)
+![alt text](image-4.webp)
 
 1. 밀도가 높은 곳이 높은 비용을 가진다.
 2. 거리가 멀어지면 밀도가 높아진다.
 3. 아주 얇거나 작은 트라이 폴리곤은 overshading을 유발한다.
 
 3번의 이유로 이러한 폴리곤을 가진 모델링은 좋지 않다.
-![alt text](image-5.png)
+![alt text](image-5.webp)
