@@ -430,9 +430,25 @@
         } else if (location.hash) {
           const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
           if (target) {
-            const imgs = Array.from(container.querySelectorAll('img')).filter(img => !img.complete);
-            Promise.all(imgs.map(img => new Promise(r => { img.onload = img.onerror = r; })))
-              .then(() => target.scrollIntoView());
+            // 끝부분 앵커도 화면 맨 위(nav 아래)로 올리기 위한 여백
+            const spacer = document.createElement('div');
+            container.appendChild(spacer);
+            const smt = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+            const toTop = () => {
+              spacer.style.height = '0px';
+              target.scrollIntoView();
+              const gap = target.getBoundingClientRect().top - smt;
+              if (gap > 1) { spacer.style.height = gap + 'px'; target.scrollIntoView(); }
+            };
+            // 즉시 실행 — lazy 이미지 로드를 기다리지 않음
+            toTop();
+            // 앞쪽 이미지 로드로 높이가 바뀌면 위치 재보정 (안 뜨는 lazy 이미지 대비 타임아웃)
+            const imgs = Array.from(container.querySelectorAll('img')).filter(img =>
+              !img.complete && (target.compareDocumentPosition(img) & Node.DOCUMENT_POSITION_PRECEDING));
+            Promise.race([
+              Promise.all(imgs.map(img => new Promise(r => { img.onload = img.onerror = r; }))),
+              new Promise(r => setTimeout(r, 1000))
+            ]).then(toTop);
           }
         }
       }

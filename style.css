@@ -904,6 +904,9 @@ footer {
 /* ─── Shared Markdown body (.md-body) ───────────────────── */
 .md-body { padding-top: 0; }
 
+/* 앵커 이동 시 고정 nav 아래에 헤딩이 오도록 오프셋 */
+.md-body h1, .md-body h2, .md-body h3 { scroll-margin-top: calc(var(--nav-h) + 16px); }
+
 .md-body h1, .md-body h2 {
   font-family: var(--font-sans);
   font-size: 2.26rem;
