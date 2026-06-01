@@ -1,10 +1,10 @@
 ---
-title:    DarkRuin Optimization
-date:     2026-06-01
-tags:     optimization, Unreal Engine
-featured:
-order:
-draft:    true
+title: DarkRuin Optimization
+date: 2026-06-01
+tags: optimization, Unreal Engine
+featured: false
+order: 
+draft: true
 ---
 
 **하드 웨어**
@@ -26,6 +26,9 @@ Unreal 라이브러리 에서 얻을 수 있는 DarkRuin 씬을 최적화 해보
 90fps
 
 ## Workflow
+
+### Material
 기둥에도 4K를 쓰는 모습
 ![alt text](image-2.png)
-일괄적으로 최대 2K 로 사용 하게 리밋을 잡아 주었다. 디테일이 떨어 지는 부분은 추후에 재조정.
+일괄적으로 최대 2K 로 사용 하게 리밋을 잡아 주었다. 디테일이 떨어 지는 부분은 추후에 재조정. 또한 메테리얼에서 커스텀 노이즈와 
+![](paste-20260601123854.png)

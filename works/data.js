@@ -137,8 +137,7 @@ link:
 ### 설정
 간단한 아웃풋 설정이 가능하다.
 ![alt text](image-1.png)
-
-[Culling](../../notes/Game/culling/main.md#precomputed-visibility-volumes)`,
+`,
 
   'desertbiom': `---
 title: Desert Biom (PCG)
