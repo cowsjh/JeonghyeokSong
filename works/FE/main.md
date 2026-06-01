@@ -1,7 +1,7 @@
 ---
 title: Fire Extinguisher
 category: Game Art
-thumbnail: image-17.png
+thumbnail: image-17.webp
 date: 2021.07
 tools: Houdini 18.5
 featured: true
@@ -11,7 +11,7 @@ description: Houdini HDA로 제작한 프로시쥬얼 소화기 에셋. 파라�
 Procedural 소화기 HDA
 ## Planning
 대략적인 노드 구조를 짜보았다. HDA에서 다양한 종류의 에셋을 만들 수 있는 것은 중요하지만, 너무 많은 파라미터들은 오히려 독이 될 수 있어 계획 단계에서 만들어질 요소들과 상관관계를 정리하고 시작했다.
-![alt text](<image_10.png>)
+![alt text](<image_10.webp>)
 ### Parameter
 - Body
     - 너비
@@ -47,11 +47,11 @@ Procedural 소화기 HDA
 ### Trolly
 
 트롤리는 A 타입 B 타입이 있으며 바퀴, 프레임등 세부 요소도 조절 할 수 있다. 실린더를 베이스로 하기 때문에 크기나 변형이 있어도 적용된다.
-![alt text](houdini_mujUK7Byar.png) |![alt text](houdini_vPkfEBOE5u.png)|
+![alt text](houdini_mujUK7Byar.webp) |![alt text](houdini_vPkfEBOE5u.webp)|
 --- | --- |
 `type A` | `type B`
 
-![alt text](houdini_tezYex0ePb.png) |![alt text](houdini_XvVWbT3Kz8.png) |![alt text](houdini_CdpOSwOlcu.png)|
+![alt text](houdini_tezYex0ePb.webp) |![alt text](houdini_XvVWbT3Kz8.webp) |![alt text](houdini_CdpOSwOlcu.webp)|
 --- | --- | --- |
 
 
@@ -59,19 +59,19 @@ Procedural 소화기 HDA
 worldposition, objectposition, normal, curvature, ao 등을 활용해서 개연성 있는 텍스쳐를 만들고자 했다.
 
 **텍스쳐 레퍼런스**
-![alt text](chrome_K3OERJFM1F.png) |![alt text](chrome_KeYIWmdffM.png) |![alt text](chrome_q6e7ljdTX8.png) |![alt text](chrome_vIUu2jPtVT.png)|
+![alt text](chrome_K3OERJFM1F.webp) |![alt text](chrome_KeYIWmdffM.webp) |![alt text](chrome_q6e7ljdTX8.webp) |![alt text](chrome_vIUu2jPtVT.webp)|
 --- | --- | --- | --- |
 
 `VEX Material Builder`에서 VOP을 이용해 프로시쥬얼 텍스쳐 생성. worldposition, normal, curvature를 이용해 먼지가 쌓인 부분, 스크래치를 생성하고 노이즈로 도금이 벗겨져 녹슨 부분을 표현했다.
-![alt text](image-1.png) | ![alt text](image-99.png) | ![alt text](image.png)| 
+![alt text](image-1.webp) | ![alt text](image-99.webp) | ![alt text](image.webp)| 
 --- | --- | --- |
 
 
 
 바리에이션에 적용한 모습
-![alt text](houdini_vJHVFKLP8m.png) |![alt text](houdini_0N89gLKUaG.png)|
+![alt text](houdini_vJHVFKLP8m.webp) |![alt text](houdini_0N89gLKUaG.webp)|
 --- | --- |
-![alt text](houdini_576HIfqRfz.png) |![alt text](houdini_GX3eHoMIin.png) | ![alt text](houdini_hftveQ7fAL.png)|
+![alt text](houdini_576HIfqRfz.webp) |![alt text](houdini_GX3eHoMIin.webp) | ![alt text](houdini_hftveQ7fAL.webp)|
 
 ## Texturing - 2026
 `2026.04`
@@ -89,23 +89,23 @@ worldposition, objectposition, normal, curvature, ao 등을 활용해서 개연�
 #### ID mask
 ID 맵을 만드려고 했으나 이것 또한 위와 같은 이유로 다량으로 사용시 텍스쳐도 늘어나기 때문에 vertex color 로 ID 맵을 대체 하기로 했다.
 `1.0/재질의 수` 값을 @Cd.r 로 저장하고 Unreal 에서 step으로 필터링 하여 마스크를 제작 했다.
-![alt text](Artboard-1.png)
+![alt text](Artboard-1.webp)
 
 #### Curvature, AO
 Houdini 에서 미리 계산된 Curvature 와 AO값을 각 G, B 에 저장 해 주었다.
-![alt text](image-2.png)
+![alt text](image-2.webp)
 
 ### Material
 일단 녹이나 기타 웨더링을 위해서는 노이즈가 필수적일 텐데, Unreal에서 제공하는 noise는 비용이 좀 크다.
 때문에 웨더링 노이즈 부분은 텍스쳐로 교체.
 바디 부분에서 텍스쳐의 심이 제일 잘 보이기 때문에 노이즈 텍스쳐의 사용을 위해서 uv맵을 다시 정렬 해 주었다.
-![alt text](image-5.png) | ![alt text](image-6.png) |
+![alt text](image-5.webp) | ![alt text](image-6.webp) |
 --- | --- |
 기존의 uv | 0_1로 정렬된 body 파트의 uv |
 
-![alt text](image-3.png) | ![alt text](image-4.png) |
+![alt text](image-3.webp) | ![alt text](image-4.webp) |
 --- | --- |
-![alt text](image-9.png) | ![alt text](image-8.png) |
+![alt text](image-9.webp) | ![alt text](image-8.webp) |
 `상) noise 노드` `하) 텍스쳐` | Shader Complexity |
 
 
@@ -116,7 +116,7 @@ Houdini 에서 미리 계산된 Curvature 와 AO값을 각 G, B 에 저장 해 �
 RGBA - BaseColor + Roughness
 RGB - Normal
 ```
-![alt text](<Artboard 2.png>)
+![alt text](<Artboard 2.webp>)
 
 ## Result
-![alt text](image-16.png)
+![alt text](image-16.webp)

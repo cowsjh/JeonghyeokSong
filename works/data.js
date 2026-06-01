@@ -4,7 +4,7 @@ window.WORKS = {
   'Cliff': `---
 title: Cliff
 category: Game Art
-thumbnail: thum.png
+thumbnail: thum.webp
 date: 2026.05
 tools: Houdini, Zbrush, Substance Painter
 featured: false
@@ -13,13 +13,13 @@ draft: false
 ---
 ## Overview
 [HDA](../RockCliffGen/main.md)로 더미 데이터를 생성하여 Zbrush로 제작한 에셋 텍스쳐는 Substance Painter에서 진행했다.
-![alt text](ph02.png)
-![alt text](ph03.png)
+![alt text](ph02.webp)
+![alt text](ph03.webp)
 
 ## Workflow
 ### Decimation
 지브러시로 스컬프팅한 메쉬를 후디니로 불러와 최적화를 진행했다. Zbrush에서도 기능이 있지만 훨씬 빠른 연산으로 Houdini 에서 작업했다. 베이크용으로 제작한 로우 메쉬를 이용해 텍스쳐를 제작하고 한번 더 폴리곤을 정리해 주었다. 베이크용 로우 메쉬가 폴리곤이 너무 적으면 베이크에 문제가 생기는데 이 절차로 그런 에러를 확실히 줄일 수 있었다.
-![alt text](ph01.png)
+![alt text](ph01.webp)
 
 스컬프팅 이후에 메쉬가 꼬여 있는 흔적을 종종 볼 수 있는데 이대로 리메쉬를 진행하면 꼬인 면이 그대로 노출 되기 때문에 \`measure\`노드로 필터링 하여 면을 정리 했다.
 ![](<2026-05-30 01-43-45.mp4>)
@@ -28,7 +28,7 @@ draft: false
   'RockCliffGen': `---
 title: Stylized Rock Cliff Generator HDA
 category: Game Art
-thumbnail: image.png
+thumbnail: image.webp
 date: 2026.05
 tools: Houdini, Unreal
 featured: true
@@ -48,9 +48,9 @@ https://www.youtube.com/watch?v=kQhtnKJwX6Q
 
 ### Vertex Color
 Unreal에서의 사용을 염두에 두고 인풋을 버텍스 컬러로 선정했다. 높낮이를 2D로 저장할 수 있는 지형적 특성을 활용하여, 버텍스 컬러는 높이 값으로 변환되어 에셋으로 생성된다.
-![alt text](image-9.png) | ![alt text](image-10.png) |
+![alt text](image-9.webp) | ![alt text](image-10.webp) |
 --- | --- |
-![alt text](houdini_XWSIGpDjmV.png) | ![alt text](houdini_KFLRxD0jZo.png) | ![alt text](houdini_n7YZnBJzeG.png) |
+![alt text](houdini_XWSIGpDjmV.webp) | ![alt text](houdini_KFLRxD0jZo.webp) | ![alt text](houdini_n7YZnBJzeG.webp) |
 
 
 ### Clustering
@@ -58,23 +58,23 @@ Unreal에서의 사용을 염두에 두고 인풋을 버텍스 컬러로 선정�
 ![alt text](<2026-05-16 14-16-31_trimmed.webm>)
 
 바위의 덩어리감을 잡는 방법으로는 \`voronoifracture\`를 먼저 떠올렸다. 하지만 스캐터된 포인트만으로 형태감을 유도하는 것은 쉽지 않았다. 겹치는 부분이 제한적이고 조각의 모양 또한 인위적이어서 추가 공정이 필요했다. \`cluster\`와 \`shrink\` 노드로 덩어리감을 살리고, 클러스터 밀도도 조작할 수 있게 만들었다.
-![alt text](image-18.png) | ![alt text](image-19.png) |
+![alt text](image-18.webp) | ![alt text](image-19.webp) |
 --- | --- |
 
 ### Bevel, Crack
 Stylized 작업에서 자주 쓰이는 스컬핑 방식을 참고하여, 바위의 모서리와 크랙 형태를 \`polyextrude\`와 \`polybevel\` 노드로 적용했다. 크랙은 \`edgefracture\` 노드를 활용해 유기적인 패턴을 만들었다.
-![alt text](houdini_WHRgTjvI00.png) 
+![alt text](houdini_WHRgTjvI00.webp) 
 #### Geometry control
 \`polybevel\` 노드는 강력하지만, 프로시쥬얼로 예민한 파라미터를 가지고 있다. 그래서 중간중간 보정이 필요한데, 어느 정도 튀는 포인트는 \`blur\`나 \`smooth\`로 조절할 수 있다. 다만 격하게 튀는 포인트들은 반복문을 쓰거나 값을 높여도 비용만 늘고 결과가 아쉬울 때가 있다. 이 경우에는 안정화 작업 전에 한 번 필터링해 주는 편이 효율적이다.
-![alt text](houdini_m9zxRQDVih.png) | ![alt text](image-17.png) |
+![alt text](houdini_m9zxRQDVih.webp) | ![alt text](image-17.webp) |
 --- | --- |
 
 ### UV, Collision, LOD
 UV 는 커스텀 Box 매핑 노드를 사용했다.
-![alt text](image-1.png)
+![alt text](image-1.webp)
 후디니는 언리얼과 호환되는 어트리뷰트, 그룹핑 파이프라인을 가지고 있다.[Unreal](https://www.sidefx.com/docs/houdini/unreal/attributes.html)
 어트리뷰트와 그룹 네임을 이용해서 Bake 경로, 이름, Collision, LOD 설정을 해주었다.
-![alt text](image-2.png)
+![alt text](image-2.webp)
 
 ## Optimizing
 생각보다 생성에 시간이 오래 걸려, 전체적인 최적화를 한번 진행하기로 했다.
@@ -88,14 +88,14 @@ HDA에서 가장 불안정한 부분은 크랙과 베벨이 적용되는 단계�
 - 노드 교체: blur > smooth
 - 필터링 방식 수정
 
-![alt text](image-6.png)
+![alt text](image-6.webp)
 좌) 수정 전 우) 수정 후
 
 ### Result
 최적화 + 지오메트리 정리 추가
-![alt text](image-20.png)
+![alt text](image-20.webp)
 지오메트리 시드가 조금씩 바뀐 점을 감안하면, 이전과 같은 아웃풋이 나오는 것을 확인할 수 있다.
-![alt text](houdini_tK4uRqQAiu.png) | ![alt text](image-14.png) |
+![alt text](houdini_tK4uRqQAiu.webp) | ![alt text](image-14.webp) |
 --- | --- |
 최적화 전 | 최적화 후 |
 
@@ -364,24 +364,24 @@ Branch 노드를 통한 뿌리 디자인과 카드 인스턴싱의 반복 패턴
   'HARIO_V60_driper_server': `---
 title: HARIO V60 Driper, Server
 category: Game Art
-thumbnail: image_01.png
+thumbnail: image_01.webp
 date: 2025.12
 tools: Blender, Substance Painter
 featured: true
 link: https://www.artstation.com/artwork/AZxEZq
 ---
 심한 웨더링보다는 현실적인 사용감에 집중해본 작업
-![alt text](image-1.png)
-![alt text](image-2.png)
-![alt text](image-3.png)
-![alt text](image-4.png)
-![alt text](image-5.png)
-![alt text](image.png)`,
+![alt text](image-1.webp)
+![alt text](image-2.webp)
+![alt text](image-3.webp)
+![alt text](image-4.webp)
+![alt text](image-5.webp)
+![alt text](image.webp)`,
 
   'MushRoomHDA': `---
 title: Mushroom HDA
 category: Game Art
-thumbnail: image.png
+thumbnail: image.webp
 date: 2025.11
 tools: Houdini, Substance Painter
 featured: true
@@ -392,11 +392,11 @@ link: https://www.artstation.com/artwork/RKGgJe
 ## Overview
 하나의 컨셉을 가진 버섯 에셋을 만들어 보았다. 다양한 버섯을 위한 범용적인 셋업은 아니지만 파라미터 조절로 **개연성 있는 성장 단계**를 구현해보고 싶었다. 
 버섯의 전체적인 크기를 기준으로 단계가 정해진다.
-![alt text](image-1.png)
-![alt text](image-2.png)
+![alt text](image-1.webp)
+![alt text](image-2.webp)
 ## Workflow
 Module 형식으로 제작한 이유는 사용자가 노드 중간에서 지오메트리를 조작할 수 있도록 하기 위해서다. 또한 하이 메쉬로 제작되기 때문에 순차적으로 빌드하는 것이 효율이 좋을 거라고 생각했다.
-![alt text](image-3.png)
+![alt text](image-3.webp)
 
 버섯의 분포는 지정된 파라미터로 쉽게 조작할 수 있게 구성했다.
 ![alt text](timeline-1_trimmed.webm)
@@ -407,23 +407,23 @@ Module 형식으로 제작한 이유는 사용자가 노드 중간에서 지오�
 
 ### Lowpoly
 highpoly와 lowpoly가 병렬적으로 생성되는 워크플로우를 채택했다. 각 노드의 연산 비용이 증가하지만 UV 보존을 용이하게 하고 내가 원하는 디테일을 의도적으로 보존할 수 있다는 확실한 장점이 있다.
-![alt text](image-8.png) | ![alt text](image-7.png) |
+![alt text](image-8.webp) | ![alt text](image-7.webp) |
 --- | --- |
 
 
 
 ### Texture
 Houdini 내에서 lowpoly, highpoly, IDmap(VertexColor), UDIM 등의 Substance Painter 에서 사용할 요소들이 만들어진다. 때문에 master material을 하나 만들어 놓고 일괄적으로 적용 가능하게 구성하였다.
-![alt text](image-9.png) | ![alt text](image-6.png) |
+![alt text](image-9.webp) | ![alt text](image-6.webp) |
 --- | --- |
 
 > [!NOTE]
 > 지금 워크플로우는 한 번에 여러 오브젝트를 만들지만, 하나씩 생성 후에 Unreal 내부에서 레벨로 만들어 사용하거나 인스턴싱하는 방식도 괜찮을 것 같다.
 
-![alt text](image-4.png)
+![alt text](image-4.webp)
 
 ## Result
-![alt text](image.png)
+![alt text](image.webp)
 `,
 
   'Snowrock': `---
@@ -529,7 +529,7 @@ Base Color | Roughness | Normal |
   'RugFattern': `---
 title: Rug Pattern (COPs)
 category: Game Art
-thumbnail: image.png
+thumbnail: image.webp
 date: 2025.09
 tools: Houdini
 featured: true
@@ -537,13 +537,13 @@ link: https://www.artstation.com/artwork/QK51EE
 ---
 ## Overview
 Houdini COPs에서 지오메트리 데이터를 활용해 Procedural 러그 텍스처를 제작했다. 그리드 지오메트리를 인풋으로 받아 영역, 코너, 테두리 정보를 마스크로 분리해 각 구역에 서로 다른 패턴을 자동으로 배치한다.
-![alt text](image-1.png)
+![alt text](image-1.webp)
 
 ## Workflow
 
 ### Patterns
 \`SDFshape\`와 \`curve3d\`를 적극 사용해서 문양을 제작했다.
-![alt text](image-6.png) | ![alt text](image-7.png) |
+![alt text](image-6.webp) | ![alt text](image-7.webp) |
 --- | --- |
 
 ![alt text](<2026-04-30 00-00-09_trimmed.gif>)
@@ -551,16 +551,16 @@ Houdini COPs에서 지오메트리 데이터를 활용해 Procedural 러그 텍�
 ### Geometry Data
 
 러그는 중앙, 코너, 테두리 세 영역에 각각 다른 패턴이 들어가야 하기 때문에, 그리드를 인풋으로 크게 3가지 섹션으로 나눠 COPs 안에서 마스킹으로 사용하였다.
- ![alt text](image-14.png) |![alt text](image-12.png) |![alt text](image-13.png) |
+ ![alt text](image-14.webp) |![alt text](image-12.webp) |![alt text](image-13.webp) |
 --- | --- | --- |
 
 테두리 부분의 point 데이터를 이용해서 패턴을 인스턴싱하였다. point의 @N으로 패턴의 방향을 설정했다.
-![alt text](image-2.png) | ![alt text](image-3.png) |
+![alt text](image-2.webp) | ![alt text](image-3.webp) |
 --- | -- |
-![alt text](image-4.png) | ![alt text](image-5.png) |
+![alt text](image-4.webp) | ![alt text](image-5.webp) |
 
 grid의 경계 부분의 포인트 데이터로 러그의 마감 부분의 짜임 패턴을 인스턴싱하였다.
-![alt text](image-9.png) | ![alt text](image-10.png) |
+![alt text](image-9.webp) | ![alt text](image-10.webp) |
 --- | --- |
 
 
@@ -568,7 +568,7 @@ grid의 경계 부분의 포인트 데이터로 러그의 마감 부분의 짜�
 ### Weave Pattern
 
 \`tilepattern\` 노드는 Substance Designer의 tile 노드들과 동일한 기능을 한다.
-![alt text](image-11.png) | ![alt text](image-8.png) |
+![alt text](image-11.webp) | ![alt text](image-8.webp) |
 --- | --- |
 
 
@@ -578,7 +578,7 @@ grid의 경계 부분의 포인트 데이터로 러그의 마감 부분의 짜�
   'parmstore': `---
 title: File Cache parm
 category: Tool
-thumbnail: works/parmstore/image-1.png
+thumbnail: works/parmstore/image-1.webp
 date: 2023.11
 tools: python
 featured : false
@@ -597,10 +597,10 @@ featured : false
 ![alt text](<2026-04-20 16-54-44_trimmed.webm>)
 
 셋업을 수정할때 최적화 셋업을 꺼놓고 확인 해 보는 경우가 많은데, 이 경우 스위치 파라미터를 저장함으로써 최종 결과에 반영되는 최적화를 쉽게 보존시킬 수 있다.
-![alt text](image-2.png)
+![alt text](image-2.webp)
 
 Advanced -> Script 섹션의 render script에서 경로의 python 파일을 받아와 작동한다. HDA가 아니기 때문에 houdini module을 사용할 수 없었고, 코드를 따로 관리하고 싶어서 이 방식을 따랐다.
-![alt text](image-1.png)`,
+![alt text](image-1.webp)`,
 
   'hip-manager': `---
 title: Hip Manager
@@ -659,7 +659,7 @@ def onCreateInterface():
   'FE': `---
 title: Fire Extinguisher
 category: Game Art
-thumbnail: image-17.png
+thumbnail: image-17.webp
 date: 2021.07
 tools: Houdini 18.5
 featured: true
@@ -669,7 +669,7 @@ description: Houdini HDA로 제작한 프로시쥬얼 소화기 에셋. 파라�
 Procedural 소화기 HDA
 ## Planning
 대략적인 노드 구조를 짜보았다. HDA에서 다양한 종류의 에셋을 만들 수 있는 것은 중요하지만, 너무 많은 파라미터들은 오히려 독이 될 수 있어 계획 단계에서 만들어질 요소들과 상관관계를 정리하고 시작했다.
-![alt text](<image_10.png>)
+![alt text](<image_10.webp>)
 ### Parameter
 - Body
     - 너비
@@ -705,11 +705,11 @@ Procedural 소화기 HDA
 ### Trolly
 
 트롤리는 A 타입 B 타입이 있으며 바퀴, 프레임등 세부 요소도 조절 할 수 있다. 실린더를 베이스로 하기 때문에 크기나 변형이 있어도 적용된다.
-![alt text](houdini_mujUK7Byar.png) |![alt text](houdini_vPkfEBOE5u.png)|
+![alt text](houdini_mujUK7Byar.webp) |![alt text](houdini_vPkfEBOE5u.webp)|
 --- | --- |
 \`type A\` | \`type B\`
 
-![alt text](houdini_tezYex0ePb.png) |![alt text](houdini_XvVWbT3Kz8.png) |![alt text](houdini_CdpOSwOlcu.png)|
+![alt text](houdini_tezYex0ePb.webp) |![alt text](houdini_XvVWbT3Kz8.webp) |![alt text](houdini_CdpOSwOlcu.webp)|
 --- | --- | --- |
 
 
@@ -717,19 +717,19 @@ Procedural 소화기 HDA
 worldposition, objectposition, normal, curvature, ao 등을 활용해서 개연성 있는 텍스쳐를 만들고자 했다.
 
 **텍스쳐 레퍼런스**
-![alt text](chrome_K3OERJFM1F.png) |![alt text](chrome_KeYIWmdffM.png) |![alt text](chrome_q6e7ljdTX8.png) |![alt text](chrome_vIUu2jPtVT.png)|
+![alt text](chrome_K3OERJFM1F.webp) |![alt text](chrome_KeYIWmdffM.webp) |![alt text](chrome_q6e7ljdTX8.webp) |![alt text](chrome_vIUu2jPtVT.webp)|
 --- | --- | --- | --- |
 
 \`VEX Material Builder\`에서 VOP을 이용해 프로시쥬얼 텍스쳐 생성. worldposition, normal, curvature를 이용해 먼지가 쌓인 부분, 스크래치를 생성하고 노이즈로 도금이 벗겨져 녹슨 부분을 표현했다.
-![alt text](image-1.png) | ![alt text](image-99.png) | ![alt text](image.png)| 
+![alt text](image-1.webp) | ![alt text](image-99.webp) | ![alt text](image.webp)| 
 --- | --- | --- |
 
 
 
 바리에이션에 적용한 모습
-![alt text](houdini_vJHVFKLP8m.png) |![alt text](houdini_0N89gLKUaG.png)|
+![alt text](houdini_vJHVFKLP8m.webp) |![alt text](houdini_0N89gLKUaG.webp)|
 --- | --- |
-![alt text](houdini_576HIfqRfz.png) |![alt text](houdini_GX3eHoMIin.png) | ![alt text](houdini_hftveQ7fAL.png)|
+![alt text](houdini_576HIfqRfz.webp) |![alt text](houdini_GX3eHoMIin.webp) | ![alt text](houdini_hftveQ7fAL.webp)|
 
 ## Texturing - 2026
 \`2026.04\`
@@ -747,23 +747,23 @@ worldposition, objectposition, normal, curvature, ao 등을 활용해서 개연�
 #### ID mask
 ID 맵을 만드려고 했으나 이것 또한 위와 같은 이유로 다량으로 사용시 텍스쳐도 늘어나기 때문에 vertex color 로 ID 맵을 대체 하기로 했다.
 \`1.0/재질의 수\` 값을 @Cd.r 로 저장하고 Unreal 에서 step으로 필터링 하여 마스크를 제작 했다.
-![alt text](Artboard-1.png)
+![alt text](Artboard-1.webp)
 
 #### Curvature, AO
 Houdini 에서 미리 계산된 Curvature 와 AO값을 각 G, B 에 저장 해 주었다.
-![alt text](image-2.png)
+![alt text](image-2.webp)
 
 ### Material
 일단 녹이나 기타 웨더링을 위해서는 노이즈가 필수적일 텐데, Unreal에서 제공하는 noise는 비용이 좀 크다.
 때문에 웨더링 노이즈 부분은 텍스쳐로 교체.
 바디 부분에서 텍스쳐의 심이 제일 잘 보이기 때문에 노이즈 텍스쳐의 사용을 위해서 uv맵을 다시 정렬 해 주었다.
-![alt text](image-5.png) | ![alt text](image-6.png) |
+![alt text](image-5.webp) | ![alt text](image-6.webp) |
 --- | --- |
 기존의 uv | 0_1로 정렬된 body 파트의 uv |
 
-![alt text](image-3.png) | ![alt text](image-4.png) |
+![alt text](image-3.webp) | ![alt text](image-4.webp) |
 --- | --- |
-![alt text](image-9.png) | ![alt text](image-8.png) |
+![alt text](image-9.webp) | ![alt text](image-8.webp) |
 \`상) noise 노드\` \`하) 텍스쳐\` | Shader Complexity |
 
 
@@ -774,9 +774,9 @@ Houdini 에서 미리 계산된 Curvature 와 AO값을 각 G, B 에 저장 해 �
 RGBA - BaseColor + Roughness
 RGB - Normal
 \`\`\`
-![alt text](<Artboard 2.png>)
+![alt text](<Artboard 2.webp>)
 
 ## Result
-![alt text](image-16.png)
+![alt text](image-16.webp)
 `
 };

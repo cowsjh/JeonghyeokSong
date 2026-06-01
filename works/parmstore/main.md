@@ -1,7 +1,7 @@
 ---
 title: File Cache parm
 category: Tool
-thumbnail: works/parmstore/image-1.png
+thumbnail: works/parmstore/image-1.webp
 date: 2023.11
 tools: python
 featured : false
@@ -20,7 +20,7 @@ featured : false
 ![alt text](<2026-04-20 16-54-44_trimmed.webm>)
 
 셋업을 수정할때 최적화 셋업을 꺼놓고 확인 해 보는 경우가 많은데, 이 경우 스위치 파라미터를 저장함으로써 최종 결과에 반영되는 최적화를 쉽게 보존시킬 수 있다.
-![alt text](image-2.png)
+![alt text](image-2.webp)
 
 Advanced -> Script 섹션의 render script에서 경로의 python 파일을 받아와 작동한다. HDA가 아니기 때문에 houdini module을 사용할 수 없었고, 코드를 따로 관리하고 싶어서 이 방식을 따랐다.
-![alt text](image-1.png)
+![alt text](image-1.webp)
