@@ -468,6 +468,28 @@ function renderSidebar() {
       });
     });
   };
+  // Drafts — flat list of every draft:true page (works + notes), shown at top
+  let drafts = [
+    ...DATA.works.map(it => ({ ...it, type: 'work' })),
+    ...DATA.notes.map(it => ({ ...it, type: 'note' })),
+  ].filter(it => it.draft);
+  if (searchQuery) drafts = drafts.filter(it => it.slug.toLowerCase().includes(searchQuery));
+  if (drafts.length) {
+    const h = document.createElement('div'); h.className = 'group';
+    h.innerHTML = '<span class="glabel">Drafts</span><span class="count">' + drafts.length + '</span>';
+    el.appendChild(h);
+    drafts.sort((a, b) => a.title.localeCompare(b.title));
+    drafts.forEach(it => {
+      const d = document.createElement('div');
+      d.className = 'item' + (current && current.type === it.type && current.slug === it.slug ? ' active' : '');
+      d.textContent = it.title;
+      const s = document.createElement('span'); s.className = 'draft'; s.textContent = it.type; d.appendChild(s);
+      d.onclick = () => openFile(it.type, it.slug);
+      d.oncontextmenu = e => { e.preventDefault(); showContextMenu(e.clientX, e.clientY, it.type, it.slug); };
+      el.appendChild(d);
+    });
+  }
+
   block('Works', DATA.works, 'work');
   block('Notes', DATA.notes, 'note');
 }
@@ -956,9 +978,7 @@ ta.addEventListener('paste', async e => {
 // ─── status ───
 async function refreshStatus() {
   const s = await api('/api/status');
-  const parts = [s.changed + ' changed'];
-  if (s.unpushed != null) parts.push(s.unpushed + ' unpushed');
-  $('#statusText').textContent = parts.join(' · ');
+  $('#statusText').textContent = s.changed + ' changed';
 }
 
 // ─── review modal ───

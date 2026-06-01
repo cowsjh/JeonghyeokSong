@@ -428,11 +428,9 @@ for ($i = 0; $i -lt 20; $i++) {
     // GET /api/status
     if (req.method === 'GET' && p === '/api/status') {
       const st = await run('git', ['status', '--porcelain', '--', ...CONTENT_PATHS]);
-      const ahead = await run('git', ['rev-list', '--count', '@{upstream}..HEAD']);
       const changed = st.stdout.split('\n').filter(l => l.trim()).length;
       return sendJson(res, 200, {
         changed,
-        unpushed: ahead.ok ? parseInt(ahead.stdout.trim(), 10) || 0 : null,
         detail: st.stdout.trim(),
       });
     }
