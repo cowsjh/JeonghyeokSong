@@ -390,15 +390,16 @@ const server = http.createServer(async (req, res) => {
     }
 
     // POST /api/publish  { message }
+    // Only stages content paths — not editor tools or config files touched outside the editor.
     if (req.method === 'POST' && p === '/api/publish') {
       const b = JSON.parse((await readBody(req)).toString('utf8'));
       const msg = (b.message || '').trim() || 'update content';
-      const add = await run('git', ['add', '-A']);
+      const contentPaths = ['works/', 'notes/', 'gallery/', 'index.html'];
+      const add = await run('git', ['add', '--', ...contentPaths]);
       if (!add.ok) return sendJson(res, 500, { error: 'git add 실패', output: add.stderr });
       const commit = await run('git', ['commit', '-m', msg]);
-      // "nothing to commit"이면 push만 시도
       const push = await run('git', ['push']);
-      const output = ['$ git add -A', add.stdout,
+      const output = ['$ git add ' + contentPaths.join(' '), add.stdout,
         '$ git commit', commit.stdout, commit.stderr,
         '$ git push', push.stdout, push.stderr].filter(s => s && s.trim()).join('\n');
       return sendJson(res, 200, { ok: push.ok, output: output.trim() });

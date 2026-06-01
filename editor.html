@@ -1059,10 +1059,14 @@ $('#modalPush').onclick = async () => {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message: $('#commitMsg').value }),
   });
-  $('#modalPush').disabled = false;
-  $('#gitlog').textContent = res.output || res.error || '';
-  if (res.ok) { toast('Deployed', 'ok'); refreshStatus(); }
-  else toast('Deploy failed (see log)', 'err');
+  if (res.ok) {
+    $('#modalBg').classList.remove('show');
+    toast('Deployed', 'ok'); refreshStatus();
+  } else {
+    $('#modalPush').disabled = false;
+    $('#gitlog').textContent = res.output || res.error || '';
+    toast('Deploy failed (see log)', 'err');
+  }
 };
 
 // ─── init ───
