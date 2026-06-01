@@ -45,7 +45,7 @@ float f = pow(t, n);
 ```
 ---
 ## Parabola
-![alt text](msedge_pVZy7sMLTk.gif)
+![alt text](msedge_pVZy7sMLTk.webm)
 $$
 f(t) = \left(4t(1-t)\right)^n
 $$
@@ -57,7 +57,7 @@ float f = pow(4.0 * t * (1.0 - t), n);
 ```
 ---
 ## Gain
-![alt text](msedge_kTE391Qhhz.gif)
+![alt text](msedge_kTE391Qhhz.webm)
 $$
 g(t, k) =
 \begin{cases}
@@ -78,7 +78,7 @@ float gain(float t, float k)
 ```
 ---
 ## Triangle / Sawtooth Wave
-![alt text](msedge_Ezt9ITFTnu.gif)
+![alt text](msedge_Ezt9ITFTnu.webm)
 Sawtooth:
 
 $$
@@ -116,7 +116,7 @@ float oscillation = (sin(t * 6.28318530) + 1.0) * 0.5;
 ```
 ---
 ## Exponential
-![alt text](msedge_9KKgG539de.gif)
+![alt text](msedge_9KKgG539de.webm)
 감쇠:
 
 $$

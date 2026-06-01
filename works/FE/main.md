@@ -37,12 +37,12 @@ Procedural 소화기 HDA
 ### Body
 
 실린더의 두께, 길이, 핸들의 높이 등 파라미터의 조합으로 여러 가지의 형태를 만들 수 있게 설계했다. 요소들이 실린더를 베이스로 한 포인트에서 제작되었기 때문에 위치나 각도가 즉시 반영된다.
-![alt text](<2026-04-15 19-03-27_trimmed.gif>)
+![alt text](<2026-04-15 19-03-27_trimmed.webm>)
 
 ### Hose
 호스 모델링, 호스가 시작되는 부분과 끝부분의 노말 벡터를 이용해 부드럽게 이어지는 커브를 만들고 sweep으로 두께를 만들었다.
-![alt text](<2026-04-15 18-37-46_trimmed.gif>)
-![alt text](44d57109-bf8b-11eb-937a-48df37269ee2_trimmed.gif)
+![alt text](<2026-04-15 18-37-46_trimmed.webm>)
+![alt text](44d57109-bf8b-11eb-937a-48df37269ee2_trimmed.webm)
 
 ### Trolly
 

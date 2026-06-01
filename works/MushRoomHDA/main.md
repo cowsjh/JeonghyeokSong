@@ -23,7 +23,7 @@ Module 형식으로 제작한 이유는 사용자가 노드 중간에서 지오�
 
 ### Pattern
 대부분의 패턴은 VOP 안에서의 attribute와 noise를 조합하여 제작되었다.
-![alt text](<2026-04-28 18-27-55_trimmed.gif>)
+![alt text](<2026-04-28 18-27-55_trimmed.webm>)
 
 ### Lowpoly
 highpoly와 lowpoly가 병렬적으로 생성되는 워크플로우를 채택했다. 각 노드의 연산 비용이 증가하지만 UV 보존을 용이하게 하고 내가 원하는 디테일을 의도적으로 보존할 수 있다는 확실한 장점이 있다.

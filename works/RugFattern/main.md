@@ -18,7 +18,7 @@ Houdini COPs에서 지오메트리 데이터를 활용해 Procedural 러그 텍�
 ![alt text](image-6.webp) | ![alt text](image-7.webp) |
 --- | --- |
 
-![alt text](<2026-04-30 00-00-09_trimmed.gif>)
+![alt text](<2026-04-30 00-00-09_trimmed.webm>)
 
 ### Geometry Data
 
