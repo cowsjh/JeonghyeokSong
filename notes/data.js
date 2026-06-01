@@ -1418,7 +1418,11 @@ GPU 스폰 인스턴스는 런타임 GPU 메모리에만 존재하고 저장되�
 title: Profiling
 date: 2026-04-22
 tags: optimization, Unreal Engine
+featured: false
+order: 
+draft: false
 ---
+
 
 \`\`\`
 stat unit gragh
@@ -1454,7 +1458,8 @@ project setting - RenderDoc - auto attached 체크
 ## PIX
 
 ### 설치
-
+세팅
+![](paste-20260601114410.png)
 [PIX 다운로드](https://devblogs.microsoft.com/pix/download/)`,
 
   'Game/textures,pixelsshadersandmaterials': `---
