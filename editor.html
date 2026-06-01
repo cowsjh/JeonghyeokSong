@@ -78,6 +78,19 @@
     width: 240px; background: var(--panel); border-right: 1px solid var(--line);
     overflow-y: auto; flex-shrink: 0; padding: 8px;
   }
+  .search-wrap { position: relative; margin-bottom: 4px; }
+  .sidebar-search {
+    width: 100%; padding: 6px 26px 6px 9px; background: var(--bg);
+    border: 1px solid var(--line); border-radius: 5px; color: var(--text); font-size: 12.5px;
+    outline: none;
+  }
+  .sidebar-search:focus { border-color: var(--accent2); }
+  .sidebar-search::placeholder { color: var(--muted); }
+  .search-clear { position: absolute; top: 1px; right: 1px; bottom: 1px; width: 24px;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+    background: transparent; border: none; border-radius: 0 5px 5px 0;
+    color: var(--muted); font-size: 16px; line-height: 1; cursor: pointer; }
+  .search-clear:hover { color: var(--text); }
   .sidebar .group { display: flex; align-items: center; font-size: 11px; text-transform: uppercase;
     letter-spacing: .5px; color: var(--muted); margin: 14px 6px 4px; }
   .sidebar .group .glabel { flex: 1; }
@@ -256,6 +269,10 @@
 
 <div class="main">
   <div class="sidebar">
+    <div class="search-wrap">
+      <input id="sidebarSearch" class="sidebar-search" placeholder="Search folders…" spellcheck="false">
+      <button id="searchClear" class="search-clear" title="Clear" style="display:none">×</button>
+    </div>
     <div id="sidebarList"></div>
   </div>
 
@@ -284,6 +301,7 @@
 
 <div id="ctxMenu" class="ctx-menu">
   <div class="ctx-item" id="ctxCopyPath">Copy MD path</div>
+  <div class="ctx-item" id="ctxOpenVscode">Open in VS Code</div>
   <div class="ctx-item ctx-danger" id="ctxDelete">Delete</div>
 </div>
 
@@ -316,6 +334,7 @@ let DATA = null;          // /api/list result
 let current = null;       // active tab's { type, slug } (null when none open)
 let dirty = false;        // active tab's unsaved state
 let expanded = new Set(); // expanded category folder keys (type:category)
+let searchQuery = '';     // sidebar folder-name (slug) filter
 let fmCurrent = null;     // active tab's frontmatter form state
 let fmCollapsed = false;  // frontmatter section collapsed?
 let tabs = [];            // open documents: { type, slug, title, body, fm, dirty, fmCollapsed }
@@ -412,6 +431,7 @@ function renderSidebar() {
   const el = $('#sidebarList');
   el.innerHTML = '';
   const block = (label, items, type) => {
+    if (searchQuery) items = items.filter(it => it.slug.toLowerCase().includes(searchQuery));
     const h = document.createElement('div'); h.className = 'group';
     h.innerHTML = '<span class="glabel">' + label + '</span><span class="add" title="New ' + label.slice(0, -1) + '">+</span>';
     h.querySelector('.add').onclick = e => { e.stopPropagation(); showCreateForm({ type }); };
@@ -421,7 +441,7 @@ function renderSidebar() {
     Object.keys(byCat).sort().forEach(cat => {
       const key = type + ':' + cat;
       const hasCurrent = current && current.type === type && byCat[cat].some(it => it.slug === current.slug);
-      const open = expanded.has(key) || hasCurrent;
+      const open = searchQuery ? true : (expanded.has(key) || hasCurrent);
       const folder = document.createElement('div');
       folder.className = 'folder';
       folder.innerHTML = '<span class="arrow">' + (open ? '▾' : '▸') + '</span>' +
@@ -1030,6 +1050,11 @@ document.addEventListener('click', hideContextMenu);
 document.addEventListener('click', closeSeriesList);
 document.addEventListener('scroll', hideContextMenu, true);
 $('#ctxDelete').onclick = () => { const t = ctxTarget; if (t) deletePage(t.type, t.slug); };
+$('#ctxOpenVscode').onclick = () => {
+  const t = ctxTarget; if (!t) return;
+  api('/api/open-vscode?type=' + t.type + '&slug=' + encodeURIComponent(t.slug), { method: 'POST' })
+    .then(r => { if (!r.ok) toast('VS Code 열기 실패', 'err'); });
+};
 $('#ctxCopyPath').onclick = () => {
   const t = ctxTarget; if (!t) return;
   const path = (t.type === 'work' ? 'works/' : 'notes/') + t.slug + '/main.md';
@@ -1086,6 +1111,16 @@ async function loadList(keep) {
   renderSidebar();
 }
 $('#saveBtn').onclick = save;
+$('#sidebarSearch').addEventListener('input', e => {
+  searchQuery = e.target.value.trim().toLowerCase();
+  $('#searchClear').style.display = e.target.value ? 'flex' : 'none';
+  renderSidebar();
+});
+$('#searchClear').onclick = () => {
+  const inp = $('#sidebarSearch');
+  inp.value = ''; searchQuery = ''; $('#searchClear').style.display = 'none';
+  renderSidebar(); inp.focus();
+};
 $('#fmHead').onclick = () => {
   fmCollapsed = !fmCollapsed;
   $('#fmForm').style.display = fmCollapsed ? 'none' : '';

@@ -16,6 +16,9 @@ const PORT = 4000;
 const WORKS_DIR = path.join(ROOT, 'works');
 const NOTES_DIR = path.join(ROOT, 'notes');
 
+// Deploy/status only consider content — not editor tools or config files.
+const CONTENT_PATHS = ['works/', 'notes/', 'gallery/', 'index.html'];
+
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js':   'text/javascript; charset=utf-8',
@@ -377,9 +380,54 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: true, beforeMB: mb(before), afterMB: mb(after) });
     }
 
+    // POST /api/open-vscode?type=&slug=
+    if (req.method === 'POST' && p === '/api/open-vscode') {
+      const type = url.searchParams.get('type');
+      const slug = url.searchParams.get('slug');
+      const paths = resolvePaths(type, slug);
+      if (!paths) return sendJson(res, 400, { error: 'invalid slug' });
+      const ps1 = path.join(require('os').tmpdir(), 'vscode_focus.ps1');
+      // SetWindowPos(TOPMOST → NOTOPMOST) forces the window to the top of the
+      // z-order regardless of Windows' foreground-lock — more reliable than
+      // SetForegroundWindow alone. Retry briefly in case VS Code is still
+      // spawning its window (cold start).
+      fs.writeFileSync(ps1, `
+Add-Type @"
+using System; using System.Runtime.InteropServices;
+public class W {
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int n);
+  [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr h);
+  [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint flags);
+}
+"@
+$TOPMOST = New-Object IntPtr(-1)
+$NOTOPMOST = New-Object IntPtr(-2)
+$FLAGS = [uint32](0x0040 -bor 0x0002 -bor 0x0001)  # SHOWWINDOW | NOMOVE | NOSIZE
+for ($i = 0; $i -lt 20; $i++) {
+  $p = Get-Process -Name 'Code' -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+  if ($p) {
+    $h = $p.MainWindowHandle
+    if ([W]::IsIconic($h)) { [void][W]::ShowWindow($h, 9) }   # restore if minimized
+    [void][W]::SetWindowPos($h, $TOPMOST, 0, 0, 0, 0, $FLAGS)
+    [void][W]::SetWindowPos($h, $NOTOPMOST, 0, 0, 0, 0, $FLAGS)
+    [void][W]::SetForegroundWindow($h)
+    break
+  }
+  Start-Sleep -Milliseconds 250
+}
+`);
+      exec(`code "${paths.md}"`, () => {
+        setTimeout(() => {
+          exec(`powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "${ps1}"`);
+        }, 400);
+      });
+      return sendJson(res, 200, { ok: true });
+    }
+
     // GET /api/status
     if (req.method === 'GET' && p === '/api/status') {
-      const st = await run('git', ['status', '--porcelain']);
+      const st = await run('git', ['status', '--porcelain', '--', ...CONTENT_PATHS]);
       const ahead = await run('git', ['rev-list', '--count', '@{upstream}..HEAD']);
       const changed = st.stdout.split('\n').filter(l => l.trim()).length;
       return sendJson(res, 200, {
@@ -394,12 +442,11 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && p === '/api/publish') {
       const b = JSON.parse((await readBody(req)).toString('utf8'));
       const msg = (b.message || '').trim() || 'update content';
-      const contentPaths = ['works/', 'notes/', 'gallery/', 'index.html'];
-      const add = await run('git', ['add', '--', ...contentPaths]);
+      const add = await run('git', ['add', '--', ...CONTENT_PATHS]);
       if (!add.ok) return sendJson(res, 500, { error: 'git add 실패', output: add.stderr });
       const commit = await run('git', ['commit', '-m', msg]);
       const push = await run('git', ['push']);
-      const output = ['$ git add ' + contentPaths.join(' '), add.stdout,
+      const output = ['$ git add ' + CONTENT_PATHS.join(' '), add.stdout,
         '$ git commit', commit.stdout, commit.stderr,
         '$ git push', push.stdout, push.stderr].filter(s => s && s.trim()).join('\n');
       return sendJson(res, 200, { ok: push.ok, output: output.trim() });

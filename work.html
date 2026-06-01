@@ -218,21 +218,24 @@
       } else {
         path = resolvePath('works/' + id + '/', href);
       }
-      let slug = path.replace(/^works\//, '').replace(/\.md$/, '');
+      const isNote = path.startsWith('notes/');
+      let slug = path.replace(/^works\//, '').replace(/^notes\//, '').replace(/\.md$/, '');
       const parts = slug.split('/');
       if (parts.length >= 2 && (parts[parts.length - 1] === 'main' || parts[parts.length - 1] === parts[parts.length - 2])) {
         slug = parts.slice(0, -1).join('/');
       }
-      return slug;
+      return { slug, isNote };
     }
 
     function convertMdLinks(html, id) {
       return html.replace(
         /<a href="([^"#]+\.md)(#[^"]*)?"/gi,
         (m, path, hash) => {
-          const slug = mdPathToWorkSlug(path, id);
-          if (!slug) return m;
-          return `<a href="work.html?id=${encodeURIComponent(slug)}${hash || ''}"`;
+          const result = mdPathToWorkSlug(path, id);
+          if (!result) return m;
+          const { slug, isNote } = result;
+          const page = isNote ? 'blog.html' : 'work.html';
+          return `<a href="${page}?id=${encodeURIComponent(slug)}${hash || ''}"`;
         }
       );
     }
