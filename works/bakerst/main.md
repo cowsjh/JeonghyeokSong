@@ -6,7 +6,7 @@ date: 2026.06
 tools: Unreal Engine, C++, AI
 featured: false
 order: 
-draft: true
+draft: false
 link: 
 ---
 
@@ -24,6 +24,15 @@ link:
 Original | BakeRC | *Bakerst* |
 --- | --- | --- |
 ![](paste-20260605174323.webp)|![](paste-20260605174233.webp)|![](paste-20260605174248.webp)|
+
+BakeRC 방법은 색이 조금 바래 보이거나 캡쳐시 조금 왜곡 되는 현상이 보인다.
+```compare
+![](paste-20260608095740.png)
+![](paste-20260608095757.png)
+Barkerst
+BakeRC
+```
+
 
 Bakerst는 이 한계를 해결하기 위해 만든 플러그인으로, **여러 소스 메시의 머티리얼을 하나의 아틀라스 텍스처로 베이크해 단일 머티리얼로 병합할 수 있게 한다.**
 
@@ -45,7 +54,7 @@ Atlas Textures (BaseColor, Normal, Roughness, Metallic …)
 
 ## Setting
 
-![](paste-20260608072902.png)
+![](paste-20260608072902.webp)
 
 
 Parm | Description |
@@ -61,7 +70,7 @@ Parm | Description |
 
 BaseColor | Normal | Roughness |
 --- | --- | --- |
-![](Target_Bakerst_BaseColor.png)|![](Target_Bakerst_Normal.png)|![](Target_Bakerst_Roughness.png)|
+![](Target_Bakerst_BaseColor.webp)|![](Target_Bakerst_Normal.webp)|![](Target_Bakerst_Roughness.webp)|
 
 
 ## Algorithm
