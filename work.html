@@ -208,7 +208,8 @@
             .trim().split('\n').map(l => l.trim()).filter(Boolean);
           if (lines.length < 2) return match;
           const toSrc = f => /^https?:\/\/|^\//.test(f) ? f : `works/${id}/${f}`;
-          const bSrc = toSrc(lines[0]), aSrc = toSrc(lines[1]);
+          const pick = l => { const m = l.match(/^!\[[^\]]*\]\(<?([^)>]+)>?\)$/); return m ? m[1].trim() : l; };
+          const bSrc = toSrc(pick(lines[0])), aSrc = toSrc(pick(lines[1]));
           const bLabel = lines[2] || 'Before', aLabel = lines[3] || 'After';
           return `<div class="img-compare"><img class="compare-before" src="${bSrc}" alt="${bLabel}" loading="lazy"><img class="compare-after" src="${aSrc}" alt="${aLabel}" loading="lazy" style="clip-path:inset(0 50% 0 0)"><div class="img-compare-handle"><div class="img-compare-knob">&#10094;&#10095;</div></div><span class="compare-label compare-label-before">${bLabel}</span><span class="compare-label compare-label-after">${aLabel}</span></div>`;
         }
