@@ -210,7 +210,7 @@
           const toSrc = f => /^https?:\/\/|^\//.test(f) ? f : `works/${id}/${f}`;
           const bSrc = toSrc(lines[0]), aSrc = toSrc(lines[1]);
           const bLabel = lines[2] || 'Before', aLabel = lines[3] || 'After';
-          return `<div class="img-compare"><img class="compare-before" src="${bSrc}" alt="${bLabel}" loading="lazy"><img class="compare-after" src="${aSrc}" alt="${aLabel}" loading="lazy" style="clip-path:inset(0 50% 0 0)"><div class="img-compare-handle"><div class="img-compare-knob">&#9668;&#9658;</div></div><span class="compare-label compare-label-before">${bLabel}</span><span class="compare-label compare-label-after">${aLabel}</span></div>`;
+          return `<div class="img-compare"><img class="compare-before" src="${bSrc}" alt="${bLabel}" loading="lazy"><img class="compare-after" src="${aSrc}" alt="${aLabel}" loading="lazy" style="clip-path:inset(0 50% 0 0)"><div class="img-compare-handle"><div class="img-compare-knob">&#10094;&#10095;</div></div><span class="compare-label compare-label-before">${bLabel}</span><span class="compare-label compare-label-after">${aLabel}</span></div>`;
         }
       );
     }
