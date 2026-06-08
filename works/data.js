@@ -57,25 +57,6 @@ Atlas Textures (BaseColor, Normal, Roughness, Metallic …)
 
 ## Setting
 
-![](paste-20260608072902.webp)
-
-
-Parm | Description |
---- | --- |
-**Set Sources** | 월드 액터들 선택 후 버튼을 누르면 자동으로 파라미터가 작성된다. |
-**Target Material** | 머티리얼에 같은 이름을 공유하는 Texture 2D Parm이 있다면, 자동으로 텍스처를 넣어 메시에 적용시켜 준다. |
-**Projection Distance** | 소스-타겟 간 최대 허용 거리 (기본 1.0 cm) |
-**Export to Disk** | 이미지를 디스크로 익스포트 |
-**Output** | 텍스쳐맵별로 해상도를 개별 조정 |
-**SuperSample** | 경계 품질 향상 |
-
-![](<2026-06-08 17-43-59.mp4>)
-
-BaseColor | Normal | Roughness |
---- | --- | --- |
-![](Target_Bakerst_BaseColor.webp)|![](Target_Bakerst_Normal.webp)|![](Target_Bakerst_Roughness.webp)|
-
-
 ## Algorithm
 
 두 가지 베이크 방식을 지원한다.
@@ -92,7 +73,28 @@ BaseColor | Normal | Roughness |
 
 
 
+Parm | Description |
+--- | --- |
+**Set Sources** | 월드 액터들 선택 후 버튼을 누르면 자동으로 파라미터가 작성된다. |
+**Target Material** | 머티리얼에 같은 이름을 공유하는 Texture 2D Parm이 있다면, 자동으로 텍스처를 넣어 메시에 적용시켜 준다. |
+**Projection Distance** | 소스-타겟 간 최대 허용 거리 (기본 1.0 cm) |
+**Export to Disk** | 이미지를 디스크로 익스포트 |
+**Output** | 텍스쳐맵별로 해상도를 개별 조정 |
+**SuperSample** | 경계 품질 향상 |
+
+![](paste-20260608072902.webp)
+![](<2026-06-08 17-43-59.mp4>)
+
+>[!important]
+위치 베이스 베이킹이기 때문에 소스와 타겟 액터는 반드시 월드상 동일한 위치에 있어야 한다.
+
+BaseColor | Normal | Roughness |
+--- | --- | --- |
+![](Target_Bakerst_BaseColor.webp)|![](Target_Bakerst_Normal.webp)|![](Target_Bakerst_Roughness.webp)|
+
+
 ## Result
+Bake RC 보다 훨씬 빠르 속도로 베이크가 가능 하며 불필요 하게 뭉쳐 있는 드로우콜을 풀어 줄 수 있어 좋다.
 Original | Bake |
 --- | --- |
 ![](paste-20260605182517.webp) | ![](paste-20260605182538.webp) |
