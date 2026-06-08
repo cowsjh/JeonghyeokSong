@@ -6,6 +6,12 @@
 <title>Website Editor</title>
 <style>
   * { box-sizing: border-box; }
+  @font-face {
+    font-family: 'D2Coding';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_three@1.0/D2Coding.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
+  }
   :root {
     --bg: #1e1e22; --panel: #26262b; --panel2: #2d2d33; --line: #3a3a42;
     --text: #e6e6ea; --muted: #9a9aa5; --accent: #6ea8fe; --accent2: #4a8cff;
@@ -164,7 +170,7 @@
   .editor-wrap { position: relative; flex: 1; min-height: 0; }
   .editor-wrap textarea, .md-highlight {
     position: absolute; inset: 0; margin: 0; padding: 14px; border: 0;
-    font-family: 'Consolas', 'Courier New', monospace; font-size: 13.5px; line-height: 1.6;
+    font-family: 'D2Coding', 'Consolas', 'Courier New', monospace; font-size: 13.5px; line-height: 1.6;
     white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word; tab-size: 2;
     overflow-y: auto;
   }
@@ -360,6 +366,7 @@
     <div class="review-body" id="reviewBody">Checking…</div>
     <div class="row">
       <button id="reviewRefresh">Re-check</button>
+      <button id="reviewConvertAll" style="display:none">Convert All</button>
       <button id="reviewClose" class="primary">Close</button>
     </div>
   </div>
@@ -1135,6 +1142,34 @@ ta.addEventListener('keydown', e => {
   }
 });
 
+// ─── Alt+Up / Alt+Down: move current line(s) up/down ───
+ta.addEventListener('keydown', e => {
+  if (!e.altKey || e.ctrlKey || e.metaKey || e.isComposing) return;
+  if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+  const v = ta.value, s = ta.selectionStart, en = ta.selectionEnd;
+  const lineStart = v.lastIndexOf('\n', s - 1) + 1;            // start of first selected line
+  let lineEnd = v.indexOf('\n', en); if (lineEnd === -1) lineEnd = v.length;   // end of last selected line (no trailing \n)
+  const block = v.slice(lineStart, lineEnd);
+
+  if (e.key === 'ArrowUp') {
+    if (lineStart === 0) return;                               // already at top
+    e.preventDefault();
+    const prevStart = v.lastIndexOf('\n', lineStart - 2) + 1;  // start of previous line
+    const prevLine = v.slice(prevStart, lineStart - 1);        // previous line (no \n)
+    const shift = lineStart - prevStart;
+    ta.selectionStart = prevStart; ta.selectionEnd = lineEnd;
+    insertAtCursor(block + '\n' + prevLine, s - shift, en - shift);
+  } else {
+    if (lineEnd === v.length) return;                          // already at bottom
+    e.preventDefault();
+    let nextEnd = v.indexOf('\n', lineEnd + 1); if (nextEnd === -1) nextEnd = v.length;
+    const nextLine = v.slice(lineEnd + 1, nextEnd);            // next line (no \n)
+    const shift = nextEnd - lineEnd;
+    ta.selectionStart = lineStart; ta.selectionEnd = nextEnd;
+    insertAtCursor(nextLine + '\n' + block, s + shift, en + shift);
+  }
+});
+
 // ─── status ───
 async function refreshStatus() {
   const s = await api('/api/status');
@@ -1192,14 +1227,27 @@ function renderReview(r) {
     const res = await api('/api/convert?type=' + current.type + '&slug=' + encodeURIComponent(current.slug) + '&name=' + encodeURIComponent(name), { method: 'POST' });
     if (res.ok) {
       toast('Converted: ' + name + ' → ' + res.newName + ' (' + res.beforeMB + 'MB → ' + res.afterMB + 'MB)', 'ok');
-      // 서버가 main.md 참조를 갱신했으므로, 편집 버퍼의 파일명 참조도 동일하게 치환 (미저장 편집 보존)
-      const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = new RegExp('([(</:\\s])' + esc, 'g');
-      const ed = $('#editor'); ed.value = ed.value.replace(re, '$1' + res.newName);
-      const thumb = $('#fm-thumbnail'); if (thumb && thumb.value.endsWith(name)) thumb.value = thumb.value.slice(0, -name.length) + res.newName;
-      updateHighlight(); renderPreview(); refreshStatus(); runReview();
+      applyConvertResult(name, res.newName);
+      runReview();
     } else { toast('Convert failed: ' + (res.error || ''), 'err'); btn.disabled = false; btn.textContent = 'Convert'; }
   });
+
+  const convertAllBtn = $('#reviewConvertAll');
+  if (r.convertible && r.convertible.length) {
+    convertAllBtn.style.display = '';
+    convertAllBtn.disabled = false;
+    convertAllBtn.textContent = 'Convert All (' + r.convertible.length + ')';
+  } else {
+    convertAllBtn.style.display = 'none';
+  }
+}
+
+function applyConvertResult(oldName, newName) {
+  const esc = oldName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp('([(</:\\s])' + esc, 'g');
+  const ed = $('#editor'); ed.value = ed.value.replace(re, '$1' + newName);
+  const thumb = $('#fm-thumbnail'); if (thumb && thumb.value.endsWith(oldName)) thumb.value = thumb.value.slice(0, -oldName.length) + newName;
+  updateHighlight(); renderPreview(); refreshStatus();
 }
 async function runReview() {
   if (!current) return;
@@ -1259,6 +1307,21 @@ $('#togglePreview').onclick = () => {
 };
 $('#reviewBtn').onclick = () => { $('#reviewBg').classList.add('show'); runReview(); };
 $('#reviewRefresh').onclick = runReview;
+$('#reviewConvertAll').onclick = async () => {
+  const btn = $('#reviewConvertAll');
+  btn.disabled = true;
+  const items = [...$('#reviewBody').querySelectorAll('[data-convert]')];
+  let done = 0;
+  for (const item of items) {
+    const name = item.getAttribute('data-convert');
+    btn.textContent = 'Converting… (' + (done + 1) + '/' + items.length + ')';
+    const res = await api('/api/convert?type=' + current.type + '&slug=' + encodeURIComponent(current.slug) + '&name=' + encodeURIComponent(name), { method: 'POST' });
+    if (res.ok) { applyConvertResult(name, res.newName); done++; }
+    else toast('Convert failed: ' + name + ' — ' + (res.error || ''), 'err');
+  }
+  toast('Converted ' + done + '/' + items.length, 'ok');
+  runReview();
+};
 $('#reviewClose').onclick = () => $('#reviewBg').classList.remove('show');
 
 // ─── deploy modal ───
