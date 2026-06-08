@@ -1494,6 +1494,30 @@ mipmap 적용, 미적용 | 블렌딩 적용 방식 |
 GPU는 메모리를 절약을 위해 4*4 픽셀 블록 단위로 묶어서 압축된다.
 >(직사각형)32x16도 지원한다.`,
 
+  'Game/최적화시유용한커멘드': `---
+title: 최적화시 유용한 커멘드
+date: 2026-06-08
+tags: Unreal Engine, optimization
+featured: false
+order: 
+draft: false
+series: 
+---
+
+\`\`\`
+stat Unit
+stat FPS
+\`\`\`
+
+\`\`\`
+FreezeRendering
+r.VisualizePrimitives 1
+profileGPU
+
+abtest r.Nanite.MaxPixelsPerEdge 1 5
+abtest stop
+\`\`\``,
+
   'Houdini/control-smoke-by-max-density': `---
 title: Control Smoke by Max Density
 date: 2023-04-05
