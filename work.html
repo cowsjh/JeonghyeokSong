@@ -199,6 +199,42 @@
       );
     }
 
+    // ─── compare 블록 → 슬라이더 치환 ────────────────
+    function convertCompareBlocks(html, id) {
+      return html.replace(
+        /<pre><code class="language-compare">([\s\S]*?)<\/code><\/pre>/gi,
+        (match, raw) => {
+          const lines = raw.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+            .trim().split('\n').map(l => l.trim()).filter(Boolean);
+          if (lines.length < 2) return match;
+          const toSrc = f => /^https?:\/\/|^\//.test(f) ? f : `works/${id}/${f}`;
+          const bSrc = toSrc(lines[0]), aSrc = toSrc(lines[1]);
+          const bLabel = lines[2] || 'Before', aLabel = lines[3] || 'After';
+          return `<div class="img-compare"><img class="compare-before" src="${bSrc}" alt="${bLabel}" loading="lazy"><img class="compare-after" src="${aSrc}" alt="${aLabel}" loading="lazy" style="clip-path:inset(0 50% 0 0)"><div class="img-compare-handle"><div class="img-compare-knob">&#9668;&#9658;</div></div><span class="compare-label compare-label-before">${bLabel}</span><span class="compare-label compare-label-after">${aLabel}</span></div>`;
+        }
+      );
+    }
+
+    function initCompareSliders(container) {
+      container.querySelectorAll('.img-compare').forEach(el => {
+        const after = el.querySelector('.compare-after');
+        const handle = el.querySelector('.img-compare-handle');
+        function set(clientX) {
+          const rect = el.getBoundingClientRect();
+          const pct = Math.max(0, Math.min(100, (clientX - rect.left) / rect.width * 100));
+          after.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+          handle.style.left = pct + '%';
+        }
+        let active = false;
+        el.addEventListener('mousedown', e => { active = true; set(e.clientX); e.preventDefault(); });
+        window.addEventListener('mousemove', e => { if (active) set(e.clientX); });
+        window.addEventListener('mouseup', () => { active = false; });
+        el.addEventListener('touchstart', e => { active = true; set(e.touches[0].clientX); }, { passive: true });
+        window.addEventListener('touchmove', e => { if (active) set(e.touches[0].clientX); }, { passive: true });
+        window.addEventListener('touchend', () => { active = false; });
+      });
+    }
+
     // ─── .md 링크 → work 페이지 링크 치환 ──────────
     function resolvePath(base, rel) {
       const parts = base.split('/');
@@ -305,10 +341,11 @@
           ${tools.length ? `<div class="work-tools">${toolBadges}</div>` : ''}
           ${linkBtn}
         </div>
-        <div class="md-body">${convertMdLinks(convertImgToVideo(convertAlerts(marked.parse(body)).replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, `$1works/${id}/`)), id)}</div>
+        <div class="md-body">${convertMdLinks(convertCompareBlocks(convertImgToVideo(convertAlerts(marked.parse(body, { breaks: true })).replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, `$1works/${id}/`)), id), id)}</div>
       `;
 
       postProcessTables(document.getElementById('work-content'));
+      initCompareSliders(document.getElementById('work-content'));
       buildTOC();
     }
 

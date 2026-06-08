@@ -83,7 +83,7 @@ function renderWork(body, id) {
     (_, _url, vid) =>
       `<div class="yt-embed"><iframe src="https://www.youtube.com/embed/${vid}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
   );
-  let html = marked.parse(body);
+  let html = marked.parse(body, { breaks: true });
   html = convertAlerts(html).replace(/(<img[^>]+src=")(?!https?:\/\/|\/|data:)/g, `$1works/${id}/`);
   html = convertImgToVideo(html);
   html = convertMdLinks(html, id);

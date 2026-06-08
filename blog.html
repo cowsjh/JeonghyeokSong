@@ -301,6 +301,26 @@
       return slug;
     }
 
+    function initCompareSliders(container) {
+      container.querySelectorAll('.img-compare').forEach(el => {
+        const after = el.querySelector('.compare-after');
+        const handle = el.querySelector('.img-compare-handle');
+        function set(clientX) {
+          const rect = el.getBoundingClientRect();
+          const pct = Math.max(0, Math.min(100, (clientX - rect.left) / rect.width * 100));
+          after.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+          handle.style.left = pct + '%';
+        }
+        let active = false;
+        el.addEventListener('mousedown', e => { active = true; set(e.clientX); e.preventDefault(); });
+        window.addEventListener('mousemove', e => { if (active) set(e.clientX); });
+        window.addEventListener('mouseup', () => { active = false; });
+        el.addEventListener('touchstart', e => { active = true; set(e.touches[0].clientX); }, { passive: true });
+        window.addEventListener('touchmove', e => { if (active) set(e.touches[0].clientX); }, { passive: true });
+        window.addEventListener('touchend', () => { active = false; });
+      });
+    }
+
     function makeRenderer(id) {
       const r = new marked.Renderer();
       r.image = function(hrefOrToken, title, text) {
@@ -339,6 +359,15 @@
       r.code = function(token) {
         const code = typeof token === 'object' ? token.text : token;
         const lang = typeof token === 'object' ? token.lang : arguments[1];
+        if (lang === 'compare') {
+          const lines = code.trim().split('\n').map(l => l.trim()).filter(Boolean);
+          if (lines.length >= 2) {
+            const toSrc = f => /^https?:\/\/|^\//.test(f) ? f : `notes/${id}/${f}`;
+            const bSrc = toSrc(lines[0]), aSrc = toSrc(lines[1]);
+            const bLabel = lines[2] || 'Before', aLabel = lines[3] || 'After';
+            return `<div class="img-compare"><img class="compare-before" src="${bSrc}" alt="${bLabel}" loading="lazy"><img class="compare-after" src="${aSrc}" alt="${aLabel}" loading="lazy" style="clip-path:inset(0 50% 0 0)"><div class="img-compare-handle"><div class="img-compare-knob">&#9668;&#9658;</div></div><span class="compare-label compare-label-before">${bLabel}</span><span class="compare-label compare-label-after">${aLabel}</span></div>`;
+          }
+        }
         if (typeof hljs === 'undefined') {
           const esc = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           return `<pre><code class="language-${lang || 'plaintext'}">${esc}</code></pre>`;
@@ -410,6 +439,7 @@
       `;
       const container = document.getElementById('post-content');
       postProcessTables(container);
+      initCompareSliders(container);
       container.querySelectorAll('.md-body h1, .md-body h2, .md-body h3').forEach((h, i) => {
         if (!h.id) {
           h.id = h.textContent.trim().toLowerCase()
