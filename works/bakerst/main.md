@@ -27,8 +27,8 @@ Original | BakeRC | *Bakerst* |
 
 BakeRC 방법은 색이 조금 바래 보이거나 캡처 시 조금 왜곡되는 현상이 보인다.
 ```compare
-![](paste-20260608095740.png)
-![](paste-20260608095757.png)
+![](paste-20260608095740.webp)
+![](paste-20260608095757.webp)
 Bakerst
 BakeRC
 ```
@@ -62,8 +62,8 @@ Atlas Textures (BaseColor, Normal, Roughness, Metallic …)
 #### Cage 메쉬 노멀 베이크
 일반적인 베이크는 머티리얼의 노멀맵만 굽고 메쉬 자체의 기하(형상) 노멀은 포함하지 않는다. Bakerst는 이를 보완하기 위해 **cage 광선 베이크**를 추가했다 — 타겟 텍셀마다 표면 법선 방향으로 광선을 쏴 소스 하이폴리 표면에 명중시키고, 그 기하 노멀을 머티리얼 노멀과 합성 한다. **카메라가 없어 구석,오목면도 누락이 없고, 풀해상도 버퍼를 사용하지 않아 메모리 부담이 적다.**
 ```compare
-![](paste-20260611154250.png)
-![](paste-20260611154215.png)
+![](paste-20260611154250.webp)
+![](paste-20260611154215.webp)
 원본 메가스캔 데이터
 로우폴리 베이크 데이터+베이크 텍스쳐
 ```
@@ -77,22 +77,26 @@ VRAM을 사용하기 때문에 빈 레벨에서 굽는 것을 권장한다. Mate
 소스 메시 주변에 렌더 캡처 카메라 6개를 자동 배치해 머티리얼을 캡처한 뒤 타겟 UV로 투영한다. 버추얼 텍스처가 사용 된 메쉬에 차선으로 사용가능 하다.
 임의의 형상 차이에도 동작하지만 카메라 사각지대(코너·오목면)는 누락될 수 있다.
 
+위의 문제는 파라미터로 일정 부분 커버 가능하다.
+![](paste-20260617072400.webp)
+
+
 #### 단점
 카메라 사각지대 누락 외에 SSAA 미지원, 맵별 해상도 조정 불가, OpacityMask/AO 미지원.
 
 
-
+### Parameters
+![](paste-20260611155655.webp)
 Parm | Description |
 --- | --- |
 **Set Sources** | 월드 액터들 선택 후 버튼을 누르면 자동으로 파라미터가 작성된다. |
 **Target Material** | 머티리얼에 같은 이름을 공유하는 Texture 2D Parm이 있다면, 자동으로 텍스처를 넣어 메시에 적용시켜 준다. |
-**Projection Distance** | 소스-타겟 간 최대 허용 거리 (기본 1.0 cm) |
+**Projection Distance** | 소스-타겟 간 최대 허용 거리 (기본 1.0 cm) - 로우 메시 경우 버텍스 위치가 달라질 수 있기 때문에 값을 높여줘야 한다. |
 **Blend Mesh Normal** | (TopologyMatching) ON 시 소스 메쉬 기하 노멀을 cage 광선으로 포집해 머티리얼 노멀과 합성. OFF면 머티리얼 노멀만. |
 **Export to Disk** | 이미지를 디스크로 익스포트 |
 **Output** | 텍스쳐맵별로 해상도를 개별 조정 |
 **SuperSample** | 경계 품질 향상 |
 
-![](paste-20260611155655.png)
 ![](<2026-06-08 17-43-59.mp4>)
 
 >[!important]
@@ -101,6 +105,9 @@ Parm | Description |
 BaseColor | Normal | Roughness |
 --- | --- | --- |
 ![](Target_Bakerst_BaseColor.webp)|![](Target_Bakerst_Normal.webp)|![](Target_Bakerst_Roughness.webp)|
+
+
+
 
 
 ## Result
