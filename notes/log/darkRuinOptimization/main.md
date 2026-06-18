@@ -34,7 +34,7 @@ Qpaque 머티리얼 동일 Master 단일화
 
 
 #### 머티리얼 최적화
-Opaque 머티리얼 Bakerst 플러그인 사용하여 텍스처 기반 단순 머티리얼로 변환.
+Opaque 머티리얼은 직접 제작한 [Bakerst](../../../works/bakerst/main.md) 플러그인 사용하여 텍스처 기반 단순 머티리얼로 변환.
 일괄적으로 최대 2K로 사용하게 리밋을 잡아 주었다. 디테일이 떨어지는 부분은 추후에 재조정.
 
 ```compare
@@ -44,10 +44,36 @@ Opaque 머티리얼 Bakerst 플러그인 사용하여 텍스처 기반 단순 �
 
 ### Light
 - 무드용 라이트 `shadow cast` off
+- static, stationary 로 변경
+- 라이트 반경 조절
 - 불 필요한 라이트 제거
 - 촛불 라이트  -> spot 라이트 교체
 씬의 무드를 위한 라이트는 shadow를 전부 꺼주었다. 작은 촛불 하나씩 있던 라이트를 전부 지우고 스포트 라이트로 표현해 주었다.
 
 ![](paste-20260601133247.webp) |![](paste-20260611015459.png)|
 --- | --- |
+
+### PostProcessing
+
+포스트 프로세싱중 연산 효율이 좋지 않고 변화가 거의 없는 것들은 수정을 해주었다.
+
+![](qrenderdoc_8D5m2riMwB.png)
+
+```
+r.BloomQuality 0
+r.AntiAliasingMethod 2
+sg.AntiAliasingQuality 2
+r.LensFlareQuality 0
+```
+
+
+![](paste-20260617083354.png)
+```compare
+![](paste-20260617085152.png)
+![](paste-20260617085810.png)
+```
+
+## Result
+빌드 후 프레임
+![](paste-20260618025750.png)
 
