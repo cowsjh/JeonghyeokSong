@@ -12959,6 +12959,607 @@ tags: TIP
 줄을 많이 띄우면 글이 아래로 내려 온다.
 `,
 
+  'Linux/claude-remote-control-setup': `---
+title: 노트북 Claude 원격 머신 셋업 (Claude Remote Control Setup)
+date: 2026-08-10
+tags: ssh, tailscale
+order: 
+featured: false
+draft: false
+---
+
+# 노트북 Claude 원격 머신 셋업 (Claude Remote Control Setup)
+
+새 노트북을 Claude Code 원격 제어(Remote Control)용 머신으로 세팅하는 절차. **처음 셋업할 때**와 **연결이 끊겨서 다시 붙을 때**를 나눠서 정리.
+
+관련: Claude Code statusline 커스텀 설정 — 같은 리눅스 원격 기기에서 Claude Code를 세팅한 또 다른 기록(상태줄 커스터마이징).
+
+---
+
+## A. 첫 연결
+
+## 1. 폰 준비물
+- Tailscale 앱 설치 (노트북과 같은 계정으로 로그인)
+- Claude 앱 설치 (원격 QR 스캔용)
+- termux : 원격 ssh 재접속시 필요
+## 2. 노트북 기본 설정
+
+*노트북 터미널에서 직접 실행, sudo 필요.*
+
+\`\`\`bash
+# 1. 패키지 설치
+sudo apt update
+sudo apt install -y tmux openssh-server
+
+# 2. Tailscale 설치
+curl -fsSL https://tailscale.com/install.sh | sh
+
+# 3. 뚜껑 닫아도 절전 안 되게 설정
+sudo sed -i 's/^#\\?HandleLidSwitch=.*/HandleLidSwitch=ignore/' /etc/systemd/logind.conf
+sudo sed -i 's/^#\\?HandleLidSwitchDocked=.*/HandleLidSwitchDocked=ignore/' /etc/systemd/logind.conf
+sudo sed -i 's/^#\\?HandleLidSwitchExternalPower=.*/HandleLidSwitchExternalPower=ignore/' /etc/systemd/logind.conf
+grep -qE '^HandleLidSwitch=ignore' /etc/systemd/logind.conf || echo "HandleLidSwitch=ignore" | sudo tee -a /etc/systemd/logind.conf
+grep -qE '^HandleLidSwitchDocked=ignore' /etc/systemd/logind.conf || echo "HandleLidSwitchDocked=ignore" | sudo tee -a /etc/systemd/logind.conf
+grep -qE '^HandleLidSwitchExternalPower=ignore' /etc/systemd/logind.conf || echo "HandleLidSwitchExternalPower=ignore" | sudo tee -a /etc/systemd/logind.conf
+sudo systemctl restart systemd-logind
+
+# 4. 모든 절전 경로 완전 차단
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+
+# 5. SSH 서버 활성화
+sudo systemctl enable --now ssh
+
+# 6. Tailscale 연결 (브라우저 로그인 창 뜸)
+sudo tailscale up
+
+echo "=== 설정 완료 ==="
+\`\`\`
+
+\`sudo tailscale up\` 실행 시 출력되는 링크를 브라우저에서 열어 구글/깃허브 계정으로 로그인.
+
+## 3. Claude Remote Control 시작
+
+*tmux 세션 안에서 실행.*
+
+\`\`\`bash
+tmux new -s claude
+claude remote-control
+\`\`\`
+
+- \`claude remote-control\` 실행하면 세션 URL과 QR코드가 뜸 (스페이스바로 QR 토글)
+- 폰 Claude 앱으로 QR 스캔하면 연결
+- \`Ctrl-b\` 다음 \`d\` 로 detach해도 세션은 계속 살아있음
+
+## 4. 푸시 알림 켜기
+
+*Claude Code 안에서 실행.*
+
+\`\`\`
+/config
+\`\`\`
+→ "Push when Claude decides" / "Push when actions required" 켜기
+
+---
+
+## B. 재연결 시 방법
+
+핸드폰으로 ssh 연결 후 컴퓨터 터미널을 원격으로 조작 하는 방법으로 재연결을 한다.
+
+필요 어플리케이션
+1. termux
+2. tailscale
+
+### termux 터미널 에서
+
+\`\`\`bash
+ssh 컴퓨터사용자명@tailscale-ip #어플 목록에서 100.xxx.xx... 로 시작 하는 ip
+cd 디렉토리
+tmux attach -t claude
+\`\`\`
+
+최근 세션이 없다면
+\`\`\`bash
+tmux new -s claude
+claude remote-control
+\`\`\`
+
+### ssh 다운로드
+
+termux 접속
+\`\`\`bash
+pkg update && pkg install openssh 
+\`\`\`
+`,
+
+  'Linux/file-permissions-and-sudo': `---
+title: 파일 권한과 sudo (File Permissions)
+date: 2026-08-08
+tags: permissions, sudo
+order: 
+featured: false
+draft: false
+---
+
+# 파일 권한과 sudo (File Permissions)
+
+리눅스는 **다중 사용자 시스템**이라 파일 하나에도 세 부류의 접근 권한이 따로 매겨진다.
+
+## rwx 읽는 법
+
+\`\`\`
+-rwxr-xr-- 1 robot dialout 5820 Jul 7 10:30 motor_test.py
+\`\`\`
+
+| 조각 | 의미 |
+|---|---|
+| \`-\` | 종류 (\`-\` 파일, \`d\` 디렉터리, \`c\` 문자 장치) |
+| \`rwx\` | **소유자**(robot) — 읽기+쓰기+실행 |
+| \`r-x\` | **그룹**(dialout) — 읽기+실행 |
+| \`r--\` | **그 외** — 읽기만 |
+
+- 소유자(u) = 집주인, 그룹(g) = 등록된 가족 구성원, 그 외(o) = 방문객
+- 권한 변경: \`chmod\`(권한), \`chown\`(소유자) — 예: \`chmod +x run.sh\`
+
+## 로봇 개발에서 흔한 이슈 — 시리얼 포트
+
+\`/dev/ttyUSB0\`은 보통 \`dialout\` 그룹 소유라, 내 계정이 그 그룹에 없으면 \`Permission denied\`가 난다.
+
+\`\`\`bash
+sudo usermod -aG dialout $USER   # 계정을 dialout 그룹에 추가
+# 로그아웃 후 재로그인해야 적용됨
+\`\`\`
+
+그룹을 새로 만드는 게 아니라, 이미 있는 그룹에 내 계정을 넣어 그 그룹 권한(\`r-x\`)을 받는 것.
+
+## sudo — 관리자 권한의 양날
+
+\`sudo\`는 명령을 **root 권한**으로 실행한다. 시스템 설정 변경, 패키지 설치, 서비스 제어에 필요하다.
+
+> "에러가 나서 그냥 sudo를 붙였다"는 습관은 금물. 원인(그룹 미소속, 소유자 문제)을 바로잡는 게 정석이고, sudo는 시스템 수준 변경이 정말 필요할 때만.
+
+예: \`sudo colcon build\`로 빌드하면 산출물이 root 소유가 돼 이후 일반 권한 빌드가 계속 깨지는 대표적 자충수.
+
+## 관련 노트
+
+- [커널과 프로세스 (Kernel & Process)](../kernel-and-process/main.md)
+- [시리얼 통신과 UART (Serial Communication)](../serial-communication-uart/main.md)
+`,
+
+  'Linux/kernel-and-process': `---
+title: 커널과 프로세스 (Kernel & Process)
+date: 2026-08-08
+tags: kernel, os
+order: 
+featured: false
+draft: false
+---
+
+# 커널과 프로세스 (Kernel & Process)
+
+## 커널이란
+
+커널은 **하드웨어와 프로그램 사이를 중개하는 운영체제의 핵심 소프트웨어**다. 프로그램은 하드웨어를 직접 만질 수 없고 항상 커널을 거쳐야 한다.
+
+\`\`\`
+사용자 공간 (셸, ROS2 노드들, 파이썬, rviz2)
+      ↓ 시스템 콜 (open/read/write...)
+커널 (프로세스 스케줄링·메모리 관리·파일시스템·디바이스 드라이버)
+      ↓ 디바이스 드라이버
+하드웨어 (CPU·메모리·디스크·USB·네트워크)
+\`\`\`
+
+- 컴퓨터 한 대에 커널은 **딱 하나**, 부팅 시 로드돼 종료까지 계속 실행된다.
+- 모든 프로그램(프로세스)이 이 하나의 커널을 공유해 하드웨어에 접근한다.
+- 리눅스는 **모놀리식 커널**: 스케줄링·메모리 관리·파일시스템·드라이버가 한 덩어리로 뭉쳐 있다.
+
+## 커널도 소프트웨어다 — 단, 특권 모드
+
+커널도 C로 짜인 코드지만, 실행 권한(모드)이 일반 프로그램과 다르다.
+
+| 모드 | 실행 주체 | 하드웨어 접근 |
+|---|---|---|
+| 사용자 모드 | 일반 프로그램(파이썬, ROS2 노드) | 불가 — 시스템 콜로만 요청 |
+| 커널 모드 | 커널 | 가능 — 디바이스 드라이버로 직접 조작 |
+
+프로그램이 시스템 콜을 보내면 커널이 **직접** 하드웨어를 조작하고 결과를 돌려준다. 커널은 단순 중개자가 아니라 하드웨어를 만지는 유일한 주체이며, CPU 시간 배분과 메모리 할당도 능동적으로 수행한다.
+
+> 프로그램이 하드웨어를 직접 만질 수 없게 한 이 구조 덕분에, 프로그램 하나가 죽어도 시스템 전체는 살아남는다.
+
+## 프로세스
+
+실행 중인 프로그램 하나하나. 각 프로세스는 고유 **PID**를 가지고, **독립된 메모리 공간**으로 서로 침범하지 못하며, 커널 스케줄러가 CPU 시간을 배분한다.
+
+로봇을 켜면 ROS2 노드 수십 개가 각각 프로세스로 뜬다. \`ps aux\`/\`htop\`으로 확인, \`kill PID\`로 종료. "노드 하나가 죽어도 다른 노드는 계속 돈다"는 ROS2의 견고함은 이 **프로세스 격리** 위에 서 있다.
+
+## 관련 노트
+
+- [파일 권한과 sudo (File Permissions)](../file-permissions-and-sudo/main.md)
+- [시리얼 통신과 UART (Serial Communication)](../serial-communication-uart/main.md)
+`,
+
+  'Linux/linux-basic-commands': `---
+title: linux 기본 명령어
+date: 2026-08-08
+tags: bash, basic
+order: 
+featured: false
+draft: false
+---
+
+# linux 기본 명령어
+
+\`\`\`bash
+
+# 파일, 경로
+mkdir
+rm
+rm -r
+mv
+cp
+ls
+\`\`\`
+
+\`\`\`
+\`\`\`
+
+---
+
+파일 명령을 다룬 뒤 접근 권한까지 확장한 내용은 [파일 권한과 sudo (File Permissions)](../file-permissions-and-sudo/main.md) 참고.
+`,
+
+  'Linux/serial-communication-uart': `---
+title: 시리얼 통신과 UART (Serial Communication)
+date: 2026-08-08
+tags: serial, uart
+order: 
+featured: false
+draft: false
+---
+
+# 시리얼 통신과 UART (Serial Communication)
+
+## 시리얼(직렬) vs 병렬
+
+"직렬"은 포트 개수가 아니라 **한 통신선 안에서 데이터가 흐르는 순서**를 뜻한다.
+
+- 병렬: 여러 비트를 동시에 나란히 전송 (빠르지만 배선 복잡)
+- 직렬: 비트를 한 줄로 세워 하나씩 전송 (배선 단순)
+
+리눅스는 이를 \`/dev/ttyUSB0\`, \`/dev/ttyACM0\` 같은 **장치 파일**로 인식한다(\`tty\` = teletype 줄임말). "모든 것은 파일" 철학 덕분에 \`open('/dev/ttyUSB0')\`처럼 파일 다루듯 하드웨어와 통신 가능.
+
+## USB와 시리얼의 관계
+
+USB(Universal **Serial** Bus)도 물리 계층에서는 직렬 전송이다. 다만 리눅스의 장치 파일 이름은 **USB 위에서 어떤 프로토콜을 쓰느냐**로 갈린다.
+
+| 장치 | USB 위 프로토콜 | 장치 파일 | 서브시스템 |
+|---|---|---|---|
+| 모터 컨트롤러 (Arduino, STM32) | UART 흉내 | \`/dev/ttyUSB0\`, \`ttyACM0\` | tty |
+| USB 카메라 | UVC | \`/dev/video0\` | V4L2 |
+
+## 시리얼 포트(tty)의 대표 예
+
+모터 드라이버 보드 · GPS 모듈(NMEA) · IMU 센서 · 저가형 2D 라이다(RPLiDAR) · 3D 프린터/CNC(G-code)
+
+| 장치 파일 패턴 | 의미 |
+|---|---|
+| \`/dev/ttyUSB0\` | USB-to-Serial 칩 (FTDI, CP2102 등) |
+| \`/dev/ttyACM0\` | USB CDC-ACM (Arduino Uno 등) |
+| \`/dev/ttyS0\` | 내장 물리 RS-232 포트 |
+| \`/dev/ttyAMA0\` | 라즈베리파이 GPIO UART 핀 |
+
+\`ls -l /dev/tty*\`의 종류 문자는 \`c\`(문자 장치) — 한 번에 한 바이트씩 주고받는다.
+
+## UART (Universal Asynchronous Receiver/Transmitter)
+
+시작비트-데이터-정지비트 방식으로 통신하는 하드웨어 회로 겸 규격.
+
+- **비동기식**: 클럭 신호선 없이, 속도(baud rate, 예: 9600bps)만 미리 약속
+- 송신: 바이트 → 비트로 풀어 순서대로 전송 / 수신: 비트를 모아 바이트로 재조립
+
+**전송 구조** — 예: 거리값 250(\`11111010\`) 전송 시
+
+\`\`\`
+[시작비트] [데이터 8비트]  [정지비트]
+   0        11111010          1
+\`\`\`
+
+여러 바이트가 모여 라이다 패킷(\`[헤더][각도][거리]...[체크섬]\`)이나 GPS NMEA 문자열(\`$GPGGA,...\`) 구조를 이룬다.
+
+**시작/정지 비트 구별법**: 값(0/1)이 아니라 **타이밍**으로 구별한다.
+
+- 평소 회선은 항상 **1(idle)** 유지
+- 0으로 뚝 떨어지는 순간 = 시작비트
+- 이후 약속된 속도로 정해진 개수(보통 8개)만 세어 데이터로 읽고, 다음 1비트는 정지비트
+
+\`\`\`
+1111111111 [0] 1 1 1 1 1 0 1 0 [1] 1111111111
+   idle    시작  ---데이터 8비트---  정지  다시 idle
+\`\`\`
+
+값이 아니라 순서(타이밍)로 구분하므로, 데이터 안 0/1 패턴이 시작/정지비트와 같아 보여도 안 헷갈린다.
+
+## 관련 노트
+
+- [커널과 프로세스 (Kernel & Process)](../kernel-and-process/main.md)
+- [파일 권한과 sudo (File Permissions)](../file-permissions-and-sudo/main.md)
+- [USB 장치 식별과 udev 규칙 (USB Device Identification)](../usb-device-identification-udev-rules/main.md) — \`/dev/ttyACM0\` 같은 장치 파일이 실제로 어떤 vendor/product·경로로 식별되는지
+- [udev port 관련 명령어](../udev-port-commands/main.md) — 위 식별 값들을 직접 조회·고정하는 명령어 모음
+`,
+
+  'Linux/ubuntu-2204-dual-boot-setup': `---
+title: Ubuntu 22.04 듀얼부팅 설치 가이드
+date: 2026-08-14
+tags: ubuntu, dual-boot
+order: 
+featured: false
+draft: false
+---
+
+# Ubuntu 22.04 듀얼부팅 설치 가이드
+
+Windows 11 + Ubuntu 22.04 LTS 듀얼부팅. [ROS2 Humble](../../ROS2/ros-basics/main.md) 개발 목적. 재부팅하며 진행하므로 폰/다른 기기에서 이 노트를 보며 따라간다.
+
+## 이 기기 사양 (호환성 걱정 0)
+
+| 부품 | 모델 | 22.04 지원 |
+|---|---|---|
+| CPU | AMD Ryzen 9 3900X (Zen2, 12코어) | 완벽 |
+| GPU | NVIDIA RTX 2070 SUPER | 완벽 (드라이버 + CUDA) |
+| 메인보드 | ASUS PRIME X570-P | 완벽 (UEFI) |
+| 유선랜 | Realtek PCIe GbE | 설치 직후 인터넷 됨 |
+| RAM | 64GB | 넉넉 |
+
+부품이 전부 2019년산이라 22.04(2022 출시)가 드라이버를 다 잡는다. ASUS 데스크탑 기준 **부팅메뉴 = F8, BIOS = Delete**.
+
+## 최종 디스크 레이아웃
+
+**NVMe SSD (512GB) — 속도 담당**
+
+| 파티션 | 크기 | 용도 |
+|---|---|---|
+| Windows C: (NTFS) | ~356GB | Windows 그대로 (476GB − 120GB) |
+| 리눅스 \`/\` (ext4) | ~120GB | 시스템 + 도커/빌드 캐시 |
+
+**WD HDD (1863GB) — 용량 담당**
+
+| 파티션 | 크기 | 용도 |
+|---|---|---|
+| Windows S: (NTFS) | ~1363GB | Windows·Linux 공용 창고 (1863GB − 500GB) |
+| 리눅스 데이터 (ext4) | ~500GB | \`/mnt/data\` (데이터셋·rosbag) |
+
+- swap 별도 파티션 불필요 → Ubuntu가 \`/\` 안에 swapfile 자동 생성.
+- \`/mnt/data\`는 폴더처럼 보이지만 내용물은 HDD에 저장된다. **코드·설정은 홈(\`~\`, SSD), 무거운 데이터는 \`/mnt/data\`(HDD)** 규칙만 기억.
+
+## 준비물
+- USB 8GB 이상
+- Ubuntu 22.04 LTS ISO (ubuntu.com/download)
+- Rufus (rufus.ie)
+
+---
+
+## 1단계 · Windows 안전장치 끄기 (제일 중요)
+1. **BitLocker 해제**: 설정 → 개인정보 및 보안 → 장치 암호화 → 꺼짐 확인 (Windows 11 Home은 "장치 암호화" 명칭)
+2. **빠른 시작 + 최대절전 끄기**: 관리자 PowerShell에서 \`powercfg /h off\` 한 줄. (빠른 시작이 꺼지고 hiberfil.sys도 삭제돼 3단계 파티션 축소가 잘 된다.)
+3. 완전 종료 후 재부팅 1회
+
+> 빠른 시작 안 끄면 리눅스가 Windows 파티션을 못 건드리거나 데이터가 깨질 수 있다. 무조건 먼저.
+
+## 2단계 · Windows에서 빈 공간 만들기 — **드라이브별로 방법이 다르다**
+
+> **이 기기 실제 확인 결과 (2026-08-16):** C:는 Windows 내장 축소로 **17GB밖에 안 잘린다.** 볼륨 끝(459GB 지점)에 \`$Mft\`(마스터 파일 테이블)가 박혀 있는데, Windows 내장 "볼륨 축소"는 MFT를 못 옮기기 때문. 페이지파일·최대절전·시스템 보호를 다 꺼도 소용없다(이건 다른 종류의 이동불가 파일이라 이 경우엔 해결책이 아님). → **C:는 디스크 관리 말고 USB의 GParted로 줄인다(4단계 이후).**
+
+**S: (HDD, 500GB) → 지금 Windows 디스크 관리로 OK ✅**
+\`Win + X\` → **디스크 관리**
+4. \`S:\` 우클릭 → 볼륨 축소 → **512000 MB (500GB)** → 축소 → "할당되지 않음"으로 둔다.
+   - S:는 여유 1.6TB짜리 순수 데이터 드라이브라 끝에 이동불가 파일이 걸릴 일이 거의 없어 정상적으로 잘린다.
+   - (혹시 S:도 축소량이 500GB보다 적게 뜨면, S: 끝에도 이동불가 파일이 있는 것 → 이것도 C:처럼 GParted로 넘긴다.)
+
+**C: (SSD, 120GB) → 디스크 관리로 하지 말 것. 5단계(USB의 GParted)에서 처리한다.**
+
+> 새 볼륨 만들지 말 것. "할당되지 않음"인 채로 둔다. 포맷은 리눅스가 한다.
+
+## 3단계 · 설치 USB 만들기
+6. Rufus → 장치=USB, 부팅선택=Ubuntu ISO
+7. 파티션 방식 = **GPT**, 대상 시스템 = **UEFI** 확인 → 시작
+
+## 4단계 · USB로 부팅 → GParted로 C: 먼저 축소
+8. USB 꽂고 재부팅 → 로고 뜰 때 **F8** 연타 → 부팅메뉴에서 USB 선택
+9. **"Try Ubuntu"** 선택 (아직 설치 X — 라이브 환경으로 진입)
+10. **GParted 실행** (좌상단 Activities에서 "gparted" 검색) → 우상단에서 **SSD 디스크(\`/dev/nvme0n1\`, 512GB)** 선택
+11. **C: NTFS 파티션** 우클릭 → **Resize/Move** → 뒤쪽에서 **120GB(122880MB)** 만큼 줄여 뒤에 "unallocated" 공간 만들기 → 초록 체크(Apply)로 적용.
+    - GParted는 Windows와 달리 MFT를 재배치할 수 있어 여기선 120GB가 문제없이 잘린다.
+    - **전제:** 1단계(BitLocker 해제 + \`powercfg /h off\` + 완전 종료)를 안 했으면 GParted가 C:를 잠긴 상태로 보고 리사이즈를 거부한다. 그럴 땐 취소하고 Windows로 돌아가 1단계부터.
+12. GParted 닫기 → 바탕화면의 **"Install Ubuntu 22.04 LTS"** 더블클릭 → 설치 시작
+13. **서드파티 드라이버 체크박스 켜기** (그래픽·Wi-Fi 하드웨어용 소프트웨어 설치) → NVIDIA 드라이버 자동 설치
+14. 설치 유형 → **"Something else / 기타"** 선택 (자동 옵션 X)
+
+## 5단계 · 수동 파티션 (핵심)
+파티션 표에 "여유 공간(free space)" 2개가 보인다 (SSD 120GB = 4단계 GParted로 만든 것, HDD 500GB = 2단계 디스크 관리로 만든 것):
+15. **SSD 여유 120GB** → \`+\` → 크기 전부, 종류 **Ext4**, 마운트 **\`/\`** → OK
+16. **HDD 여유 500GB** → \`+\` → 크기 전부, 종류 **Ext4**, 마운트 **\`/mnt/data\`** → OK
+17. 맨 아래 **"부트로더 설치할 장치"** → **SSD (\`/dev/nvme0n1\`, WD 아님!)** 선택
+18. **"지금 설치"** → 검토 → 계속
+
+> - **EFI 파티션 새로 만들지 말 것.** Windows가 이미 SSD에 만들어둔 EFI 파티션에 Ubuntu가 알아서 GRUB을 넣는다. (\`/\`와 \`/mnt/data\`만 만들면 됨)
+> - 부트로더를 USB나 HDD에 두는 게 초보 실수 1순위. 꼭 Windows가 깔린 SSD로.
+> - SSD = \`/dev/nvme0n1\`, HDD = \`/dev/sda\`. 헷갈리면 용량(512GB=SSD)으로 구분.
+
+## 6단계 · 마무리
+19. 시간대(서울) → 계정/비밀번호 → 설치 완료 → **USB 뽑고 재부팅**
+20. **(Secure Boot 켜져 있으면) 파란 MOK 화면 처리 — 중요**:
+    - 설치 중 서드파티 드라이버를 켰다면, 설치 막판에 "Secure Boot 비밀번호"를 정하라고 한다 → 아무 임시 비번 입력.
+    - 첫 재부팅 시 파란 화면(**MOK Manager**)이 뜨면 → **Enroll MOK → Continue → Yes → 방금 정한 비번 입력 → Reboot**.
+    - 이걸 안 하고 그냥 부팅하면 NVIDIA 드라이버가 서명 검증 실패로 안 올라온다. (놓쳤으면 7단계 22번으로 복구)
+21. 재부팅하면 **GRUB 메뉴** 등장: \`Ubuntu\`(리눅스) / \`Windows Boot Manager\`(윈도우) 방향키로 선택.
+    - Windows가 목록에 안 뜨면: Ubuntu 부팅 후 \`sudo os-prober\` 확인 → \`sudo update-grub\`.
+
+## 7단계 · 설치 후
+19. \`/mnt/data\` 소유권을 내 계정으로 (터미널):
+\`\`\`bash
+sudo chown -R $USER:$USER /mnt/data
+\`\`\`
+23. (화면 저해상도/NVIDIA 안 잡힐 때) 드라이버 설치·검증:
+\`\`\`bash
+sudo ubuntu-drivers autoinstall   # 드라이버 설치
+sudo reboot
+nvidia-smi                        # 재부팅 후 GPU 인식되면 성공
+\`\`\`
+
+## 실사용 규칙 요약
+| 종류 | 위치 | 이유 |
+|---|---|---|
+| 코드·설정·ROS2 워크스페이스 | \`~\` (SSD) | 빠름 |
+| 데이터셋·rosbag·큰 파일 | \`/mnt/data\` (HDD) | 용량 |
+
+예:
+\`\`\`bash
+cd ~/ros2_ws && colcon build                    # 홈(SSD)에서 빌드
+ros2 bag record -o /mnt/data/rosbags/test1 ...   # rosbag은 HDD로
+\`\`\`
+`,
+
+  'Linux/udev-port-commands': `---
+title: udev port 관련 명령어
+date: 2026-08-28
+tags: udev, usb
+order: 
+featured: false
+draft: false
+---
+
+# udev port 관련 명령어
+
+## udev
+
+\`\`\`bash
+ls -l <장치>
+udevadm info --attribute-walk <장치>
+udevadm info -a -n <장치>       # --attribute-walk과 동일, 짧은 표기
+udevadm info -q path -n <장치>  # 장치 파일 → sysfs devpath만 바로 뽑기
+\`\`\`
+
+## rules
+### 경로
+\`\`\`bash
+/etc/udev/rules.d/
+\`\`\`
+
+### 재연결
+\`\`\` bash
+sudo udevadm control --reload-rules   # 룰 파일 재적재
+sudo udevadm trigger                  # 이미 꽂혀있는 장치에 룰 재적용 (reload-rules만으론 안 먹음)
+\`\`\`
+
+## 디버깅
+\`\`\`bash
+udevadm test /sys/class/tty/ttyACM0   # 심링크 실제 생성 없이 룰 매칭 여부만 dry-run
+udevadm monitor                       # 뽑고 꽂을 때 udev 이벤트 실시간 관찰
+lsusb                                 # Bus/Device, idVendor:idProduct
+lsusb -t                              # Bus-Port 트리 구조
+ls -l /dev/serial/by-id/              # udev가 자동 생성한 고정 심링크 확인
+\`\`\`
+
+## 관련 노트
+
+- [USB 장치 식별과 udev 규칙 (USB Device Identification)](../usb-device-identification-udev-rules/main.md) — 여기 명령어들이 뽑아내는 값(idVendor, subsystem_vendor, devpath 등)의 의미
+- [시리얼 통신과 UART (Serial Communication)](../serial-communication-uart/main.md) — \`ttyACM0\` 같은 장치 파일 자체에 대한 배경`,
+
+  'Linux/usb-device-identification-udev-rules': `---
+title: USB 장치 식별과 udev 규칙 (USB Device Identification)
+date: 2026-08-28
+tags: usb, udev
+order: 
+featured: false
+draft: false
+---
+
+# USB 장치 식별과 udev 규칙 (USB Device Identification)
+
+## Vendor ID / Product ID
+
+| 필드 | 의미 | 예시 (\`1a86:55d3\`) |
+|---|---|---|
+| \`idVendor\` | 칩을 만든 회사. USB-IF가 회사마다 발급하는 고유번호 | \`1a86\` = QinHeng Electronics(WCH) |
+| \`idProduct\` | 그 회사가 자기 제품 라인 안에서 매기는 모델 구분값 | \`55d3\` = USB Single Serial 칩 |
+
+같은 회사(vendor)라도 칩 모델(product)이 다르면 값이 다르다. vendor+product는 **전세계에 그 칩을 쓰는 모든 보드가 공유**하는 값이라, 개별 장치를 구분하려면 \`ATTRS{serial}\`(생산 단위별 일련번호)까지 필요하다.
+
+## PCI의 이중 구조 — vendor vs subsystem_vendor
+
+USB에는 없고 PCI 장치에만 있는 구조.
+
+- \`vendor\` — 칩 자체를 만든 회사
+- \`subsystem_vendor\` — 그 칩을 얹어 완제품 보드로 조립·판매한 회사
+
+\`\`\`
+ATTRS{vendor}=="0x8086"            # Intel — USB 컨트롤러 칩 제조사
+ATTRS{subsystem_vendor}=="0x17aa"  # Lenovo — 그 칩을 얹은 노트북 제조사
+\`\`\`
+
+**같은 칩이어도 완제품 회사는 다를 수 있다** — GPU에 비유하면 "NVIDIA 칩 + ASUS가 만든 카드"와 같은 구조.
+
+## Bus/Device 번호는 계층이 아니라 주소
+
+\`lsusb\` 출력:
+
+\`\`\`
+Bus 003 Device 015: ID 1a86:55d3 QinHeng Electronics USB Single Serial
+\`\`\`
+
+- **Bus**: 이 컴퓨터에 물린 USB 컨트롤러(루트허브) 중 몇 번째인가
+- **Device**: 그 버스 안에서 부팅(또는 마지막 리셋) 후 몇 번째로 주소를 받았는가 — 그냥 누적 카운터, 계층 깊이가 아니다
+
+뽑았다 다시 꽂으면 Device 번호가 바뀐다 — 코드에 하드코딩하기엔 불안정한 이름.
+
+## sysfs devpath — 실제 계층 구조
+
+\`\`\`
+/devices/pci0000:80/0000:80:14.0/usb3/3-10/3-10:1.0/tty/ttyACM0
+\`\`\`
+
+| 조각 | 의미 |
+|---|---|
+| \`pci0000:80\` | PCI 도메인 0, 버스 80 |
+| \`0000:80:14.0\` | 그 버스의 특정 PCI 장치(Intel USB 컨트롤러 칩) |
+| \`usb3\` | 그 컨트롤러가 만든 USB 루트허브 — \`lsusb\`의 **Bus 03**과 동일 |
+| \`3-10\` | 버스 3의 **포트 10** — \`lsusb -t\`의 **Port 10**과 동일 |
+| \`3-10:1.0\` | 그 장치의 config 1·interface 0 (인터페이스가 여러 개면 \`:1.1\`처럼 늘어남) |
+| \`tty\` | 이 인터페이스를 처리하는 커널 서브시스템 |
+| \`ttyACM0\` | 최종 \`/dev/\` 장치 파일 이름 |
+
+\`udevadm info -a -n /dev/ttyACM0\`은 이 경로를 자식(\`ttyACM0\`)→부모(\`pci...\`) 방향으로 훑으며, 각 조각(레벨)의 속성을 블록 단위로 보여준다.
+
+## udev rule 매칭 함정 — 블록을 섞으면 영영 안 걸림
+
+한 rule의 \`ATTRS{}\` 조건은 전부 **같은 하나의 부모 장치 블록**에서 나온 값이어야 매칭된다. 서로 다른 블록의 값을 섞으면, 그 조건들을 동시에 만족하는 단일 장치가 애초에 존재하지 않아 rule이 절대 안 걸린다.
+
+실제로 걸렸던 사례:
+
+\`\`\`
+# /etc/udev/rules.d/80-so-101.rules — 문제 있던 버전
+ATTRS{subsystem_device}=="0x3d73", ATTRS{subsystem_vendor}=="0x17aa", ATTRS{serial}=="5B8E114947", SYMLINK+="ws-servo-board"
+\`\`\`
+
+\`subsystem_vendor\`/\`subsystem_device\`는 PCI 컨트롤러 블록(\`0000:80:14.0\`) 값인데 \`serial\`은 서보 보드 블록(\`3-10:1.0\`) 값이다 — 서로 다른 블록. \`udevadm test\`와 \`ls /dev/ws-servo-board\`로 심링크가 안 생겼음을 확인. 올바른 방향은 서보 보드 블록 안의 값끼리만(\`idVendor\`/\`idProduct\`/\`serial\`) 조합하는 것.
+
+## 이름 고정이 필요한 이유
+
+\`/dev/ttyACM0\`은 커널이 USB 장치를 인식한 순서에 매기는 번호라, 다른 USB-시리얼 장치가 얽히면 흔들린다.
+
+\`\`\`
+$ ls -l /dev/serial/by-id/
+usb-1a86_USB_Single_Serial_5B8E114947-if00 -> ../../ttyACM0
+\`\`\`
+
+\`/dev/serial/by-id/\`는 udev가 vendor+product+serial로 자동 생성하는 고정 심볼릭 링크. 커스텀 이름이 필요하면 위 규칙처럼 \`SYMLINK+=\`을 쓰되, 조건은 같은 블록 값으로만 구성한다.
+
+---
+
+[시리얼 통신과 UART (Serial Communication)](../serial-communication-uart/main.md)에서 다룬 \`/dev/ttyACM0\` 같은 tty 장치 파일이, 실제로는 이 노트의 vendor/product·devpath 체계로 식별된 결과물이다.
+
+여기 나온 값들을 직접 뽑아보는 명령어는 [udev port 관련 명령어](../udev-port-commands/main.md) 참고.
+`,
+
   'Markdown/Call-Out': `---
 title: Call Out, Alert
 date: 2026-04-16
@@ -13120,224 +13721,2574 @@ README.md 에서
 [1]:<https://naver.com>
 `,
 
-  'Math/삼각-함수': `---
-title: 삼각 함수
-date: 2021-07-17
+  'Math/arithmetic-and-geometric-sequences': `---
+title: 등차수열과 등비수열
+date: 2026-08-27
+tags: algebra, sequence
+order: 
+featured: false
+draft: false
 ---
 
-후디니에서의 삼각함수는 패턴을 만들거나 움직임 또는 값을 자동화 시킬 수 있는 유용한 펑션으로 사용 된다.
+# 등차수열과 등비수열
 
-위의 단위원과 그안에서의 직각삼각형으로 우리는 삼각함수를 이용해 그래프나 패턴을 구할 수 있다.
+## 등차수열 (공차 $d$만큼 계속 더하는 수열) 
 
-후디니 내에선 삼각함수값을 이용할때 [라디안](/cb8db1ed02fb44b88dca4ee88b2b8d27)을 사용한다.
+$$a_n = a_1+(n-1)d$$
+  $$S_n = \\dfrac{n(a_1+a_n)}{2}$$
+## 등비수열 (공비 $r$만큼 계속 곱하는 수열): 
 
----
+$$a_n = a_1 r^{n-1}$$
+  $$S_n = \\dfrac{a_1(1-r^n)}{1-r}\\ (r\\ne1)$$
 
-> [!note]+ **Cos**
-> 코사인 cos(radian) = 직각삼각형의 빗변과 밑변의 비율을 구한다.
->
-> 위그림과 같을때
->
-> cos(25) = 0.9... 이 나온다. 100m 와 밑변의 비율이 0.9라는 의미이므로 0.9 * 100 = 90 이라는 밑변의 길이도 구할 수 있는 식이 나온다.
->
-> 식으로 표현하자면 ==cos(==$\\theta$==) = 빗변/밑변== 이 될 수 있다.
->
-> 위와같은 단위원의 경우
->
-> cos($\\theta$)
->
-> ⇒ x/r = 밑변
->
-> ⇒ x/1 = x
->
-> ⇒ cos($\\theta$) = x가 성립 된다.
->
-> 즉 P의 x값을 구할 수 있다는 이야기 이다.
->
-> 이 값을 그래프로 적용 하자면,
->
-> 여기서 세로축은 x를 뜻한다. x를 y값에 적용했다는 이야기
->
-> 그래프 상에서 각도가 0( cos(0) )일때, y가 1 즉 x가 1이라는 말이고 시간에따라 각도가 변한다면 위와 같은 그래프가 그려진다.
-
-> [!note]+ **Sin**
-> 사인 sin(radian) = 직각삼각형의 빗변과 높이의 비율을 구한다.
->
-> 위그림과 같을때
->
-> 식으로 표현하자면 ==sin(==$\\theta$==) = 높이/빗변== 이 될 수 있다.
->
-> 곧 sin($\\theta$) * 100 = $x$( 높이 ) 가 되는 것이다.
->
-> ## 단위 원에서의 sin
->
-> 위와같은 단위원의 경우
->
-> sin($\\theta$)
->
-> ⇒ y/r = 밑변
->
-> ⇒ y/1 = x
->
-> ⇒ sin($\\theta$) = x가 성립 된다.
->
-> 즉 P의 Y값을 구할 수 있다는 이야기 이다.
->
-> 이 값을 그래프로 적용 하자면,
->
-> 그래프 상에서 각도가 0( sin(0)) )일때, y가 0 이라는 말이고 시간에따라 각도가 변한다면 위와 같은 그래프가 그려진다.
-
-> [!note]+ **Tan**
-> 탄젠트 tan($\\theta$) = 직각삼각형의 높이와 밑변의 비율을 구한다.
->
-> 위그림과 같을때
->
-> 식으로 표현하자면  ==tan(==$\\theta$==) = 높이/밑변== 이 될 수 있다.
->
-> ## 단위 원에서의 sin
->
-> 위와같은 단위원의 경우
->
-> tan($\\theta$) = 1이 나오며
->
-> tan($\\theta$) = y/x = y^/x^
->
-> tan($\\theta$) = y/x = y^/1
->
-> ⇒ y^이 나오게 된다.
->
-> 곧
->
-> 위의 값이 성립 된다.
->
-> tan의 값이 커지면서 y의 값도 커지지만, 삼각비에서 나오듯이 tan90의 값은 측정 할 수 없게 된다.
-
----
-
-> [!note]+ 참고 링크
-> [https://mathbang.net/509](https://mathbang.net/509)
->
-> [http://lab.gamecodi.com/board/zboard.php?id=GAMECODILAB_Lecture_series&page=1&sn1=&divpage=1&sn=off&ss=on&sc=on&select_arrange=headnum&desc=asc&no=127](http://lab.gamecodi.com/board/zboard.php?id=GAMECODILAB_Lecture_series&page=1&sn1=&divpage=1&sn=off&ss=on&sc=on&select_arrange=headnum&desc=asc&no=127)
+응용: 이 두 공식이 [수열의 극한과 무한급수](../sequence-limits-and-infinite-series/main.md)로
+넘어가는 출발점 — 등비수열의 부분합 $S_n$에서 $n\\to\\infty$ 극한을 취하면
+등비급수의 수렴 공식이 나온다.
 `,
 
-  'Math/정사영-othogonal-projection': `---
-title: 정사영 (Othogonal Projection)
-date: 2022-08-14
+  'Math/basic-properties-of-functions': `---
+title: 함수의 기본 성질
+date: 2026-08-25
+tags: algebra, function
+order: 
+featured: false
+draft: false
 ---
 
-[https://mrw0119.tistory.com/94](https://mrw0119.tistory.com/94)
+# 함수의 기본 성질
 
-<!-- Column 1 -->
+## 정의역과 치역
 
-<!-- Column 2 -->
+**정의역/치역**: 함수가 정의되는 입력값의 범위(domain), 그에 대응하는 출력값의
+범위(range). 예: $f(x)=\\dfrac{1}{x-1}$은 $x=1$에서 정의되지 않으므로
+정의역은 $x\\ne 1$인 모든 실수.
 
-투영 벡터를 구하는 방법은 다음과 같다
+## 합성함수
 
-**여기서 N은 normalized된 단위 벡터이다.**
+$(f \\circ g)(x) = f(g(x))$ — 안쪽 함수 $g$를 먼저 계산한 결과를
+바깥 함수 $f$에 넣는 것. 예: $f(x)=x^2,\\ g(x)=x+1$이면
+$(f\\circ g)(x) = (x+1)^2$. 미분의 [연쇄법칙](../differentiation/main.md)은 결국 이 합성 구조를
+미분하는 규칙이므로, 어떤 함수가 "안쪽 함수 + 바깥 함수"로 합성되어
+있는지 눈으로 바로 분해할 수 있어야 함.
+
+## 역함수
+
+$f$가 일대일대응(one-to-one)일 때만 존재하며, $f^{-1}$는 입출력을
+뒤바꾼 함수. $f(f^{-1}(x)) = x$, $f^{-1}(f(x)) = x$. 그래프는 $y=x$에
+대해 대칭. 예: $f(x)=e^x$의 역함수는 $f^{-1}(x)=\\ln x$ — 지수/로그가
+서로 역함수 관계라는 점은 [로그법칙 Laws of Logarithms](../laws-of-logarithms/main.md) 참고.
+
+## 그래프의 대칭성 — 우함수·기함수
+
+- **우함수(even function)**: $f(-x)=f(x)$, $y$축 대칭. 예: $x^2, \\cos x$
+- **기함수(odd function)**: $f(-x)=-f(x)$, 원점 대칭. 예: $x^3, \\sin x$
+- → 이 대칭성 구분은 나중에 **푸리에 급수**에서 우함수는 코사인 항만,
+  기함수는 사인 항만 남는다는 판단 근거로 그대로 재사용됨.
+`,
+
+  'Math/characteristic-equation': `---
+title: 특성방정식
+date: 2026-08-24
+tags: matrix, eigenvalue
+order: 
+featured: false
+draft: false
+---
+
+# 특성방정식
+
+정사각행렬 $A$에 대해, 어떤 벡터 $v \\ne 0$ 와 스칼라 $\\lambda$ 가
+
+$$Av=λv$$
+를 만족하면, $\\lambda$를 고유값, $v$ 를 고유벡터라고 부른다.
+
+직관적으로 생각 하면  
+벡터에 행렬 $A$ 를 곱하면 그 벡터의 방향이 바뀐다. 그런데 어떤 특별한 방향의 벡터 $v$는 $A$를 곱해도 방향이 안 바뀌고 **길이(크기)만** $\\lambda$배로 변한다. 그 특별한 배율이 **고유값**이다.
+
+## 수식 정리
+
+$$Av = \\lambda v$$
+$$Av - \\lambda v = 0$$
+$v$ 로 식을 묶어 주고,
+행렬에서 실수를 뺄 수 없기 때문에 **단위 행렬**을 곱해 준다.
+
+$$(A-\\lambda I)v = 0$$
+
+ $(A-\\lambda I)$ 는 $v$ 를 [영공간](../determinant-column-space-null-space/main.md) 으로 보내는 행렬이 된다. 따라서 이 행렬에 역행렬은 존재 하지 않는다. 이것을 특**성 방정식**이라고 한다.
+정사각 행렬이 역행렬을 갖지 않을 필요 충분 조건은 행렬식 이 0 이라는 것이다. 그것을 식으로 표현 하면
+
+$$det(A-\\lambda I) = 0$$
+이 식은 [행렬식](../determinant-column-space-null-space/main.md)을 이용 하여 고유값을 얻을 수 있다.
+
+## 행렬 $A$ 가 대칭 일때
+$$A = \\begin{pmatrix}2&1\\\\1&2\\end{pmatrix}$$
+행렬 $A$ 를 대칭으로 예를 들어 식을 풀어 보자.
+$$ det(A-\\lambda I) = \\begin{pmatrix}2-\\lambda& 1 \\\\ 1 & 2 - \\lambda \\end{pmatrix}$$
+$$= (2 - \\lambda)(2-\\lambda) - 1$$
+$$=(2-\\lambda)^2 -1$$
+$$=\\lambda^2 -4\\lambda+3$$
+
+이렇게 이차방정식이 나오고, [근의 공식](../quadratic-formula/main.md)으로 이걸 인수 분해 하면
+
+$$\\lambda = 1,3$$
+고유값은 1과 3이 나왔다.
+
+## 행렬 $A$ 가 비대칭 일때
+
+고유값은 행렬이 대칭일때와 같이 근의 공식으로 풀수 있는 식이 존재 하는 반면, 그렇지 않을 때도 있다.
+
+$$A = \\begin{pmatrix}0&-1\\\\1&0\\end{pmatrix}$$
+행렬 $A$ 가 90도 회전 행렬 일때,
+$$ A-\\lambda I = \\begin{pmatrix}-\\lambda& -1 \\\\ 1 & - \\lambda \\end{pmatrix}$$
+$$det(A-\\lambda I)= (- \\lambda)^2 - (-1)$$
+$$=\\lambda^2+1 = 0$$
+$+1$ 을 옮기면
+$$\\lambda^2 = -1$$
+이 식은 [허수](../허수와-복소수/main.md)를 나타 낼때 $i^2 = -1$ 와 동일 한 식이다. 
+그러므로
+$$\\lambda = \\pm i$$
+
+직관적으로생각해 본다면 90도 회전 시키는 행렬은 어떤 벡터를 넣어도 **방향이 유지되는 실수가 존재 할 수 없다.** 모든 벡터가 90도를 회전 하기 때문이다.  
+그렇기 때문에 **실수 에서는 고유 벡터를 찾을 수 없고**, 수학적으로 **복소수**의 영역 까지 확장 해야 하는 것 이다.`,
+
+  'Math/complex-multiplication-2d-rotation-isomorphism': `---
+title: 복소수 곱셈과 2D 회전행렬의 동형사상
+date: 2026-08-21
+tags: complex-number, rotation
+order: 
+featured: false
+draft: false
+---
+
+# 복소수 곱셈과 2D 회전행렬의 동형사상
+
+$a+bi$라는 [복소수](../허수와-복소수/main.md)를 이런 2×2 행렬 하나로 바꿔보자.
+
+$a+bi \\quad\\longleftrightarrow\\quad \\begin{bmatrix} a & -b \\\\ b & a \\end{bmatrix}$
+
+이 대응은 덧셈도 곱셈도 그대로 보존한다. 즉 복소수 두 개를 곱한 결과와,
+대응하는 행렬 두 개를 곱한 결과가 정확히 일치한다(동형, isomorphism).
+
+여기에 $i=0+1i$를 넣으면:
+
+$i \\quad\\longleftrightarrow\\quad \\begin{bmatrix} 0 & -1 \\\\ 1 & 0 \\end{bmatrix}$
+
+$R(\\theta) = \\begin{bmatrix} \\cos\\theta & -\\sin\\theta \\\\ \\sin\\theta & \\cos\\theta \\end{bmatrix}$
+
+2D 회전 행렬과 동일한 모양이 나온다.
+$\\theta=90°$를 넣으면 $\\cos90°=0,\\ \\sin90°=1$이라, $i$에 대응하는 행렬과 한 치도 다르지 않다.
+
+즉 "$z$에 $i$를 곱한다"는 연산은 "벡터 $(a,b)$에 90° 회전행렬을 곱한다"는 연산과 비유가 아니라 정확히 같은 연산이다.
+
+일반화하면 임의의 단위복소수 $e^{i\\theta}=\\cos\\theta+i\\sin\\theta$도 마찬가지로 $R(\\theta)$ 그 자체와 대응한다. 크기가 1이 아니면 $r\\cdot R(\\theta)$가 되어 회전에 확대·축소가 얹힌다.
+
+## $i^2=-1$의  행렬 검증
+
+$\\begin{bmatrix}0&-1\\\\1&0\\end{bmatrix}\\begin{bmatrix}0&-1\\\\1&0\\end{bmatrix} = \\begin{bmatrix}-1&0\\\\0&-1\\end{bmatrix} = -I$
+
+90° 회전을 두 번 하면 180° 회전, 즉 부호 반전과 같다는 걸 행렬로도 그대로 확인할 수 있다.
+$i^2=-1$이라는 대수 규칙 하나가 "90° 회전 두 번 = 반전"이라는 기하학적 사실을 그대로 인코딩하고 있는 셈이다. 이 2차원에서의 동형 관계를, 회전축을 셋으로 늘려 4차원으로 확장한 것이 쿼터니언이다.
 
 
-$(|V| * cos\\theta)*N = Proj(V)$
+> [!NOTE]
+> **왜 담았나**
+> 로봇 수업에서 이미 배운 2D 회전행렬과 복소수 곱셈을 그동안 "곱셈=회전"이라고 비유적으로만 엮어왔는데, 실제로 완전히 같은 구조(동형)라는 걸 행렬로 직접 증명해서 남겨둠.`,
 
+  'Math/cosine-similarity': `---
+title: 코사인 유사도-Consine Similarity
+date: 2026-08-19
+tags: cosine
+order: 
+featured: false
+draft: false
+---
 
-내적 벡터로 구하기
+# 코사인 유사도-Consine Similarity
 
-$(V\\bullet N) * N = Proj(V)$
+$cos(\\theta) = \\frac{A\\cdot B}{\\left|\\vec{A}\\right|\\left|\\vec{B}\\right|}$  
 
-$(|V| * |N| * cos\\theta) * N = Proj(V)$ [******](/d2016b7c039448cdb2c09c809e1a1c3a)
+코사인 법칙을 이용하여 구할 수 있는 두 벡터의 유사도
 
-$(|V| * cos\\theta) * N = Proj(V)$
+먼저 내적의 식에서 출발 한다.
 
-$|N|$는 단위 벡터 이기 때문에 생략
+$A \\cdot B = \\left| \\vec{A} \\right|\\left|\\vec{B}\\right| * cos\\theta$
 
+에서 각 변에 $\\left| \\vec{A} \\right|\\left|\\vec{B}\\right|$ 을 나눠 주면
 
-후디니 에서의 사용
+$cos(\\theta) = \\frac{A\\cdot B}{\\left|\\vec{A}\\right|\\left|\\vec{B}\\right|}$  
+`,
 
-\`\`\`python
-int npt = npoints(1);
-vector pos0 = point(1,"P",0);
-vector pos1 = point(1,"P",npt - 1);
+  'Math/determinant-column-space-null-space': `---
+title: 행렬식, 열공간, 영공간 (Inverse Matrices, Column Space & Null Space)
+date: 2026-08-18
+tags: matrix, linear-algebra
+order: 
+featured: false
+draft: false
+---
 
-vector N = pos1 - pos0;
-vector V = @P - pos0;
+# 행렬식, 열공간, 영공간 (Inverse Matrices, Column Space & Null Space)
 
-vector N_norm = normalize(N);
-vector V_norm = normalize(V);
+연립방정식 $Ax = v$ 를 푸는 문제는 "**v에 도착하는 벡터 x를 찾아라**"라는 기하학 문제와 완전히 같다. 이 노트는 그 관점에서 역행렬·랭크·열공간·영공간이 왜 필요한 개념인지를 잇는다.
 
-@P = dot(V, N_norm) * N_norm;  ##내적 으로 구하는 프로젝트 값
+## 연립방정식을 행렬 하나로 묶기 — $Ax = v$
+
+예를 들어 아래 연립방정식이 있다고 하자:
+
+\`\`\`
+2x + 5y = -3
+4x + 0y =  4
 \`\`\`
 
-이때 우리가 사용할 수 있는 값들
+각 변수에 곱해진 계수만 따로 떼어 행렬 $A$로 묶고, 미지수를 벡터 $x=(x,y)$로, 우변 상수를 벡터 $v=(-3,4)$로 두면 이 두 줄짜리 연립방정식은 벡터 방정식 한 줄이 된다:
+$$\\begin{Bmatrix}2&5\\\\4&0\\end{Bmatrix} \\begin{Bmatrix} x\\\\y\\end{Bmatrix} = \\begin{Bmatrix} -3\\\\4\\end{Bmatrix}$$
+$$Ax = v$$
+
+$A$는 선형변환 이고, $Ax=v$를 푼다는 건 **"변환 A를 통과시켰을 때 v 자리에 착지하는 벡터 x는 어디 있었는가"** 를 거꾸로 찾는 문제와 정확히 같다. 대수 문제가 "공간을 되감는" 기하 문제로 번역되는 지점이다.
 
 
-> [!note]+ ### (응용) 평면 projection
+## 행렬식
+
+정방행렬 하나를 넣으면 숫자 하나가 나오는 함수. 2×2면 $A=\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}$일 때 $\\det(A) = ad-bc$.
+**기하학적 의미**
+- 그 변환이 넓이, 부피 를 몇 배로 늘리는지.
+
+예를 들어 $\\begin{bmatrix}2&0\\\\0&3\\end{bmatrix}$은 x축 2배·y축 3배로 늘리는 변환이라 넓이가 6배 → $\\det=6$. 반면 $\\begin{bmatrix}1&2\\\\2&4\\end{bmatrix}$는 두 열벡터 $(1,2)$, $(2,4)$가 서로 평행(같은 방향)이라 평행사변형이 안 만들어지고 넓이가 0 → $\\det=0$, 즉 공간이 한 차원 찌그러졌다는 뜻이 바로 이 숫자로 드러난다. 부호가 음수면 방향이 뒤집힌 것.
+
+## 행렬식이 0이 아닐 때 — 역행렬
+
+$\\det(A) \\neq 0$일때
+$A$의 **역행렬**을 $A^{-1}$이라 부른다.
+
+정의상 $A$ 와 $A^{-1}$을 적용하면 "아무것도 안 한 것"과 같다.
+이것을 **항등행렬(identity matrix)** 이라 한다.
+
+$$A^{-1}A = I$$
+
+$Ax = v$의 양변에 $A^{-1}$을 곱하면 $x = A^{-1}v$
+**역행렬을 구하면 연립방정식은 자동으로 풀린다.**
+
+## 행렬식이 0일 때
+
+$\\det(A) = 0$이면 변환이 공간을 한 차원 낮은 곳(선·점 등)으로 찌그러뜨린다.
+**한 점이 입력되면 출력은 반드시 한 점이어야 하는데,**
+찌그러진 선 위의 한 점은 원래 무한히 많은 점이 겹쳐지고
+이 경우 **역행렬 자체가 존재하지 않는다.**
+
+단, "역행렬이 없다" $\\ne$ "해가 없다"
+다만 그 해가 유일하지 않을 수 있다.
+## 랭크(rank)와 열공간(column space)
+
+$\\det(A)=0$인 경우들도 서로 다르다
+- 평면: **rank2**
+- 선: **rank1**
+- 점: **rank0**
+- 3D: $\\det(A)\\ne0$ **rank3** (full rank)
+
+**랭크(rank)**: 변환의 출력의 차원
+**열공간(column space)**: 출력이 만드는 모든 결과물의 집합
+- 각열이 기저 벡터가 변환 후 어디로 가는지를 담고 있다.
+- 열벡터들의 [생성(span)](../orthogonal-projection/main.md)이 곧 가능한 모든 출력이기 때문이다. 즉:
+$$\\text{rank}(A) = \\dim(\\text{col}(A))$$
+
+
+> [!NOTE]
+> **센서 6개, rank 3 — 직접 만들어보는 예시**
+> 센서 6개가 매 순간 값을 하나씩 찍고, 각 센서의 측정값 시퀀스를 행(row)으로 쌓아 6×4 행렬을 만든다고 하자. 앞 3개 센서는 서로 진짜 독립적인 정보를 준다고 하고:
 >
-> \`\`\`python
-> vector  pos_0 = prim(1,"P",0) ;                      // "___" 에 들어갈 코드를 채워 넣으세요
-> vector  vec_A = @P - pos_0 ;                            // "___" 에 들어갈 코드를 채워 넣으세요
-> vector  vec_B_norm = prim(1, "N", 0) ;                  // vec_B_norm을 어떻게 구할 수 있는지 HINT node를 확인해 보세요.
-> vector  vec_B =  dot(vec_A, vec_B_norm) * vec_B_norm;   // "___" 에 들어갈 코드를 채워 넣으세요
->
-> @P -= lerp({0,0,0}, vec_B, bias) ;
+> \`\`\`
+> r1 = (1, 0, 2, 3)
+> r2 = (0, 1, 1, -1)
+> r3 = (2, 1, 0, 4)
 > \`\`\`
 >
-> primitive 의 P, N attridute를 사용해서 같은 수식을 정해 준다.
+> 나머지 3개 센서가 배선을 잘못했거나 물리적으로 같은 걸 재는 위치에 달려서 앞 3개의 조합으로 딱 떨어진다면:
+>
+> \`\`\`
+> r4 = r1 + r2 = (1, 1, 3, 2)
+> r5 = 2·r3    = (4, 2, 0, 8)
+> r6 = r1 - r3 = (-1, -1, 2, -1)
+> \`\`\`
+>
+> 이 6×4 행렬은 행이 6개지만 **rank는 3**이다 — $r_4, r_5, r_6$은 $r_1, r_2, r_3$를 알면 계산 없이도 유도되니까($r_4$가 고장 나도 $r_1+r_2$로 복원 가능). 이 6개 행이 만들어내는 span(열공간)은 \`r1, r2, r3\`만으로 만든 span과 정확히 같다 — 뒤의 3개를 더해도 span은 1mm도 안 넓어진다. **차원이 안 늘어난다 = 정보가 안 늘어난다**는 게 이 예시의 핵심.
+>
+> 로보틱스에서는 이게 칼만 필터 등 상태 추정의 **관측 가능성(observability)** 판단(센서 조합이 상태를 완전히 관측하는지, 그 관측 가능성 행렬의 rank로 확인)과 데이터 압축(PCA — 실제 독립 차원만 남기고 나머지를 버려도 정보 손실이 없다)으로 바로 이어진다.
+
+## 영공간(null space, kernel)
+
+원점(영벡터)은 어떤 선형변환을 거쳐도 항상 원점에 그대로 남는다(선형변환의 정의 자체가 원점 고정을 요구).
+풀랭크 변환이면 원점으로 가는 벡터는 원점 자기 자신뿐이지만, 입력 차원 보다 낮은 rank를 갖는 경우 원점 말고도 여러 개가 존재한다.
+이런 "원점으로 사라지는 모든 벡터의 집합"을 **영공간(null space)**, 또는 **커널(kernel)**이라 부른다.
+
+- 평면으로 찌그러지면 → 영공간은 선 하나
+- 선으로 찌그러지면 → 영공간은 평면 하나
+
+### 영공간과 해집합
+
+$Ax = v$에서 **$v$ 가 하필 영벡터(0)일 때**, 그 방정식의 해가 바로 영공간 전체이기 때문이다.
+$A$가 여러 벡터를 동시에 0으로 보낸다는 게, $Ax=0$의 해가 하나가 아니라 여럿(공간 하나만큼)이라는 뜻과 같다.
+
+> "커널(kernel)"은 "씨앗·알맹이"라는 뜻의 옛 영어(kyrnel)에서 왔다. "겉껍질(전체 공간)을 다 걷어내도 남는 핵심 알맹이"라는 이미지라, 운영체제의 **OS 커널**도 같은 어원 — "하드웨어를 가장 직접 다루는, 다른 모든 걸 걷어내도 남는 핵심 알맹이 소프트웨어"라는 은유로 같은 단어를 쓴다.
+
+
+## 정리
+
+$Ax = v$ 를 푸는 문제는 이 세 개념이 서로 다른 질문에 답하는 구조다:
+
+| 개념 | 답하는 질문 |
+|---|---|
+| 역행렬 $A^{-1}$ | $\\det(A)\\neq0$일 때, 유일한 해를 실제로 계산하는 도구 |
+| 열공간(rank) | $\\det(A)=0$이어도 해가 **존재하긴 하는지** — $v$가 열공간 안에 있어야 함 |
+| 영공간(kernel) | 해가 존재할 때, 그 해가 **유일한지 아니면 여러 개인지** — $v=0$이면 해집합 자체가 영공간 |
+
+## 로보틱스와의 연결 — 자코비안 특이점이 바로 이 얘기다
+
+이 영상의 "$\\det(A)=0$이면 공간이 찌그러져서 역행렬이 없다"는 이야기는 [자코비안 특이점](../../Robotics/jacobian-singularity-and-static-forces/main.md) 노트에서 이미 다룬 $\\det[J]=0$ 판정과 **완전히 같은 원리**다. 자코비안 $J$는 관절속도 → 손끝속도로 보내는 선형변환이고, $\\det[J]=0$인 관절각 조합(특이점)에서는 그 변환이 손끝속도 공간을 찌그러뜨려서 **로봇이 낼 수 없는 방향의 속도가 생긴다** — 로봇 고장이 아니라, 딱 이 영상에서 본 "선을 다시 평면으로 펼치는 함수는 없다"는 것과 같은 기하학적 한계다. 손끝 속도 $v$를 관절 속도 $\\dot\\theta$로 되돌리려면 $J$의 역행렬이 필요한데, 그 역이 사라지는 지점이 바로 특이점.
+
+$\\dot{R} = [\\omega]_\\times R$을 다룬 [반대칭 행렬](../skew-symmetric-matrix/main.md) 노트도 같은 계열 — "회전행렬은 되감을 수 있는 변환(직교행렬이라 $R^{-1}=R^T$, 즉 $\\det(R)=1$로 항상 풀랭크)"이라는 전제가 깔려 있다.
+
+## 이 영상이 다루지 않은 것
+
+- 실제 역행렬·랭크 계산 방법(가우스 소거법, row echelon form) — 이 영상은 의도적으로 "왜 필요한가"라는 직관만 다루고 계산은 다른 자료로 넘긴다.
+- 정방행렬이 아닌 경우(행/열 개수가 다른 경우) — 3Blue1Brown 시리즈의 다음 영상 주제.
+`,
+
+  'Math/diagonalization': `---
+title: 대각화 (Diagonalization)
+date: 2026-08-24
+tags: matrix, eigenvalue
+order: 
+featured: false
+draft: false
+---
+
+# 대각화 (Diagonalization)
+
+$$A=\\begin{bmatrix}2&1\\\\1&2\\end{bmatrix}$$
+
+이 행렬을 몇 번이고 곱해야 한다고 해보자($A^{10}$ 같은 걸 손으로 계산하면 지옥이다). 그런데 [고유벡터](../eigenvalues-and-eigenvectors/main.md)로 기저를 바꾸면 이야기가 완전히 달라진다.
+
+[특성방정식](../characteristic-equation/main.md) $\\det(A-\\lambda I)=0$을 풀면(대각합 $=4$, 행렬식 $=3$이니 검산까지 맞아떨어짐) $\\lambda=3, 1$. 각각의 고유벡터는 $v_1=(1,1)$, $v_2=(1,-1)$.
+
+이 고유벡터들을 **열로 나란히 세운 행렬** $P$와, **고유값을 대각선에 얹은 행렬** $D$를 만들면:
+
+$$P=\\begin{bmatrix}1&1\\\\1&-1\\end{bmatrix},\\quad D=\\begin{bmatrix}3&0\\\\0&1\\end{bmatrix}$$
+
+$$A = P D P^{-1}$$
+
+이 관계가 성립한다. 즉 "$A$라는 애매한 변환"을 "고유벡터 기저로 갈아타기($P^{-1}$) → 그 기저에서는 그냥 축마다 늘이기만 하면 됨($D$) → 원래 기저로 돌아오기($P$)"로 쪼갠 것. 이게 **대각화**다.
+
+$A^n = PD^nP^{-1}$이고, $D$는 대각행렬이라 $D^n$은 그냥 대각원소들을 각각 $n$제곱하면 끝($D^{10}=\\begin{bmatrix}3^{10}&0 \\\\ 0&1\\end{bmatrix}$). 
+반복 행렬곱이 스칼라 거듭제곱으로 붕괴한다. 로봇공학에서 선형 상태공간 시스템($\\dot x = Ax$)의 해를 구하거나 마르코프 체인의 장기 거동을 볼 때 정확히 이 트릭을 쓴다.
+
+## 대각화의 조건
+
+모든 행렬이 대각화가 가능한건 아니다. $n \\times n$  행렬이 대각화가 가능하려면, 선형 독립인 고유 벡터가 $n$ 개 있어야 한다.
+고유값에 중복이 있는데 고유벡터가 그만큼 안 나오는 경우  "결함이 있는(**defective**) 행렬"이라고 한다.`,
+
+  'Math/differentiation': `---
+title: 미분
+date: 2026-08-06
+tags: differentiation
+order: 
+featured: false
+draft: false
+---
+
+# 미분
+
+## 도함수의 정의
+
+$$f'(x) = \\lim_{h\\to 0}\\frac{f(x+\\Delta)-f(x)}{\\Delta}$$
+
+평균변화율(기울기)의 [극한](../limits-and-continuity/main.md) = 순간변화율. 정의를 외우기보다는 "왜 이렇게 정의하는가"를
+한 번은 그래프로 이해해둘 것.
+
+## 기본 미분법칙
+
+$$(f\\pm g)' = f'\\pm g'$$
+$$(fg)' = f'g + fg' \\quad \\text{(곱의 미분법)}$$
+$$\\left(\\frac{f}{g}\\right)' = \\frac{f'g-fg'}{g^2} \\quad \\text{(몫의 미분법)}$$
+
+## 연쇄법칙 (Chain Rule) — 가장 중요
+
+$$\\{f(g(x))\\}' = f'(g(x))\\cdot g'(x)$$
+
+**공업수학 전체에서 가장 많이 쓰이는 미분 기법입니다.**
+
+$$\\frac{d}{dx} e^{-3x} = e^{-3x}\\cdot(-3) = -3e^{-3x}$$
+$$\\frac{d}{dx} \\sin(\\omega x) = \\omega\\cos(\\omega x)$$
+$$\\frac{d}{dx} \\ln(x^2+1) = \\frac{2x}{x^2+1}$$
+
+라플라스 변환의 $e^{-st}f(t)$, ODE의 $e^{\\lambda x}$ 등 지수함수 안에 변수가 곱해진
+형태를 미분/[적분](../integration/main.md)할 때마다 연쇄법칙이 자동으로 들어갑니다.
+
+## 기본함수의 도함수 (암기)
+
+| $f(x)$ | $f'(x)$ |
+|---|---|
+| $x^n$ | $nx^{n-1}$ |
+| $e^x$ | $e^x$ |
+| $a^x$ | $a^x \\ln a$ |
+| $\\ln x$ | $1/x$ |
+| $\\sin x$ | $\\cos x$ |
+| $\\cos x$ | $-\\sin x$ |
+| $\\tan x$ | $\\sec^2 x$ |
+| $\\sinh x$ | $\\cosh x$ |
+| $\\cosh x$ | $\\sinh x$ |
+| $\\tan^{-1}x$ | $\\dfrac{1}{1+x^2}$ |
+
+마지막 두 줄(쌍곡선함수, 역삼각함수)은 강의노트 1장 예비자료에 그대로 나오는
+내용이니 꼭 챙길 것.
+
+## 음함수의 미분 
+
+$x^2+y^2=1$처럼 $y$가 $x$에 대해 음함수로 주어질 때 양변을 $x$로 미분하고
+$y' $에 대해 정리하는 방법. 공업수학에서 자주 쓰이진 않지만 알아두면 좋음.
+
+`,
+
+  'Math/eigenvalues-and-eigenvectors': `---
+title: 고유값, 고유벡터
+date: 2026-08-19
+tags: matrix
+order: 
+featured: false
+draft: false
+---
+
+# 고유값, 고유벡터
+
+선형변환에 A에 의한 변환 결과가 자기 자신의 *상수배가 되는 0이 아닌 벡터* 를
+**고유벡터**라 하고 상수배값을 **고유값** 이라 한다.
+
+![](Pasted image 20260824092151.png)
+
+- $A$ 에 대해 $Av = \\lambda v$ 를 만족하는 0이 아닌 
+	- $v$ = 고유벡터
+	- 상수 $\\lambda$ = 고유값
+
+예를 들면,
+$2*(1,2) = (2,4)$ 에서
+고유벡터: (2,4)
+고유값: 2
+
+### scale
+선형 변환A 에 의해 *방향은 달라지지 않고 크기만 늘어나는 고유벡터* 에서의 *고유값은 크기*일 것이다.
+### rotation
+회전 변환에 의해 변하지 않는 고유벡터는 최전축 벡터이고 그 고유값은 1이다 — 이 축을 뽑아내는 방식이 [axis-angle 표현](../../Robotics/orientation-representations/main.md)의 수학적 근거다.
+
+## 고유벡터와 회전축
+
+3차원 회전행렬 $R$이 실제로 고유값·고유벡터를 가지면 어떤 값이 나오는지, [특성방정식](../characteristic-equation/main.md)으로 직접 구해보면 답이 나온다.
+
+**특성방정식(characteristic equation)**: $Av=\\lambda v$를 정리하면 $(A-\\lambda I)v=0$.
+
+$v\\ne 0$인 해가 존재하려면 $(A-\\lambda I)$가 [특이행렬](../determinant-column-space-null-space/main.md)이어야 하므로
+
+$$\\det(A-\\lambda I)=0$$
+
+이 $n$차 다항방정식의 근이 곧 고유값들이다.
+
+**검산 공식**: $\\sum_i \\lambda_i = \\operatorname{tr} A$(대각합), $\\prod_i \\lambda_i = \\det A$. 계산 실수를 바로 잡아낼 수 있어 외워둘 만하다.
+
+가장 쉬운 경우인 z축 회전으로 직접 확인해보자.
+
+$$R_z(\\theta)=\\begin{bmatrix}\\cos\\theta & -\\sin\\theta & 0\\\\ \\sin\\theta & \\cos\\theta & 0\\\\ 0&0&1\\end{bmatrix}$$
+
+이 행렬은 2×2 회전 블록과 $[1]$ 블록이 붙어있는 모양이라 고유값도 따로 논다. z축 방향 $(0,0,1)$은 곱해도 그대로 자기 자신이 나오니 $\\lambda=1$. 2×2 블록의 특성방정식 $\\lambda^2-2\\cos\\theta\\,\\lambda+1=0$을 풀면 $\\lambda=\\cos\\theta\\pm i\\sin\\theta$가 나온다. 일반 축 기준 회전도 그 축을 z축으로 두는 정규직교 좌표계로 바꾸면(orthogonal similarity라 고유값은 그대로 보존) 항상 이 꼴로 환원되므로, 결국 임의의 3차원 회전행렬 $R$의 고유값은
+
+$$\\lambda_1 = 1\\ \\text{(실수)}, \\qquad \\lambda_{2,3} = \\cos\\theta \\pm i\\sin\\theta\\ \\text{(켤레복소수)}$$
+
+**$\\lambda=1$인 고유벡터가 곧 회전축이다** — $R\\mathbf n=\\mathbf n$, 즉 그 축 위의 벡터는 회전을 시켜도 방향·크기가 그대로이기 때문. 위 rotation 절에서 "회전 변환에 의해 변하지 않는 고유벡터는 회전축"이라 한 게 여기서 특성방정식으로 확인되는 셈이다.
+
+나머지 두 복소 고유값 $\\cos\\theta+i\\sin\\theta$는 사실 [2D 회전=복소수 곱셈 동형사상](../complex-multiplication-2d-rotation-isomorphism/main.md) 그 자체다($e^{i\\theta}$) — 위에서 뽑아낸 2×2 회전 블록의 고유값이 복소수로 나오는 게 우연이 아니라, 그 동형사상이 특성방정식 위로 그대로 드러난 것이다. 편각이 곧 회전각 $\\theta$고, 대각합에서 바로 읽힌다.
+
+$$\\operatorname{tr} R = 1+2\\cos\\theta \\implies \\theta=\\arccos\\frac{\\operatorname{tr}R-1}{2}$$
+
+이게 **오일러 회전 정리**("모든 3D 회전은 하나의 축을 중심으로 한 회전이다")의 선형대수적 증명이다 — 로드리게스 공식이 축 $\\hat\\omega$를 미분방정식으로 "구성"해서 회전행렬을 만들어냈다면, 고유값 문제는 거꾸로 이미 주어진 회전행렬에서 그 축을 "추출"해내는 길이다.
+`,
+
+  'Math/euler-formula': `---
+title: 4단계 — 오일러 공식 (Euler's Formula)
+date: 2026-08-06
+tags: euler-formula, complex-number
+order: 
+featured: false
+draft: false
+---
+
+# 4단계 — 오일러 공식 (Euler's Formula)
+
+2계 ODE의 특성방정식이 복소근을 가질 때(판별식 $D<0$), 그리고 라플라스 변환에서
+$\\cos, \\sin$이 지수함수와 얽힐 때 반드시 필요합니다.
+
+## 1. 공식
+
+$$e^{i\\theta} = \\cos\\theta + i\\sin\\theta$$
+
+## 2. 유도 (Maclaurin 급수를 이용, 강의노트 2장 8p에 동일하게 등장)
+
+$e^x$의 Maclaurin 급수([급수 수렴의 토대](../sequence-limits-and-infinite-series/main.md)):
+
+$$e^x = 1+x+\\frac{x^2}{2!}+\\frac{x^3}{3!}+\\frac{x^4}{4!}+\\cdots$$
+
+여기에 $x=i\\theta$를 대입하면 ($i^2=-1, i^3=-i, i^4=1$ 반복 이용):
+
+$$e^{i\\theta} = 1+i\\theta+\\frac{(i\\theta)^2}{2!}+\\frac{(i\\theta)^3}{3!}+\\frac{(i\\theta)^4}{4!}+\\cdots$$
+
+$$= \\left(1-\\frac{\\theta^2}{2!}+\\frac{\\theta^4}{4!}-\\cdots\\right) + i\\left(\\theta-\\frac{\\theta^3}{3!}+\\frac{\\theta^5}{5!}-\\cdots\\right)$$
+
+앞 괄호는 $\\cos\\theta$의 급수, 뒤 괄호는 $\\sin\\theta$의 급수이므로
+
+$$e^{i\\theta} = \\cos\\theta + i\\sin\\theta$$
+
+같은 방법으로 $e^{-i\\theta} = \\cos\\theta - i\\sin\\theta$.
+
+## 3. 역으로 코사인·사인을 지수함수로 표현
+
+$$\\cos\\theta = \\frac{e^{i\\theta}+e^{-i\\theta}}{2}, \\qquad \\sin\\theta = \\frac{e^{i\\theta}-e^{-i\\theta}}{2i}$$
+
+## 4. 복소수 $z=s+it$에 대한 지수함수 정의
+
+$$e^z = e^{s+it} = e^s e^{it} = e^s(\\cos t + i\\sin t)$$
+
+## 5. 왜 필요한가 — 2계 ODE에서의 활용
+
+특성방정식 $\\lambda^2+a\\lambda+b=0$의 근이 $\\lambda = \\alpha\\pm i\\beta$ (복소근)일 때:
+
+$$e^{\\lambda_1 x} = e^{(\\alpha+i\\beta)x} = e^{\\alpha x}(\\cos\\beta x+i\\sin\\beta x)$$
+$$e^{\\lambda_2 x} = e^{(\\alpha-i\\beta)x} = e^{\\alpha x}(\\cos\\beta x-i\\sin\\beta x)$$
+
+중첩의 원리로 두 해를 더하고 빼서 2로 나누면 **실함수인 해의 기저**를 얻습니다:
+
+$$y_1 = \\frac{e^{\\lambda_1 x}+e^{\\lambda_2 x}}{2} = e^{\\alpha x}\\cos\\beta x, \\qquad y_2=\\frac{e^{\\lambda_1 x}-e^{\\lambda_2 x}}{2i}=e^{\\alpha x}\\sin\\beta x$$
+
+따라서 일반해는
+
+$$y = e^{\\alpha x}(C_1\\cos\\beta x + C_2\\sin\\beta x)$$
+
+이 과정을 스스로 유도할 수 있으면 2장 "경우Ⅲ(복소근)"과 라플라스 변환의
+$\\mathcal{L}(e^{at}\\cos\\omega t)$류 공식이 왜 그런 형태인지 자연스럽게 이해됩니다.
+
+## 예제
+
+### 공식 값 계산
+
+**1)** $e^{i2\\pi}$의 값을 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$e^{i2\\pi}=\\cos2\\pi+i\\sin2\\pi=1+i(0)$$
+
+**답: $e^{i2\\pi}=1$**
+
+</details>
+
+**2)** $e^{i\\frac{5\\pi}{6}}$의 실수부와 허수부를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$e^{i\\frac{5\\pi}{6}}=\\cos\\frac{5\\pi}{6}+i\\sin\\frac{5\\pi}{6}$$
+
+$\\cos\\frac{5\\pi}{6}=-\\frac{\\sqrt3}{2}$, $\\sin\\frac{5\\pi}{6}=\\frac12$ 이므로
+
+**답: 실수부 $-\\dfrac{\\sqrt3}{2}$, 허수부 $\\dfrac12$**, 즉 $e^{i\\frac{5\\pi}{6}}=-\\dfrac{\\sqrt3}{2}+i\\dfrac12$
+
+</details>
+
+### Maclaurin 급수로 유도/확인
+
+**1)** Maclaurin 급수를 이용하여 $e^{-i\\theta}=\\cos\\theta-i\\sin\\theta$ 임을 유도하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$e^x$의 Maclaurin 급수에 $x=-i\\theta$를 대입한다 ($(-i)^2=-1,\\ (-i)^3=i,\\ (-i)^4=1$ 반복):
+
+$$e^{-i\\theta}=1+(-i\\theta)+\\frac{(-i\\theta)^2}{2!}+\\frac{(-i\\theta)^3}{3!}+\\frac{(-i\\theta)^4}{4!}+\\cdots$$
+
+$$=\\left(1-\\frac{\\theta^2}{2!}+\\frac{\\theta^4}{4!}-\\cdots\\right)+i\\left(-\\theta+\\frac{\\theta^3}{3!}-\\cdots\\right)$$
+
+앞 괄호는 $\\cos\\theta$, 뒤 괄호는 $-\\sin\\theta$의 급수이므로
+
+**답: $e^{-i\\theta}=\\cos\\theta-i\\sin\\theta$**
+
+</details>
+
+**2)** $e^{i\\theta}$의 Maclaurin 급수를 $\\theta^4$ 항까지만 전개하여 실수부 근사식을 구하고, $\\theta=\\dfrac{\\pi}{2}$를 대입한 근사값이 실제값 $\\cos\\dfrac{\\pi}{2}=0$에 얼마나 가까운지 확인하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$e^{i\\theta}\\approx 1+i\\theta-\\frac{\\theta^2}{2!}-i\\frac{\\theta^3}{3!}+\\frac{\\theta^4}{4!}$$
+
+실수부 근사식(=$\\cos\\theta$의 4차 근사): $1-\\dfrac{\\theta^2}{2}+\\dfrac{\\theta^4}{24}$
+
+$\\theta=\\frac{\\pi}{2}\\approx1.5708$을 대입하면 $\\dfrac{\\theta^2}{2}\\approx1.2337,\\ \\dfrac{\\theta^4}{24}\\approx0.2537$
+
+$$1-1.2337+0.2537\\approx0.02$$
+
+**답: 근사값 $\\approx0.02$로 실제값 $0$에 매우 가깝다** → 항을 더 더할수록 급수가 $\\cos\\theta$로 수렴함을 확인.
+
+</details>
+
+### 코사인·사인을 지수함수로 표현
+
+**1)** $\\cos\\dfrac{\\pi}{3}=\\dfrac{e^{i\\pi/3}+e^{-i\\pi/3}}{2}$ 공식을 이용해 값이 $\\dfrac12$임을 확인하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$e^{i\\pi/3}=\\cos\\frac\\pi3+i\\sin\\frac\\pi3=\\frac12+i\\frac{\\sqrt3}{2},\\qquad e^{-i\\pi/3}=\\frac12-i\\frac{\\sqrt3}{2}$$
+
+$$\\frac{e^{i\\pi/3}+e^{-i\\pi/3}}{2}=\\frac{\\left(\\frac12+i\\frac{\\sqrt3}2\\right)+\\left(\\frac12-i\\frac{\\sqrt3}2\\right)}{2}=\\frac{1}{2}$$
+
+**답: $\\cos\\dfrac\\pi3=\\dfrac12$**, 공식과 일치.
+
+</details>
+
+**2)** $\\cos\\theta=\\dfrac{e^{i\\theta}+e^{-i\\theta}}{2}$와 $\\sin\\theta=\\dfrac{e^{i\\theta}-e^{-i\\theta}}{2i}$를 이용하여 $\\cos^2\\theta+\\sin^2\\theta=1$임을 증명하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$\\cos^2\\theta=\\frac{e^{2i\\theta}+2+e^{-2i\\theta}}{4}$$
+
+$$\\sin^2\\theta=\\frac{(e^{i\\theta}-e^{-i\\theta})^2}{(2i)^2}=\\frac{e^{2i\\theta}-2+e^{-2i\\theta}}{-4}=-\\frac{e^{2i\\theta}-2+e^{-2i\\theta}}{4}$$
+
+두 식을 더하면
+
+$$\\cos^2\\theta+\\sin^2\\theta=\\frac{(e^{2i\\theta}+2+e^{-2i\\theta})-(e^{2i\\theta}-2+e^{-2i\\theta})}{4}=\\frac{4}{4}$$
+
+**답: $\\cos^2\\theta+\\sin^2\\theta=1$** (지수함수 표현만으로 피타고라스 항등식이 유도됨)
+
+</details>
+
+### 복소수 지수함수 $e^z=e^{s+it}$ 계산
+
+**1)** $z=2+i\\pi$일 때 $e^z$의 값을 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$e^z=e^{2+i\\pi}=e^2\\cdot e^{i\\pi}=e^2(\\cos\\pi+i\\sin\\pi)=e^2(-1+i(0))$$
+
+**답: $e^z=-e^2$** (실수)
+
+</details>
+
+**2)** $z=\\ln2+i\\dfrac{\\pi}{3}$일 때 $e^z$의 실수부와 허수부를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$e^z=e^{\\ln2}\\cdot e^{i\\pi/3}=2\\left(\\cos\\frac\\pi3+i\\sin\\frac\\pi3\\right)=2\\left(\\frac12+i\\frac{\\sqrt3}{2}\\right)$$
+
+**답: $e^z=1+i\\sqrt3$**, 즉 실수부 $1$, 허수부 $\\sqrt3$
+
+</details>
+
+### 2계 ODE에서의 활용
+
+**1)** 특성방정식 $\\lambda^2-4\\lambda+13=0$의 근을 구하고 일반해를 써라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$\\lambda=\\frac{4\\pm\\sqrt{16-52}}{2}=\\frac{4\\pm\\sqrt{-36}}{2}=\\frac{4\\pm6i}{2}=2\\pm3i$$
+
+$\\alpha=2,\\ \\beta=3$이므로
+
+**답: $y=e^{2x}(C_1\\cos3x+C_2\\sin3x)$**
+
+</details>
+
+**2)** 특성방정식 $\\lambda^2+2\\lambda+10=0$의 근을 구하고, 초기조건 $y(0)=1,\\ y'(0)=0$을 만족하는 특수해를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$\\lambda=\\frac{-2\\pm\\sqrt{4-40}}{2}=\\frac{-2\\pm6i}{2}=-1\\pm3i$$
+
+$\\alpha=-1,\\ \\beta=3$이므로 일반해는
+
+$$y=e^{-x}(C_1\\cos3x+C_2\\sin3x)$$
+
+$y(0)=C_1=1$.
+
+$$y'=-e^{-x}(C_1\\cos3x+C_2\\sin3x)+e^{-x}(-3C_1\\sin3x+3C_2\\cos3x)$$
+
+$y'(0)=-C_1+3C_2=0 \\Rightarrow C_2=\\dfrac{1}{3}$ (∵ $C_1=1$)
+
+**답: $y=e^{-x}\\left(\\cos3x+\\dfrac13\\sin3x\\right)$**
+
+</details>
+
+## 체크리스트
+
+- [ ] $e^{i\\theta}=\\cos\\theta+i\\sin\\theta$ 를 Maclaurin 급수로 직접 유도 가능
+- [ ] $\\cos\\theta, \\sin\\theta$를 지수함수로 표현하는 역방향 공식도 사용 가능
+- [ ] 복소근을 갖는 2계 ODE 일반해가 왜 $e^{\\alpha x}(\\cos\\beta x, \\sin\\beta x)$ 형태가
+      되는지 설명 가능
+
+---
+
+**이전**: [03_적분](../integration/main.md)
+`,
+
+  'Math/gaussian-elimination': `---
+title: 가우스 소거법 (Gaussian Elimination)
+date: 2026-08-20
+tags: matrix, linear-algebra
+order: 
+featured: false
+draft: false
+---
+
+# 가우스 소거법 (Gaussian Elimination)
+
+$Ax=v$의 해는 이론상 $x=A^{-1}v$지만, 행렬이 커질수록 [역행렬](../determinant-column-space-null-space/main.md)을 직접 구하는 건 비효율적이다. **가우스 소거법**은 역행렬을 계산하지 않고도 연립방정식을 바로 푸는 절차다 — 방정식을 하나씩 이용해 미지수를 순서대로 지워나간다(消去, elimination).
+
+## 예시로 먼저
+
+\`\`\`
+ x + y + z = 6
+2x + y - z = 1
+ x - y + z = 2
+\`\`\`
+
+1. 첫 방정식을 이용해 아래 두 식에서 $x$를 지운다 (행끼리 빼서 계수를 0으로 만듦)
+2. 남은 두 식으로 이번엔 $y$를 지운다
+3. 맨 아래엔 미지수가 하나만 남은 식이 남는다 → $z$ 값이 바로 나옴
+4. 구한 $z$를 위 식에 대입(**후진대입, back substitution**)해서 $y$, 그다음 $x$ 순으로 구한다
+
+위→아래로 지우고(forward elimination), 아래→위로 대입하는(back substitution) 이 두 단계가 가우스 소거법의 전부다.
+
+## 행렬로 보면 — row echelon form
+
+계수와 우변을 하나로 붙인 **첨가행렬(augmented matrix)** $[A\\,|\\,v]$에 아래 세 가지 **행 연산**만 반복해서 위쪽이 계단 모양이 되게 만드는 것과, 위 과정은 완전히 같다:
+
+- 두 행을 교환한다
+- 한 행에 0이 아닌 상수를 곱한다
+- 한 행에 다른 행의 배수를 더하거나 뺀다
+
+이 세 연산은 방정식이 나타내는 관계 자체는 바꾸지 않고 표현만 정리하는 것이므로 **해를 바꾸지 않는다.** 이렇게 만들어진 계단 모양을 **row echelon form**이라 부르고, 그 안에서 완전히 0으로만 채워지지 않은 행의 개수가 곧 그 행렬의 **rank**다.
+`,
+
+  'Math/gram-schmidt': `---
+title: Gram-Schmidt
+date: 2026-08-19
+tags: vector, orthogonalization
+order: 
+featured: false
+draft: false
+---
+
+# Gram-Schmidt
+
+주어진 벡터를 이용하여 직교 벡터를 만들어 내는 공식
+두벡터의 [정사영](../orthogonal-projection/main.md)만 알고 있다면 너무 쉽게 끝난다.
+
+![](Pasted image 20260819174913.png)
+그림은 참조만
+
+벡터 $\\vec{u}, \\vec{v}$ 가 있고
+$\\vec{v}$ 에서 $\\vec{u}$ 에 직교하는 수선의 발을 내렸다고 가정할때
+$\\vec{v}-proj_{u}\\vec{v}$ 를 로 계산된 벡터를 정규화 하면
+$\\vec{u}$ 와 직교하는 기저 벡터가 만들어진다.`,
+
+  'Math/greek-letters-cheat-sheet': `---
+title: 그리스 문자 읽는법
+date: 2026-08-12
+tags: cheat-sheet
+order: 
+featured: false
+draft: false
+---
+
+# 그리스 문자 읽는법
+
+| 대문자        | 소문자                 | 한국어 이름   | 영어      |
+| ---------- | ------------------- | -------- | ------- |
+| $A$        | $\\alpha$            | 알파       | Alpha   |
+| $B$        | $\\beta$             | 베타, 비타   | Beta    |
+| $\\Gamma$   | $\\gamma$            | 감마       | Gamma   |
+| $\\Delta$   | $\\delta$            | 델타       | Delta   |
+| $E$        | $\\varepsilon$       | 엡실론      | Epsilon |
+| $Z$        | $\\zeta$             | 제타       | Zeta    |
+| $H$        | $\\eta$              | 에타       | Eta     |
+| $\\Theta$   | $\\theta$            | 세타       | Theta   |
+| $I$        | $\\iota$             | 요타       | Iota    |
+| $K$        | $\\kappa$            | 카파       | Kappa   |
+| $\\Lambda$  | $\\lambda$           | 람다       | Lambda  |
+| $M$        | $\\mu$               | 뮤        | Mu      |
+| $N$        | $\\nu$               | 뉴        | Nu      |
+| $\\Xi$      | $\\xi$               | 크시       | Xi      |
+| $O$        | $o$                 | 오미크론     | Omicron |
+| $\\Pi$      | $\\pi$               | 피, 파이    | Pi      |
+| $P$        | $\\rho$              | 로        | Rho     |
+| $\\Sigma$   | $\\sigma, \\varsigma$ | 시그마      | Sigma   |
+| $T$        | $\\tau$              | 타우       | Tau     |
+| $\\Upsilon$ | $\\upsilon$          | 입실론, 윕실론 | Upsilon |
+| $\\Phi$     | $\\varphi$           | 피, 파이    | Phi     |
+| $X$        | $\\chi$              | 카이       | Chi     |
+| $\\Psi$     | $\\psi$              | 프사이      | Psi     |
+| $\\Omega$   | $\\omega$            | 오메가      | Omega   |
+
+각도를 나타낼 때 가장 자주 쓰이는 게 $\\theta$(세타)인데, [삼각함수와 단위원](../삼각-함수/main.md)에서 각도 변수로 등장하는 게 그 예다.`,
+
+  'Math/integration': `---
+title: 3단계 — 적분
+date: 2026-08-06
+tags: integration
+order: 
+featured: false
+draft: false
+---
+
+# 3단계 — 적분
+
+## 1. 부정적분 = 미분의 역연산
+
+$$\\int f'(x)\\,dx = f(x) + C$$
+
+## 2. 기본 적분공식
+
+$$\\int x^n dx = \\frac{x^{n+1}}{n+1}+C \\ (n\\neq -1), \\qquad \\int \\frac1x dx = \\ln|x|+C$$
+$$\\int e^x dx = e^x + C, \\qquad \\int \\sin x\\,dx = -\\cos x + C, \\qquad \\int \\cos x\\,dx=\\sin x+C$$
+
+강의노트 1장 예비자료 공식도 챙길 것:
+
+$$\\int \\tan x\\,dx = -\\ln|\\cos x|+C = \\ln|\\sec x|+C, \\qquad \\int \\cot x\\,dx=\\ln|\\sin x|+C$$
+$$\\int \\tanh x\\,dx = \\ln|\\cosh x|+C, \\qquad \\int \\coth x\\,dx = \\ln|\\sinh x|+C$$
+
+## 3. 정적분과 미적분의 기본정리
+
+$$\\int_a^b f(x)\\,dx = F(b)-F(a) \\quad (F'=f)$$
+
+정적분은 "넓이"의 극한(리만합)으로 정의되지만, 실전에서는 부정적분을 구해서
+양 끝값을 대입하는 것으로 계산합니다. **이상적분**(적분 구간이 무한대)도 중요합니다:
+
+$$\\int_0^\\infty e^{-st}\\,dt = \\lim_{B\\to\\infty}\\int_0^B e^{-st}\\,dt = \\frac1s \\quad (s>0)$$
+
+이 계산이 바로 **라플라스 변환의 정의 그 자체**입니다 (6장 첫 페이지).
+
+## 4. 치환적분
+
+$$\\int f(g(x))g'(x)\\,dx = \\int f(u)\\,du \\quad (u=g(x))$$
+
+예: $\\int 2x\\,e^{x^2}dx$ → $u=x^2, du=2x\\,dx$ → $\\int e^u du = e^{x^2}+C$
+
+## 5. 부분적분 — 매우 중요
+
+$$\\int u\\,v'\\,dx = uv - \\int u'v\\,dx \\qquad \\text{(강의노트 표기: } \\int uv'\\,dx=uv-\\int u'v\\,dx\\text{)}$$
+
+**적용 우선순위(LIATE)**: 로그(L) → 역삼각(I) → 다항식(A) → 삼각(T) → 지수(E) 순으로
+$u$를 선택하면 대체로 계산이 쉬워집니다.
+
+예: $\\int x e^x dx$ — $u=x, v'=e^x$ → $u'=1, v=e^x$
+$$\\int x e^x dx = xe^x - \\int e^x dx = xe^x - e^x + C$$
+
+**2계 ODE 미정계수법, 라플라스 역변환($t^n e^{at}$ 형태)에서 반복 등장**하므로
+여러 번 반복해서 손에 익힐 것.
+
+## 6. 부분분수 분해 — 라플라스 변환의 핵심 도구
+
+분자의 차수가 분모보다 낮은 유리함수를 간단한 항의 합으로 쪼개는 기법.
+(분자 차수가 분모 이상이면 먼저 나눗셈을 해서 낮출 것.)
+
+$$\\frac{x-3}{(2x+3)(x-2)} = \\frac{A}{2x+3}+\\frac{B}{x-2}$$
+
+$$\\frac{3x+5}{(2x+3)(x^2-2)} = \\frac{A}{2x+3}+\\frac{Bx+C}{x^2-2} \\quad (\\text{분자를 분모보다 한 차수 낮게})$$
+
+분모가 $(\\ )^n$ 거듭제곱이면:
+
+$$\\frac{x-1}{(x^2+3x+3)(2x+1)^3} = \\frac{Ax+B}{x^2+3x+3}+\\frac{C}{2x+1}+\\frac{D}{(2x+1)^2}+\\frac{E}{(2x+1)^3}$$
+
+### 도포법 (Cover-up Method) — 계산 지름길
+
+분모가 일차식들의 곱일 때, 예를 들어
+
+$$\\frac{s^2+6s+9}{(s-1)(s-2)(s+4)}=\\frac{A}{s-1}+\\frac{B}{s-2}+\\frac{C}{s+4}$$
+
+에서 $A$를 구하려면 양변에 $(s-1)$을 곱하고 $s=1$을 대입:
+
+$$A = \\frac{s^2+6s+9}{(s-2)(s+4)}\\bigg|_{s=1}$$
+
+같은 방법으로 $B, C$도 각각 $s=2, s=-4$ 대입해서 구함. **라플라스 역변환 문제
+대부분이 이 기법으로 풀립니다.**
+
+## 7. 삼각치환 (참고, 필요할 때 찾아서 사용)
+
+- $\\sqrt{a^2-x^2}$ 꼴 → $x=a\\sin\\theta$
+- $\\sqrt{a^2+x^2}$ 꼴 → $x=a\\tan\\theta$
+- $\\sqrt{x^2-a^2}$ 꼴 → $x=a\\sec\\theta$
+
+## 예제
+
+### 1. 부정적분 = 미분의 역연산
+
+#### 기본 역연산 확인
+
+**1)** 어떤 함수 $f(x)$가 $f'(x) = 5x^4 - 3x^2$을 만족한다. $\\displaystyle\\int f'(x)\\,dx$를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+부정적분은 미분의 역연산이므로 항별로 적분하면 된다.
+$$\\int (5x^4-3x^2)\\,dx = x^5 - x^3 + C$$
+
+**$x^5-x^3+C$**
+
+</details>
+
+**2)** $\\dfrac{d}{dx}\\left[x^2\\sin x\\right] = 2x\\sin x + x^2\\cos x$ 임을 이용하여 $\\displaystyle\\int (2x\\sin x + x^2\\cos x)\\,dx$를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+피적분함수가 정확히 $x^2\\sin x$의 도함수이므로, 별도의 계산 없이 미분의 역연산으로 바로 답을 얻는다.
+$$\\int (2x\\sin x + x^2\\cos x)\\,dx = x^2\\sin x + C$$
+
+**$x^2\\sin x+C$**
+
+</details>
+
+### 2. 기본 적분공식
+
+#### 다항식 적분
+
+**1)** $\\displaystyle\\int (4x^3 - 6x^2 + 2x - 5)\\,dx$
+
+<details>
+<summary>정답 보기</summary>
+
+항별로 거듭제곱 공식 $\\int x^n dx=\\frac{x^{n+1}}{n+1}+C$ 적용.
+$$\\int (4x^3-6x^2+2x-5)\\,dx = x^4-2x^3+x^2-5x+C$$
+
+**$x^4-2x^3+x^2-5x+C$**
+
+</details>
+
+**2)** $\\displaystyle\\int \\left(3\\sqrt{x} - \\frac{2}{x^3}\\right)dx$
+
+<details>
+<summary>정답 보기</summary>
+
+지수 형태로 바꾸면 $3x^{1/2}-2x^{-3}$.
+$$\\int 3x^{1/2}dx = 3\\cdot\\frac{x^{3/2}}{3/2}=2x^{3/2}$$
+$$\\int (-2x^{-3})dx = -2\\cdot\\frac{x^{-2}}{-2}=x^{-2}$$
+
+**$2x^{3/2}+x^{-2}+C$**
+
+</details>
+
+#### 지수/삼각함수 적분
+
+**1)** $\\displaystyle\\int \\left(4e^x + \\frac{3}{x}\\right)dx$
+
+<details>
+<summary>정답 보기</summary>
+
+$\\int e^x dx=e^x+C$, $\\int \\frac1x dx=\\ln|x|+C$ 를 그대로 적용.
+$$\\int \\left(4e^x+\\frac3x\\right)dx = 4e^x+3\\ln|x|+C$$
+
+**$4e^x+3\\ln|x|+C$**
+
+</details>
+
+**2)** $\\displaystyle\\int (2\\tan x + 3\\cot x)\\,dx$
+
+<details>
+<summary>정답 보기</summary>
+
+강의노트 공식 $\\int\\tan x\\,dx=\\ln|\\sec x|+C$, $\\int\\cot x\\,dx=\\ln|\\sin x|+C$ 를 사용.
+$$\\int (2\\tan x+3\\cot x)\\,dx = 2\\ln|\\sec x|+3\\ln|\\sin x|+C$$
+
+**$2\\ln|\\sec x|+3\\ln|\\sin x|+C$**
+
+</details>
+
+### 3. 정적분과 미적분의 기본정리
+
+#### 정적분 계산
+
+**1)** $\\displaystyle\\int_0^2 (3x^2-4x+1)\\,dx$
+
+<details>
+<summary>정답 보기</summary>
+
+부정적분: $F(x)=x^3-2x^2+x$.
+$$F(2)-F(0) = (8-8+2)-(0-0+0) = 2$$
+
+**$2$**
+
+</details>
+
+**2)** $\\displaystyle\\int_1^e \\frac{1}{x}\\,dx$
+
+<details>
+<summary>정답 보기</summary>
+
+$F(x)=\\ln|x|$.
+$$F(e)-F(1) = \\ln e - \\ln 1 = 1-0=1$$
+
+**$1$**
+
+</details>
+
+#### 이상적분
+
+**1)** $\\displaystyle\\int_0^\\infty e^{-3t}\\,dt$
+
+<details>
+<summary>정답 보기</summary>
+
+라플라스 변환의 기본 형태 $\\int_0^\\infty e^{-st}dt=\\frac1s\\ (s>0)$에 $s=3$ 대입.
+
+$$\\int_0^\\infty e^{-3t}\\,dt=\\lim_{B\\to\\infty}\\left[-\\frac13e^{-3t}\\right]_0^B=\\lim_{B\\to\\infty}\\left(-\\frac13e^{-3B}+\\frac13\\right)=\\frac13$$
+
+**$\\dfrac13$**
+
+</details>
+
+**2)** $\\displaystyle\\int_1^\\infty \\frac{1}{x^2}\\,dx$
+
+<details>
+<summary>정답 보기</summary>
+
+$\\int x^{-2}dx=-x^{-1}+C$ 이므로
+
+$$\\int_1^\\infty \\frac1{x^2}dx=\\lim_{B\\to\\infty}\\left[-\\frac1x\\right]_1^B=\\lim_{B\\to\\infty}\\left(-\\frac1B+1\\right)=1$$
+
+**$1$** (수렴)
+
+</details>
+
+### 4. 치환적분
+
+#### 치환적분
+
+**1)** $\\displaystyle\\int 6x^2 e^{x^3}\\,dx$
+
+<details>
+<summary>정답 보기</summary>
+
+$u=x^3,\\ du=3x^2dx$ 로 치환하면 $6x^2dx=2\\,du$.
+$$\\int 6x^2e^{x^3}dx = 2\\int e^u du = 2e^u+C = 2e^{x^3}+C$$
+
+**$2e^{x^3}+C$**
+
+</details>
+
+**2)** $\\displaystyle\\int \\frac{\\ln x}{x}\\,dx$
+
+<details>
+<summary>정답 보기</summary>
+
+$u=\\ln x,\\ du=\\frac1x dx$ 로 치환.
+$$\\int \\frac{\\ln x}{x}dx = \\int u\\,du = \\frac{u^2}{2}+C = \\frac{(\\ln x)^2}{2}+C$$
+
+**$\\dfrac{(\\ln x)^2}{2}+C$**
+
+</details>
+
+### 5. 부분적분
+
+#### 부분적분 1회
+
+**1)** $\\displaystyle\\int x e^{-x}\\,dx$
+
+<details>
+<summary>정답 보기</summary>
+
+$u=x,\\ v'=e^{-x}\\Rightarrow u'=1,\\ v=-e^{-x}$
+$$\\int xe^{-x}dx = -xe^{-x}-\\int(-e^{-x})dx = -xe^{-x}-e^{-x}+C$$
+
+**$-e^{-x}(x+1)+C$**
+
+</details>
+
+**2)** $\\displaystyle\\int \\ln x\\,dx$
+
+<details>
+<summary>정답 보기</summary>
+
+LIATE 순서상 로그가 최우선이므로 $u=\\ln x,\\ v'=1\\Rightarrow u'=\\frac1x,\\ v=x$
+$$\\int \\ln x\\,dx = x\\ln x-\\int x\\cdot\\frac1x dx = x\\ln x-\\int 1\\,dx = x\\ln x-x+C$$
+
+**$x\\ln x-x+C$**
+
+</details>
+
+#### 부분적분 반복
+
+**1)** $\\displaystyle\\int x^2\\cos x\\,dx$
+
+<details>
+<summary>정답 보기</summary>
+
+1차: $u=x^2,\\ v'=\\cos x\\Rightarrow u'=2x,\\ v=\\sin x$
+$$\\int x^2\\cos x\\,dx = x^2\\sin x-\\int 2x\\sin x\\,dx$$
+2차: $u=2x,\\ v'=\\sin x\\Rightarrow u'=2,\\ v=-\\cos x$
+$$\\int 2x\\sin x\\,dx = -2x\\cos x+\\int 2\\cos x\\,dx=-2x\\cos x+2\\sin x$$
+$$\\therefore \\int x^2\\cos x\\,dx = x^2\\sin x-(-2x\\cos x+2\\sin x)=x^2\\sin x+2x\\cos x-2\\sin x+C$$
+
+**$x^2\\sin x+2x\\cos x-2\\sin x+C$**
+
+</details>
+
+**2)** $\\displaystyle\\int x^2 e^{-x}\\,dx$
+
+<details>
+<summary>정답 보기</summary>
+
+1차: $u=x^2,\\ v'=e^{-x}\\Rightarrow u'=2x,\\ v=-e^{-x}$
+$$\\int x^2e^{-x}dx = -x^2e^{-x}+\\int 2xe^{-x}dx$$
+2차: $u=2x,\\ v'=e^{-x}\\Rightarrow u'=2,\\ v=-e^{-x}$
+$$\\int 2xe^{-x}dx = -2xe^{-x}+\\int 2e^{-x}dx = -2xe^{-x}-2e^{-x}$$
+$$\\therefore \\int x^2e^{-x}dx = -x^2e^{-x}-2xe^{-x}-2e^{-x}+C = -e^{-x}(x^2+2x+2)+C$$
+
+**$-e^{-x}(x^2+2x+2)+C$**
+
+</details>
+
+### 6. 부분분수 분해
+
+#### 일차식 분모(도포법)
+
+**1)** $\\dfrac{3x-1}{(x-2)(x+1)}$을 부분분수로 분해하고 적분하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$\\frac{3x-1}{(x-2)(x+1)}=\\frac{A}{x-2}+\\frac{B}{x+1}$$
+도포법: $A=\\dfrac{3(2)-1}{2+1}=\\dfrac53$, $\\ B=\\dfrac{3(-1)-1}{-1-2}=\\dfrac{-4}{-3}=\\dfrac43$
+$$\\int\\left(\\frac{5/3}{x-2}+\\frac{4/3}{x+1}\\right)dx = \\frac53\\ln|x-2|+\\frac43\\ln|x+1|+C$$
+
+**$\\dfrac53\\ln|x-2|+\\dfrac43\\ln|x+1|+C$**
+
+</details>
+
+**2)** $\\dfrac{4s-1}{(s-1)(s+1)(s-3)}$을 부분분수로 분해하고 적분하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$\\frac{4s-1}{(s-1)(s+1)(s-3)}=\\frac{A}{s-1}+\\frac{B}{s+1}+\\frac{C}{s-3}$$
+도포법:
+$$A=\\frac{4(1)-1}{(1+1)(1-3)}=\\frac{3}{-4}=-\\frac34,\\quad B=\\frac{4(-1)-1}{(-1-1)(-1-3)}=\\frac{-5}{8}=-\\frac58$$
+$$C=\\frac{4(3)-1}{(3-1)(3+1)}=\\frac{11}{8}$$
+$$\\int\\left(\\frac{-3/4}{s-1}+\\frac{-5/8}{s+1}+\\frac{11/8}{s-3}\\right)ds=-\\frac34\\ln|s-1|-\\frac58\\ln|s+1|+\\frac{11}{8}\\ln|s-3|+C$$
+
+**$-\\dfrac34\\ln|s-1|-\\dfrac58\\ln|s+1|+\\dfrac{11}{8}\\ln|s-3|+C$**
+
+</details>
+
+#### 이차식/거듭제곱 분모
+
+**1)** $\\dfrac{x+1}{(x-1)(x^2+1)}$을 부분분수로 분해하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$\\frac{x+1}{(x-1)(x^2+1)}=\\frac{A}{x-1}+\\frac{Bx+C}{x^2+1}$$
+도포법으로 $A$ 먼저: $A=\\dfrac{1+1}{1^2+1}=1$
+양변에 $(x-1)(x^2+1)$을 곱하면
+$$x+1 = A(x^2+1)+(Bx+C)(x-1)$$
+$x^2$ 계수 비교: $A+B=0\\Rightarrow B=-1$. 상수항 비교: $A-C=1\\Rightarrow C=0$.
+
+**$\\dfrac{1}{x-1}-\\dfrac{x}{x^2+1}$**
+
+</details>
+
+**2)** $\\dfrac{2x}{(x+1)^2}$을 부분분수로 분해하고 적분하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$\\frac{2x}{(x+1)^2}=\\frac{A}{x+1}+\\frac{B}{(x+1)^2}$$
+양변에 $(x+1)^2$을 곱하면 $2x=A(x+1)+B$.
+$x=-1$ 대입: $-2=B$. $x$의 계수 비교: $A=2$.
+$$\\int\\left(\\frac{2}{x+1}-\\frac{2}{(x+1)^2}\\right)dx = 2\\ln|x+1|+\\frac{2}{x+1}+C$$
+
+**$2\\ln|x+1|+\\dfrac{2}{x+1}+C$**
+
+</details>
+
+### 7. 삼각치환
+
+#### 삼각치환
+
+**1)** $\\displaystyle\\int \\frac{dx}{\\sqrt{9-x^2}}$
+
+<details>
+<summary>정답 보기</summary>
+
+$\\sqrt{a^2-x^2}$ 꼴이므로 $x=3\\sin\\theta,\\ dx=3\\cos\\theta\\,d\\theta$, $\\sqrt{9-x^2}=3\\cos\\theta$.
+$$\\int \\frac{3\\cos\\theta\\,d\\theta}{3\\cos\\theta}=\\int d\\theta=\\theta+C$$
+$\\theta=\\arcsin(x/3)$이므로
+
+**$\\arcsin(x/3)+C$**
+
+</details>
+
+**2)** $\\displaystyle\\int \\frac{dx}{16+x^2}$
+
+<details>
+<summary>정답 보기</summary>
+
+$\\sqrt{a^2+x^2}$ 꼴(제곱근은 없지만 같은 치환)이므로 $x=4\\tan\\theta,\\ dx=4\\sec^2\\theta\\,d\\theta$, $16+x^2=16\\sec^2\\theta$.
+$$\\int \\frac{4\\sec^2\\theta\\,d\\theta}{16\\sec^2\\theta}=\\int \\frac14 d\\theta=\\frac14\\theta+C$$
+$\\theta=\\arctan(x/4)$이므로
+
+**$\\dfrac14\\arctan(x/4)+C$**
+
+</details>
+
+## 체크리스트
+
+- [ ] 이상적분 $\\int_0^\\infty e^{-st}dt$ 를 스스로 계산 가능
+- [ ] 부분적분을 두 번 이상 반복 적용하는 문제(예: $\\int x^2 e^x dx$)를 풀 수 있음
+- [ ] 분모의 형태(일차식/이차식/거듭제곱)에 따라 부분분수 형태를 바로 세팅 가능
+- [ ] 도포법으로 계수를 빠르게 계산 가능
+
+---
+
+**이전**: [미분](../differentiation/main.md) · **다음**: [04_오일러_공식](../euler-formula/main.md) — 2계 ODE 특성방정식의 복소근을 처리하려면 오일러 공식이 필요하다.
+`,
+
+  'Math/laws-of-exponents': `---
+title: 지수법칙 Laws of Exponents
+date: 2026-08-18
+tags: algebra, function
+order: 
+featured: false
+draft: false
+---
+
+# 지수법칙 Laws of Exponents
+
+## 지수 법칙
+
+$$a^m \\cdot a^n = a^{m+n}, \\qquad \\frac{a^m}{a^n} = a^{m-n}, \\qquad (a^m)^n = a^{mn}$$
+
+$$(ab)^n = a^n b^n, \\qquad a^{1/n} = \\sqrt[n]{a}$$
+
+## $a^0=1$, $a^{-n}$
+
+$2^3=8,\\ 2^2=4,\\ 2^1=2$ — 지수가 1씩 줄 때마다 값은 계속 반으로 준다. 이 패턴을
+0 밑으로 그대로 이어가면:
+
+$$2^0 = 1, \\qquad 2^{-1}=\\frac12, \\qquad 2^{-2}=\\frac14$$
+
+즉 $a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$은 규칙을 새로 만든 게 아니라 곱셈 패턴을
+음의 지수까지 **일관되게 연장**한 결과다.
+
+## 왜 지수를 더하기만 하면 되는가
+
+$2^3 \\cdot 2^2$를 풀어 쓰면 $(2\\cdot2\\cdot2)\\cdot(2\\cdot2) = 2^5$. 그냥 2를 3번 곱하고
+2번 더 곱한 것 = 2를 총 5번 곱한 것. 그래서 밑이 같은 곱셈은 지수의 **덧셈**으로
+바뀐다 — 아래 법칙들은 전부 이 패턴의 확장이다.
+
+
+- 로그는 이 법칙을 정확히 거꾸로 뒤집은 것 — [로그법칙 Laws of Logarithms](../laws-of-logarithms/main.md)
+- $e^{-x}$ 형태의 지수가 그대로 등장하는 예: 시그모이드 함수 Sigmoid Function
+`,
+
+  'Math/laws-of-logarithms': `---
+title: 로그법칙 Laws of Logarithms
+date: 2026-08-18
+tags: algebra, function
+order: 
+featured: false
+draft: false
+---
+
+# 로그법칙 Laws of Logarithms
+
+$\\log_a x$ = "a를 몇 제곱해야 $X$가 되는가?"
+
+$$\\log_a x = y \\iff a^y = x$$
+
+로그와 지수는 서로 역함수 관계 — [지수법칙 Laws of Exponents](../laws-of-exponents/main.md)를 뒤집은 것뿐이다.
+
+## 로그 법칙
+
+지수법칙에서 곱셈이 덧셈으로 바뀌었듯, 로그법칙에서는 **곱셈이 덧셈으로 "내려온다"**:
+
+$$\\log_a(xy) = \\log_a x + \\log_a y, \\qquad \\log_a\\frac{x}{y} = \\log_a x - \\log_a y, \\qquad \\log_a x^n = n\\log_a x$$
+
+$$\\log_a a = 1, \\qquad \\log_a 1 = 0$$
+
+## 밑변환 공식
+
+$$\\log_a x = \\frac{\\ln x}{\\ln a}$$
+
+계산기·프로그램은 대부분 자연로그($\\ln$)나 상용로그($\\log_{10}$)만 지원하므로,
+임의의 밑을 계산할 때 이 공식으로 바꿔서 쓴다.
+
+## 자연로그와 $e$
+
+$\\ln x = \\log_e x$, $e \\approx 2.71828\\ldots$. $e$가 특별한 이유는
+$\\dfrac{d}{dx}e^x=e^x$
+미분해도 자기 자신이 나오는 유일한 지수함수의 밑이기 때문
+
+
+- $e^{-x}$가 실제로 쓰이는 예: 시그모이드 함수 Sigmoid Function
+`,
+
+  'Math/least-squares-method': `---
+title: 최소자승법, damped least squares로 이어지는 다리 (Least Squares Method)
+date: 2026-08-21
+tags: jacobian, singularity
+order: 
+featured: false
+draft: false
+---
+
+# 최소자승법, damped least squares로 이어지는 다리 (Least Squares Method)
+
+**최소자승법(least squares method)**은 여러 관측점을 가장 잘 설명하는 직선(혹은 모델)을 찾는 방법이다. 즉, 정답이 하나로 딱 안 떨어지는 상황에서 "가장 덜 틀린" 답을 골라내는 절차.
+
+## 모터 캘리브레이션
+
+로봇 팔 모터에 PWM 값을 여러 개 넣고 실제 관절 각도를 측정했다고 하자.
+
+| PWM 입력 | 측정된 각도 |
+| ------ | ------ |
+| 10     | 2.1°   |
+| 20     | 4.3°   |
+| 30     | 5.8°   |
+| 40     | 8.2°   |
+
+점을 찍어보면 대략 직선 $y=ax+b$ 위에 있지만 정확히 일직선은 아니다 — 측정 노이즈 때문. 이 점들을 가장 잘 설명하는 $a, b$를 구하는 게 최소자승법이다.
+
+## 왜 하필 "제곱"인가
+
+각 점의 오차(잔차) $e_i = y_i - (ax_i+b)$를 그냥 다 더하면 양수·음수가 섞여서 상쇄돼버린다. 그렇다고 절댓값을 쓰면 0에서 뾰족하게 꺾여서 미분이 안 되는 지점이 생긴다.
+
+그러므로 제곱을 쓴다:
+
+$$\\min_{a,b} \\sum_i (y_i - ax_i - b)^2$$
+
+제곱은 어디서나 매끄러워서 미분으로 최솟값을 구할 수 있고, 큰 오차일수록 더 무겁게 벌점을 준다. 이름 자체가 이 목적함수에서 나왔다 — 1805년 르장드르가 "méthode des moindres carrés"(최소 제곱의 방법)라 명명했고, 가우스는 자기가 1795년부터 이미 쓰고 있었다며 우선권 논쟁을 벌였다. 가우스는 이 방법으로 태양 뒤로 사라진 소행성 세레스의 궤도를 예측해서 실제로 다시 찾아냈고, 그게 최소자승법의 위력을 세상에 각인시킨 사건이었다.
+
+## 행렬로 다시 쓰면 — 유사역행렬이 튀어나온다
+
+먼저 관측이 미지수보다 많은 과결정계(overdetermined system) $Ax=b$에서 출발한다. 이때 보통 정확한 해는 없으므로, $\\|Ax-b\\|^2$을 최소화하는 $x$를 찾는다. 미분해서 0으로 놓으면 정규방정식(normal equation)이 나온다:
+
+$$A^TAx = A^Tb \\implies x = (A^TA)^{-1}A^Tb$$
+
+$(A^TA)^{-1}A^T$가 유사역행렬(pseudo-inverse, Moore-Penrose inverse)이다. 정사각행렬이 아니라 역행렬을 못 구하는 상황에서, "가장 가까운 답"을 강제로 뽑아내는 장치인 셈.
+
+## 이미 아는 것과의 다리 — damped least squares
+
+[자코비안 노트](../../Robotics/jacobian-singularity-and-static-forces/main.md)에서 특이점 근처에 대응하려고 썼던 damped least squares가 바로 이 최소자승법의 응용이다. 원래 최소자승 목적함수에 페널티 항 $\\lambda^2\\|\\dot\\theta\\|^2$을 하나 더 얹은 것뿐:
+
+$$\\min_{\\dot\\theta} \\|J\\dot\\theta - v\\|^2 + \\lambda^2\\|\\dot\\theta\\|^2$$
+
+이 페널티가 관절 속도가 무한대로 튀는 걸 억제해서, 자코비안이 특이점 근처라 역행렬이 발산하는 상황에서도 유한한 값으로 눌러준다.
+
+같은 논리가 DH 파라미터 캘리브레이션에도 쓰인다 — 여러 측정 포즈로부터 실제 DH 파라미터를 역산할 때, 측정이 파라미터 개수보다 많으면 정확히 맞아떨어지는 해가 없으므로 결국 최소자승 문제로 풀게 된다.
+
+---
+
+> [!NOTE]
+> \`5-3 자코비안\` 노트에 이미 damped least squares(DLS)가 나와 있었는데, 그게 최소자승법에 정규화 항 하나를 얹은 것이라는 걸 미처 못 잇고 있었다. "최소자승법 → 특이점에서 불안정 → 정규화 추가 → DLS"라는 한 줄기 계보를 명시적으로 남겨두려고 파편으로 뗐다. DH 파라미터 캘리브레이션에도 같은 논리가 쓰인다는 것까지.`,
+
+  'Math/limits-and-continuity': `---
+title: 1단계 — 극한과 연속
+date: 2026-08-06
+tags: limit, continuity
+order: 
+featured: false
+draft: false
+---
+
+# 1단계 — 극한과 연속
+
+## 1. 극한의 직관적 개념
+
+$$\\lim_{x\\to a} f(x) = L$$
+
+"$x$가 $a$에 한없이 가까워질 때 $f(x)$는 $L$에 한없이 가까워진다"는 뜻.
+$x=a$에서 $f$가 실제로 정의되어 있는지, $f(a)$가 $L$과 같은지는 상관없이,
+**$a$ 근처에서 $f$가 어디로 향하는지**만 보는 개념입니다.
+
+예: $f(x)=\\dfrac{x^2-1}{x-1}$은 $x=1$에서 정의되지 않지만
+($0/0$ 꼴), $x=1$ 근처에서 $f(x)$는 $2$에 한없이 가까워지므로
+$\\lim_{x\\to1}f(x)=2$.
+
+**좌극한/우극한**: $x$가 $a$보다 작은 쪽에서 다가가는 극한 $\\lim_{x\\to a^-}f(x)$와
+큰 쪽에서 다가가는 극한 $\\lim_{x\\to a^+}f(x)$이 서로 같아야 (양쪽 극한이
+일치해야) 극한 $\\lim_{x\\to a}f(x)$가 존재합니다. 이 개념은 3절
+**단위계단함수** 같은 구간별 함수의 불연속점을 판단할 때 그대로 쓰입니다.
+
+공업수학 수준에서는 $\\epsilon$-$\\delta$ 엄밀한 정의보다 **계산 능력**이 중요합니다.
+
+## 2. 극한 계산 기법
+
+먼저 **"부정형(indeterminate form)"**이 뭔지부터: $x\\to a$일 때 분자·분모가
+동시에 $0$이 되거나($0/0$) 동시에 무한대로 발산하면($\\infty/\\infty$),
+그냥 대입해서는 답이 정해지지 않습니다 — 식을 변형해서 그 원인이 되는
+공통 인수(또는 발산 속도)를 없애야 진짜 극한값이 보입니다. 아래 (2)~(4)가
+그 변형 기법들입니다.
+
+### (1) 대입이 되는 경우
+분모가 0이 되지 않으면 그냥 대입. 예: $\\lim_{x\\to 3}(x^2+1) = 10$.
+
+### (2) 부정형 $\\frac{0}{0}$ — 인수분해로 처리
+
+분자·분모가 공통으로 갖는 $(x-2)$ 인수를 약분해서 $0/0$의 원인을 제거합니다.
+
+$$\\lim_{x\\to 2}\\frac{x^2-4}{x-2} = \\lim_{x\\to 2}\\frac{(x-2)(x+2)}{x-2} = \\lim_{x\\to 2}(x+2) = 4$$
+
+### (3) 무리식 — 유리화
+
+근호가 있는 $0/0$ 꼴은 인수분해가 안 되므로, **켤레식**(부호만 반대인 식)을
+분자·분모에 곱해 근호를 없앱니다. $(\\sqrt{x+1}-1)(\\sqrt{x+1}+1) = (x+1)-1 = x$가
+되어 분모의 $x$와 약분되는 원리.
+
+$$\\lim_{x\\to 0}\\frac{\\sqrt{x+1}-1}{x} = \\lim_{x\\to 0}\\frac{(\\sqrt{x+1}-1)(\\sqrt{x+1}+1)}{x(\\sqrt{x+1}+1)} = \\lim_{x\\to 0}\\frac{1}{\\sqrt{x+1}+1} = \\frac12$$
+
+### (4) $x\\to\\infty$ 극한 — 최고차항으로 나누기
+
+분자·분모를 **가장 차수가 높은 항**(여기선 $x^2$)으로 나누면, $1/x, 1/x^2$
+같은 항들은 $x\\to\\infty$일 때 $0$으로 사라지고 상수항만 남습니다.
+
+$$\\lim_{x\\to\\infty}\\frac{3x^2+1}{2x^2-x} = \\lim_{x\\to\\infty}\\frac{3+1/x^2}{2-1/x} = \\frac32$$
+
+> 참고: 분자·분모 차수가 같으면 최고차항 계수의 비가 극한값, 분자 차수가
+> 더 높으면 $\\pm\\infty$로 발산, 분모 차수가 더 높으면 극한값은 $0$.
+
+### (5) 중요 극한 (반드시 암기)
+
+$$\\lim_{x\\to 0}\\frac{\\sin x}{x} = 1, \\qquad \\lim_{x\\to 0}\\frac{1-\\cos x}{x} = 0, \\qquad \\lim_{x\\to\\infty}\\left(1+\\frac1x\\right)^x = e$$
+
+첫 번째는 $\\sin x$와 $x$가 $0$ 근처에서 거의 같은 속도로 $0$에 다가간다는
+뜻(그래프상 $y=x$와 $y=\\sin x$가 원점 근처에서 거의 겹침). 세 번째는
+자연상수 $e$의 **정의 그 자체**이며, 복리 계산·인구 성장 모델 등 "연속적으로
+쌓이는 변화"를 나타낼 때 반복적으로 등장합니다.
+
+> **$e$란?** $\\pi$처럼 수학에 반복적으로 등장하는 고유한 무리수
+> ($e\\approx2.71828\\ldots$)로, 위 극한 $\\lim_{x\\to\\infty}(1+1/x)^x$이 바로
+> $e$의 정의 중 하나입니다 (급수 $\\sum_{n=0}^\\infty 1/n!$로 정의하기도 함).
+> $e$가 특별한 이유는 **미분해도 자기 자신이 그대로 나오는 유일한 지수함수의
+> 밑**이기 때문 ($\\dfrac{d}{dx}e^x=e^x$, 2단계 미분에서 다룸). 그래서
+> "변화율이 자기 자신에 비례하는 현상"(인구 증가, 방사성 붕괴, RC회로의
+> 충·방전 등)을 수식으로 쓰면 자연스럽게 $e^x$가 나오고, ODE의 해도 거의
+> 항상 $e^{\\lambda x}$ 꼴로 나옵니다.
+
+### (6) 로피탈의 정리 (미분을 배운 후 사용 가능)
+
+$\\frac{0}{0}$ 또는 $\\frac{\\infty}{\\infty}$ 꼴이면 분자·분모를 각각
+**따로** 미분한 다음 다시 극한을 취해도 같은 값이 나옵니다. (분자와 분모를
+통째로 미분하는 몫의 미분법과 혼동하지 말 것 — 로피탈은 분자, 분모를
+독립적으로 미분합니다.)
+
+$$\\lim_{x\\to a}\\frac{f(x)}{g(x)} = \\lim_{x\\to a}\\frac{f'(x)}{g'(x)}$$
+
+예: $\\lim_{x\\to 0}\\dfrac{\\sin x}{x}$를 (5)의 암기 없이도 로피탈로 구하면
+$\\lim_{x\\to0}\\dfrac{\\cos x}{1} = 1$로 바로 확인됩니다. 여전히 $0/0$ 또는
+$\\infty/\\infty$ 꼴이면 한 번 더 적용할 수 있습니다.
+
+> 강의노트 6.4절(Dirac 델타함수 라플라스 변환 증명)에서 실제로 사용됩니다.
+
+## 3. 함수의 연속
+
+$f(x)$가 $x=a$에서 연속이려면:
+
+1. $f(a)$가 정의됨 (구멍이 없어야 함)
+2. $\\lim_{x\\to a} f(x)$가 존재함 (좌극한 = 우극한)
+3. $\\lim_{x\\to a} f(x) = f(a)$ (극한값과 함숫값이 일치)
+
+직관적으로는 **그래프를 연필을 떼지 않고 그릴 수 있는지**로 판단하면 됩니다.
+셋 중 하나라도 깨지면 $x=a$에서 불연속:
+
+- **제거 가능한 불연속(removable)**: 극한은 존재하는데 $f(a)$가 없거나
+  극한값과 다른 경우 (예: 앞의 $f(x)=(x^2-1)/(x-1)$은 $x=1$에서 극한은
+  $2$지만 $f(1)$이 정의되지 않아 불연속 — 구멍 하나만 메우면 연속이 됨)
+- **점프 불연속(jump)**: 좌극한 ≠ 우극한이라 극한 자체가 없는 경우
+  (예: 단위계단함수는 뛰어오르는 지점에서 좌·우극한이 다름)
+- **무한 불연속(infinite)**: $x\\to a$에서 $f(x)\\to\\pm\\infty$로 발산하는 경우
+  (예: $f(x)=1/x$는 $x=0$에서)
+
+**구분적 연속(piecewise continuous)** 개념도 알아둘 것 — 구간을 유한하게
+나눴을 때 각 구간에서는 연속이고 경계에서 점프 불연속만 있는 함수를 말함.
+6장 라플라스 변환의 존재 조건과 6.3절 단위계단함수(구간별로 정의된 함수)에서
+등장합니다.
+
+## 예제
+
+### 극한값 구하기(직관)
+
+**1)** $f(x)=\\dfrac{x^3-1}{x-1}$은 $x=1$에서 정의되지 않는다. $x=0.9,\\ 0.99,\\ 1.01,\\ 1.1$일 때
+$f(x)$ 값의 경향을 이용해 $\\lim_{x\\to1}f(x)$를 직관적으로 추정하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$x$가 $1$보다 작은 쪽/큰 쪽에서 다가갈 때 $f(x)$는 모두 $3$에 한없이 가까워진다.
+실제로 $f(x)=\\dfrac{x^3-1}{x-1}=x^2+x+1$ ($x\\ne1$)이므로
+
+$$\\lim_{x\\to1}f(x)=1^2+1+1=3$$
+
+**답: $3$**
+
+</details>
+
+**2)** $f(x)=\\dfrac{x^2-5x+6}{x-2}$일 때 $\\lim_{x\\to2}f(x)$를 직관적으로(값의 경향으로) 추정하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$x^2-5x+6=(x-2)(x-3)$이므로 $x\\ne2$에서 $f(x)=x-3$이고, $x$가 $2$에 가까워질수록
+$f(x)$는 $-1$에 가까워진다.
+
+$$\\lim_{x\\to2}f(x)=2-3=-1$$
+
+**답: $-1$**
+
+</details>
+
+### 좌극한·우극한
+
+**1)** $f(x)=\\dfrac{|x-3|}{x-3}$일 때 $\\lim_{x\\to3^-}f(x)$와 $\\lim_{x\\to3^+}f(x)$를 각각 구하고,
+$\\lim_{x\\to3}f(x)$가 존재하는지 판단하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$x<3$이면 $|x-3|=3-x$이므로
+
+$$\\lim_{x\\to3^-}f(x)=\\lim_{x\\to3^-}\\frac{3-x}{x-3}=-1$$
+
+$x>3$이면 $|x-3|=x-3$이므로
+
+$$\\lim_{x\\to3^+}f(x)=\\lim_{x\\to3^+}\\frac{x-3}{x-3}=1$$
+
+좌극한 $\\ne$ 우극한이므로 **$\\lim_{x\\to3}f(x)$는 존재하지 않는다.**
+
+</details>
+
+**2)** $g(x)=\\begin{cases}2x-1 & x<1\\\\x^2 & x\\ge1\\end{cases}$일 때 $x=1$에서의 좌극한과 우극한을 구하고,
+$\\lim_{x\\to1}g(x)$가 존재하는지 판단하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$\\lim_{x\\to1^-}g(x)=2(1)-1=1,\\qquad \\lim_{x\\to1^+}g(x)=1^2=1$$
+
+좌극한 $=$ 우극한 $=1$이므로 극한이 존재한다.
+
+**답: $\\lim_{x\\to1}g(x)=1$**
+
+</details>
+
+### 대입
+
+**1)** $\\lim_{x\\to2}(3x^2-5x+4)$를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+분모가 없는 다항함수이므로 그대로 대입한다.
+
+$$3(2)^2-5(2)+4=12-10+4=6$$
+
+**답: $6$**
+
+</details>
+
+**2)** $\\lim_{x\\to-1}\\dfrac{x^3-2x^2+5}{x+3}$를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$x=-1$을 분모에 대입하면 $-1+3=2\\ne0$이므로 그냥 대입 가능.
+
+$$\\frac{(-1)^3-2(-1)^2+5}{-1+3}=\\frac{-1-2+5}{2}=\\frac{2}{2}=1$$
+
+**답: $1$**
+
+</details>
+
+### 0/0 인수분해
+
+**1)** $\\lim_{x\\to5}\\dfrac{x^2-25}{x-5}$를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$\\lim_{x\\to5}\\frac{(x-5)(x+5)}{x-5}=\\lim_{x\\to5}(x+5)=10$$
+
+**답: $10$**
+
+</details>
+
+**2)** $\\lim_{x\\to-2}\\dfrac{x^2+3x+2}{x^2-4}$를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+분자, 분모를 각각 인수분해한다.
+
+$$\\lim_{x\\to-2}\\frac{(x+1)(x+2)}{(x-2)(x+2)}=\\lim_{x\\to-2}\\frac{x+1}{x-2}=\\frac{-1}{-4}=\\frac14$$
+
+**답: $\\dfrac14$**
+
+</details>
+
+### 무리식 유리화
+
+**1)** $\\lim_{x\\to0}\\dfrac{\\sqrt{x+9}-3}{x}$를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+켤레식 $(\\sqrt{x+9}+3)$을 분자·분모에 곱한다.
+
+$$\\lim_{x\\to0}\\frac{(x+9)-9}{x(\\sqrt{x+9}+3)}=\\lim_{x\\to0}\\frac{1}{\\sqrt{x+9}+3}=\\frac16$$
+
+**답: $\\dfrac16$**
+
+</details>
+
+**2)** $\\lim_{x\\to3}\\dfrac{x-3}{\\sqrt{x+1}-2}$를 구하라. (이번엔 근호가 분모에 있음에 주의)
+
+<details>
+<summary>정답 보기</summary>
+
+분모의 켤레식 $(\\sqrt{x+1}+2)$를 분자·분모에 곱해 분모의 근호를 없앤다.
+
+$$\\lim_{x\\to3}\\frac{(x-3)(\\sqrt{x+1}+2)}{(x+1)-4}=\\lim_{x\\to3}\\frac{(x-3)(\\sqrt{x+1}+2)}{x-3}=\\lim_{x\\to3}(\\sqrt{x+1}+2)$$
+
+$$=\\sqrt4+2=4$$
+
+**답: $4$**
+
+</details>
+
+### x→∞ 최고차항
+
+**1)** $\\lim_{x\\to\\infty}\\dfrac{4x^2-x+1}{2x^2+3}$를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+분자·분모를 $x^2$으로 나눈다.
+
+$$\\lim_{x\\to\\infty}\\frac{4-1/x+1/x^2}{2+3/x^2}=\\frac42=2$$
+
+**답: $2$**
+
+</details>
+
+**2)** $\\lim_{x\\to\\infty}\\dfrac{2x^3+5x}{4x^4-x^2+1}$를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+분모의 차수($4$차)가 분자의 차수($3$차)보다 높은 경우다. $x^4$으로 나누면
+
+$$\\lim_{x\\to\\infty}\\frac{2/x+5/x^3}{4-1/x^2+1/x^4}=\\frac{0}{4}=0$$
+
+분모 차수가 더 높으면 극한값은 항상 $0$이 된다는 사실과 일치한다.
+
+**답: $0$**
+
+</details>
+
+### 중요극한(sin x/x 등)
+
+**1)** $\\lim_{x\\to0}\\dfrac{\\sin5x}{x}$를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$5x\\to0$이 되도록 분모·분자를 맞춰준다.
+
+$$\\frac{\\sin5x}{x}=5\\cdot\\frac{\\sin5x}{5x}\\ \\longrightarrow\\ 5\\times1=5$$
+
+**답: $5$**
+
+</details>
+
+**2)** $\\lim_{x\\to0}\\dfrac{\\sin3x}{\\sin5x}$를 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+분자·분모를 각각 $\\sin u/u\\to1$ 꼴로 만든다.
+
+$$\\frac{\\sin3x}{\\sin5x}=\\frac{3\\cdot\\dfrac{\\sin3x}{3x}}{5\\cdot\\dfrac{\\sin5x}{5x}}\\ \\longrightarrow\\ \\frac{3\\times1}{5\\times1}=\\frac35$$
+
+**답: $\\dfrac35$**
+
+</details>
+
+### 로피탈 정리
+
+**1)** $\\lim_{x\\to0}\\dfrac{e^{2x}-1}{x}$를 로피탈 정리로 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$0/0$ 꼴이므로 분자·분모를 각각 미분한다.
+
+$$\\lim_{x\\to0}\\frac{e^{2x}-1}{x}=\\lim_{x\\to0}\\frac{2e^{2x}}{1}=2e^0=2$$
+
+**답: $2$**
+
+</details>
+
+**2)** $\\lim_{x\\to\\pi}\\dfrac{\\sin x}{x-\\pi}$를 로피탈 정리로 구하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$x=\\pi$를 대입하면 $\\sin\\pi=0$, $\\pi-\\pi=0$이므로 $0/0$ 꼴. 분자·분모를 각각 미분.
+
+$$\\lim_{x\\to\\pi}\\frac{\\sin x}{x-\\pi}=\\lim_{x\\to\\pi}\\frac{\\cos x}{1}=\\cos\\pi=-1$$
+
+**답: $-1$**
+
+</details>
+
+### 연속 판정(3조건)
+
+**1)** $f(x)=\\dfrac{x^2-16}{x-4}\\ (x\\ne4)$, $f(4)=8$로 정의된 함수가 $x=4$에서 연속인지 판별하라.
+
+<details>
+<summary>정답 보기</summary>
+
+① $f(4)=8$로 정의되어 있음.
+② 극한: $\\displaystyle\\lim_{x\\to4}\\frac{x^2-16}{x-4}=\\lim_{x\\to4}(x+4)=8$ (존재함)
+③ $\\displaystyle\\lim_{x\\to4}f(x)=8=f(4)$ (일치함)
+
+세 조건을 모두 만족하므로 **$x=4$에서 연속이다.**
+
+</details>
+
+**2)** $h(x)=\\begin{cases}x+2 & x<1\\\\5 & x=1\\\\3x & x>1\\end{cases}$가 $x=1$에서 연속인지 3조건을 이용해 판별하라.
+
+<details>
+<summary>정답 보기</summary>
+
+① $h(1)=5$로 정의되어 있음 (조건 1 만족).
+② 좌극한: $\\lim_{x\\to1^-}h(x)=1+2=3$, 우극한: $\\lim_{x\\to1^+}h(x)=3(1)=3$이므로
+극한 $\\lim_{x\\to1}h(x)=3$이 존재함 (조건 2 만족).
+③ 그런데 $\\lim_{x\\to1}h(x)=3\\ne h(1)=5$이므로 조건 3이 깨진다.
+
+극한은 존재하지만 함숫값과 일치하지 않으므로 **$x=1$에서 불연속이다.**
+
+</details>
+
+### 불연속의 종류(제거가능/점프/무한)
+
+**1)** $f(x)=\\dfrac{x-5}{x^2-25}$의 $x=5$에서의 불연속을 분류하라.
+
+<details>
+<summary>정답 보기</summary>
+
+$$f(x)=\\frac{x-5}{(x-5)(x+5)}=\\frac{1}{x+5}\\quad(x\\ne5)$$
+
+$$\\lim_{x\\to5}f(x)=\\frac{1}{10}$$
+
+극한값은 존재하지만 $f(5)$는 정의되지 않는다(분모가 $0$). 구멍만 메우면 연속이 되는 경우이므로
+**제거 가능한 불연속(removable)** 이다.
+
+</details>
+
+**2)** 다음 두 함수의 $x=0$에서의 불연속 종류를 각각 판별하라.
+
+(a) $g(x)=\\begin{cases}2x-1 & x<0\\\\x+4 & x\\ge0\\end{cases}$
+
+(b) $h(x)=\\dfrac{1}{x^2}$
+
+<details>
+<summary>정답 보기</summary>
+
+**(a)** 좌극한 $\\lim_{x\\to0^-}g(x)=2(0)-1=-1$, 우극한 $\\lim_{x\\to0^+}g(x)=0+4=4$.
+좌극한 $\\ne$ 우극한이므로 극한 자체가 존재하지 않는다 → **점프 불연속(jump)**.
+
+**(b)** $x\\to0$일 때 $h(x)=1/x^2\\to+\\infty$ (좌우 모두 발산). → **무한 불연속(infinite)**.
+
+</details>
+
+## 체크리스트
+
+- [ ] $0/0$ 꼴 극한을 인수분해로 처리할 수 있음
+- [ ] $\\lim \\sin x / x = 1$ 등 중요 극한을 암기하고 있음
+- [ ] 로피탈 정리를 언제 쓸 수 있는지 판단 가능
+- [ ] 연속의 정의 3조건을 설명할 수 있음
+
+---
+
+**이전**: [함수의 기본 성질](../basic-properties-of-functions/main.md) · [다항식의 전개와 인수분해](../polynomial-expansion-and-factoring/main.md) · [삼각함수 덧셈정리와 반각공식](../trig-addition-and-half-angle-formulas/main.md) · [등차수열과 등비수열](../arithmetic-and-geometric-sequences/main.md) (0단계 대수 기초) · **다음**: [미분](../differentiation/main.md) — 극한의 정의가 도함수 정의(순간변화율)로 직결된다.
+`,
+
+  'Math/matrix-linear-transformation': `---
+title: 행렬의 선형변환
+date: 2026-08-19
+tags: matrix, linear-algebra
+order: 
+featured: false
+draft: false
+---
+
+# 행렬의 선형변환
+
+함수 $T$ : $R^n \\rightarrow R^m$ 이 모든 벡터 $u, v$ 와 스칼라 $c$ 에대해
+$$T(u+v) = T(u) + T(v), $$
+$$ T(cu) = cT(u) $$
+를 만족 하면 선형 변환 이라 한다.
+두 조건을 합치면 **선형 결합을 보존한다**는 문장이 된다.
+
+## 행렬 $\\rightarrow$  선형변환
+
+위의 조건식에 따라 행렬곱 식 $Ax$에 대해서
+
+$T(x)=Ax$
+
+$T(u+v)=A(u+v)$
+
+$=Au+Av$
+
+$=T(u)+T(v)$
+
+가, 되기 때문에
+
+## 선형변환 $\\rightarrow$ 행렬
+
+임의의 변환 $T$ 를 만들때
+표준기저가 어디로 가는지만 관찰하면 된다.
+
+- $e_1=(1,0)$ 은 그대로 → $T(e_1)=(1,0)$
+- $e_2=(0,1)$ 은 오른쪽으로 1만큼 밀려서 $(1,1)$ 로 이동 → $T(e_2)=(1,1)$
+
+이 두 결과를 열벡터로 나열하면 **표준행렬**이 바로 나온다.
+$$A = [\\,T(e_1)\\ \\ T(e_2)\\,] = \\begin{bmatrix} 1 & 1 \\\\ 0 & 1 \\end{bmatrix}$$
+### 검산
+
+1. 선형성만으로 직접 계산: $x = 2e_1+3e_2$ 이므로
+$$T(x) = 2T(e_1)+3T(e_2) = 2(1,0)+3(1,1) = (5,3)$$
+2. 방금 만든 행렬로 계산:
+$$Ax = \\begin{bmatrix} 1 & 1 \\\\ 0 & 1 \\end{bmatrix}\\begin{bmatrix} 2 \\\\ 3 \\end{bmatrix} = \\begin{bmatrix} 1(2)+1(3) \\\\ 0(2)+1(3) \\end{bmatrix} = \\begin{bmatrix} 5 \\\\ 3 \\end{bmatrix}$$
+
+ **행렬벡터곱도** $Ax$  = $A$의 열들을 $x$의 성분 비율로 **선형결합** 이고,
+ **선형변환도** $T(x)=x_1T(e_1)+\\cdots+x_nT(e_n)$ 로 정확히 같은 **선형결합** 이다.
+
+즉 $Ax$ 와 $T(x)$ 는 애초에 **"기저의 상(image)을 성분대로 섞는다"는 같은 계산을 가리키므**로, 선형변환은 필연적으로 행렬이 된다.
+
+### 선형변환 종류
+
+- **크기 (scaling)**: 각 축 방향으로 $k$배 늘이거나 줄인다. $\\begin{bmatrix} k & 0 \\\\ 0 & k \\end{bmatrix}$ (축마다 다른 배율도 가능: $\\begin{bmatrix} k_1 & 0 \\\\ 0 & k_2 \\end{bmatrix}$)
+- **회전 (rotation)**: 원점을 중심으로 각 $\\theta$ 만큼 회전. $\\begin{bmatrix} \\cos\\theta & -\\sin\\theta \\\\ \\sin\\theta & \\cos\\theta \\end{bmatrix}$ — [2-3 3D 회전 표현법 총정리](../../Robotics/orientation-representations/main.md)의 2D 버전.
+- **전단 (shear)**: 한 축은 고정, 다른 방향은 첫 축 성분에 비례해 밀린다. $\\begin{bmatrix} 1 & k \\\\ 0 & 1 \\end{bmatrix}$ (평행사변형처럼 찌그러뜨리는 변환)
+- **반사 (reflection)**: 특정 축/직선을 기준으로 뒤집는다. 예를 들어 $x$축 기준 반사는 $\\begin{bmatrix} 1 & 0 \\\\ 0 & -1 \\end{bmatrix}$
+
+## 로보틱스와의 연결
+
+- 로봇팔의 [2-2 변환 행렬과 연산자 (Transformation Matrix)](../../Robotics/transformation-matrix/main.md)에서 다루는 회전 행렬 $R$ 도 결국 이 선형변환의 한 종류다 — 좌표계를 회전시키는 연산자(operator)나 좌표를 다른 프레임으로 매핑(mapping)하는 것 모두, 위에서 정의한 "선형결합을 보존하는 함수"라는 성질을 그대로 만족한다.
+- 다만 로봇팔의 위치 변환은 회전(선형) + 이동(translation)이 섞인 **아핀변환**이라 원점이 고정되지 않고, 그래서 동차좌표(homogeneous coordinate)로 4×4 행렬을 써서 억지로 선형화한다 — 순수 선형변환과 아핀변환의 차이는 별도로 정리할 만하다.
+- [행렬식, 열공간, 영공간 (Inverse Matrices, Column Space & Null Space)](../determinant-column-space-null-space/main.md): 표준행렬 $A$ 의 열공간은 $T$ 의 치역(range), 영공간은 $T(x)=0$ 이 되는 입력들의 집합이다 — 선형변환을 통째로 행렬의 언어로 재서술한 것.
+`,
+
+  'Math/orthogonal-projection': `---
+title: 정사영 Orthogonal Projection
+date: 2026-08-19
+tags: vector, linear-algebra
+order: 
+featured: false
+draft: false
+---
+
+# 정사영 Orthogonal Projection
+
+$$\\frac{\\vec{u}\\cdot \\vec{v}}{\\vec{v} \\cdot \\vec{v}}\\vec{v}$$
+
+$\\theta$ 를 이용해 두 벡터의 정사영을 그리는 공식
+
+![](Pasted image 20260819163417.png)
+
+위 그림을 기준으로
+$u$ 벡터에서 $v$ 벡터 위로 **직교**하는 수선의 발을 내렸을때 $proj_vu$ 라고 표기한다.
+이때 $proj_vu$ 의 식은
+
+$$proj_vu = \\frac{\\vec{u}}{\\left||\\vec{v}\\right||^2}$$
+이식을 풀어보자
+벡터는 두가지가 필수다 **방향**과 **크기**
+
+### 방향
+---
+일단, **방향**은 **정규화**된 $\\vec{v}$ 과 동일하다.
+그러므로,
+
+**방향** = $\\frac{\\vec{v}}{\\left||\\vec{v}\\right||}$
+
+### 길이
+---
+
+길이는 직각 삼각형의 밑변의 길이와 동일 하기 때문에
+cos 법칙으로 알아 낼 수 있다.
+cos 법칙에 따르면
+
+$cos\\theta = \\frac{밑변}{빗변}$  
+
+이때, 빗변을 양 변에 곱해 준다면
+
+$cos\\theta빗변 = 밑변$ 
+
+이 된다.
+즉, 빗변은 $\\vec{u}$ 의 길이 이므로
+
+**길이** = $cos\\theta\\left||\\vec{u}\\right||$ 
+
+### 정리
+---
+
+벡터  = 방향\\*크기 이므로
+
+$cos\\theta\\left||\\vec{u}\\right||$$\\frac{\\vec{v}}{\\left||\\vec{v}\\right||}$
+
+가 된다.
+여기서 $cos\\theta$ 는 [코사인 유사도](../cosine-similarity/main.md) 로 치환 된다.
+
+$\\frac{u\\cdot v}{\\left||\\vec{u}\\right||\\left||\\vec{v}\\right||}$$\\left||\\vec{u}\\right||$$\\frac{\\vec{v}}{\\left||\\vec{v}\\right||}$
+
+$\\left||\\vec{u}\\right||$ 는 지워지고
+
+$\\frac{u\\cdot v}{\\left||\\vec{v}\\right||}$$\\frac{\\vec{v}}{\\left||\\vec{v}\\right||}$
+$\\frac{u\\cdot v}{\\left||\\vec{v}\\right||^2}$$\\vec{v}$
+
+$\\left||\\vec{v}\\right||^2$ 는 $\\vec{v} \\cdot \\vec{v}$ 로 치환 된다.
+그러므로
+
+$\\frac{\\vec{u}\\cdot \\vec{v}}{\\vec{v} \\cdot \\vec{v}}$$\\vec{v}$
+로 마무리 된다.`,
+
+  'Math/polynomial-expansion-and-factoring': `---
+title: 다항식의 전개와 인수분해
+date: 2026-08-25
+tags: algebra, polynomial
+order: 
+featured: false
+draft: false
+---
+
+# 다항식의 전개와 인수분해
+
+## 전개 공식
+
+$$(a+b)^2 = a^2+2ab+b^2, \\qquad (a-b)^2 = a^2-2ab+b^2$$
+$$(a+b)^3 = a^3+3a^2b+3ab^2+b^3, \\qquad (a-b)^3 = a^3-3a^2b+3ab^2-b^3$$
+$$a^2-b^2=(a+b)(a-b)$$
+
+## 인수분해
+
+위 전개 공식을 반대로 읽는 것.
+
+- 공통인수 묶기: $ax+ay = a(x+y)$
+- 완전제곱식: $x^2+2x+1 = (x+1)^2$
+- 합/차의 세제곱: $a^3+b^3=(a+b)(a^2-ab+b^2)$, $a^3-b^3=(a-b)(a^2+ab+b^2)$
+
+## 나머지정리와 인수정리
+
+- **나머지정리**: 다항식 $f(x)$를 $(x-a)$로 나눈 나머지는 $f(a)$와 같음.
+- **인수정리**: $f(a)=0$이면 $(x-a)$는 $f(x)$의 인수. (나머지정리에서
+  나머지가 0인 특수한 경우) — 예: $f(x)=x^3-1$은 $f(1)=0$이므로
+  $(x-1)$을 인수로 가짐.
+
+이차방정식을 인수분해로 풀 수 없을 때 쓰는 [근의 공식](../quadratic-formula/main.md)도 참고.
+`,
+
+  'Math/quadratic-formula': `---
+title: 근의 공식
+date: 2026-08-24
+tags: algebra
+order: 
+featured: false
+draft: false
+---
+
+# 근의 공식
+
+## 기본 공식
+$$ ax² + bx + c = 0$$
+$$(x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a})$$
+
+## 짝수 공식
+
+$$ ax² + 2b'x + c = 0$$
+$x$ 앞의 계수 $b$가 짝수일 때,
+$$(x = \\frac{-b' \\pm \\sqrt{{b'}^2 - ac}}{a})$$
+으로 나타낼 수 있다.
+
+## 판별식 (Discriminant)
+
+$$D = b^2-4ac$$
+
+근호 안의 부호를 결정하는 값:
+
+- $D>0$: 서로 다른 두 실근
+- $D=0$: 중근
+- $D<0$: 서로 다른 두 허근
+
+이 판별이 2계 ODE의 특성방정식에서 그대로 재사용됨 (감쇠 진동 문제에서
+$D<0$이면 진동하는 해, $D\\ge 0$이면 진동 없이 감쇠하는 해가 나옴) — 행렬
+고유값을 구할 때 등장하는 [특성방정식](../characteristic-equation/main.md)도 결국 같은 이차방정식 판별 구조다.`,
+
+  'Math/rational-function': `---
+title: 유리함수 Rational Function
+date: 2026-08-22
+tags: algebra, function
+order: 
+featured: false
+draft: false
+---
+
+# 유리함수 Rational Function
+
+$$f(x) = \\frac{P(x)}{Q(x)}$$
+
+분자 $P(x)$와 분모 $Q(x)$가 둘 다 다항식이면 $f(x)$는 유리함수다.
+
+예: $f(x) = \\dfrac{x+1}{x-2}$는 유리함수.
+반면 $\\sqrt{x}$나 $\\sin x$는 다항식의 비율로 못 쓰니 유리함수가 아니다(각각 무리함수·초월함수).
+
+## 행렬로 확장 — 나눗셈이 없는 곳에서
+
+행렬에는 나눗셈 연산 자체가 없지만, 역행렬 $A^{-1}$을 곱하는 것이 그 역할을 대신한다(스칼라의 $1/a$에 대응). 그래서 $R=(I-K)(I+K)^{-1}$처럼 행렬을 "다항식/다항식" 꼴로 조합한 식도 유리함수라 부른다 — 지수함수($\\exp$)의 무한급수 없이 사칙연산만으로 끝나서 "대수적(algebraic)"이라고도 한다. 실제 사용 예: 케일리 변환.
+
+- 지수·로그와 짝을 이루는 다항식 계열 함수: [지수법칙 Laws of Exponents](../laws-of-exponents/main.md)
+`,
+
+  'Math/sequence-limits-and-infinite-series': `---
+title: 수열의 극한과 무한급수
+date: 2026-08-27
+tags: sequence, limit
+order: 
+featured: false
+draft: false
+---
+
+# 수열의 극한과 무한급수
+
+- **수열의 극한** $\\lim_{n\\to\\infty} a_n$: $n$을 한없이 키울 때 $a_n$이
+  다가가는 값. 존재하면 수렴, 없으면 발산.
+- **무한급수** $\\sum_{n=0}^\\infty a_n$의 수렴/발산: 부분합 $S_n$의 극한이
+  존재하는지로 판단. 특히 $|r|<1$인 등비급수([등비수열](../arithmetic-and-geometric-sequences/main.md)의
+  부분합에서 $n\\to\\infty$ 극한을 취한 형태)는
+  $$\\sum_{n=0}^\\infty a_1 r^n = \\frac{a_1}{1-r}$$
+  로 수렴 — 이 형태가 **거듭제곱급수(power series)**와 **테일러 급수**의
+  가장 단순한 예이며, 5장 급수해법에서 ODE의 해를 급수 형태로 가정할 때
+  바로 이 수렴 개념이 필요함.
+- 실제 응용으로 [오일러 공식](../euler-formula/main.md)이 $e^x$의 매클로린 급수(테일러 급수의
+  특수형)를 $\\cos\\theta$·$\\sin\\theta$ 급수로 재조립해 유도되며, 거기서 항을 더할수록
+  급수가 수렴하는 걸 직접 확인한다 — 여기 수렴 개념이 그대로 쓰이는 대표 사례다.
+`,
+
+  'Math/skew-symmetric-matrix': `---
+title: 반대칭 행렬
+date: 2026-08-18
+tags: matrix
+order: 
+featured: false
+draft: false
+---
+
+# 반대칭 행렬
+
+## 정의
+
+정방행렬 $A$가 **반대칭행렬(skew-symmetric matrix, anti-symmetric matrix)**이라는 건, 전치를 취했을 때 부호만 뒤집힌 자기 자신이 나온다는 뜻이다.
+
+$$A = -A^T \\quad \\Longleftrightarrow \\quad A + A^T = 0$$
+
+원소 단위로 풀면 $a_{ij} = -a_{ji}$ — (i,j) 자리와 (j,i) 자리가 서로 부호만 반대다. 대각 원소는 i=j를 대입한 $a_{ii} = -a_{ii}$가 성립해야 하므로 항상 $a_{ii} = 0$이다. 즉 **대각선은 전부 0, 대각선을 기준으로 위·아래가 부호만 반대인 거울상**인 행렬.
+
+## 외적 → 반대칭행렬 변환 공식
+
+벡터 $a=(a_1,a_2,a_3)$와 $b=(b_1,b_2,b_3)$의 외적은 정의상:
+
+$$a \\times b = (a_2b_3-a_3b_2,\\ a_3b_1-a_1b_3,\\ a_1b_2-a_2b_1)$$
+
+$a$를 고정해두고 보면 이 식은 $b_1, b_2, b_3$에 대한 1차식, 즉 선형이다. 선형이면 항상 행렬 곱으로 옮길 수 있으니, 각 성분에서 $b_1, b_2, b_3$의 계수를 그대로 뽑아 행에 나열한다.
+
+- 1행($a_2b_3-a_3b_2$): $b_1$ 계수 0, $b_2$ 계수 $-a_3$, $b_3$ 계수 $a_2$
+- 2행($a_3b_1-a_1b_3$): $b_1$ 계수 $a_3$, $b_2$ 계수 0, $b_3$ 계수 $-a_1$
+- 3행($a_1b_2-a_2b_1$): $b_1$ 계수 $-a_2$, $b_2$ 계수 $a_1$, $b_3$ 계수 0
+
+이 계수표를 그대로 행렬로 옮긴 것이 $[a]_\\times$ 다 — 즉 반대칭행렬은 "$a\\times(\\,)$라는 선형 연산의 계수를 적어놓은 표"일 뿐이다.
+
+$$[a]_\\times = \\begin{bmatrix} 0 & -a_3 & a_2 \\\\ a_3 & 0 & -a_1 \\\\ -a_2 & a_1 & 0 \\end{bmatrix}, \\qquad [a]_\\times b = a \\times b$$
+
+예를 들어 $a = (2, -1, 3)$이면:
+
+$$[a]_\\times = \\begin{bmatrix} 0 & -3 & -1 \\\\ 3 & 0 & -2 \\\\ 1 & 2 & 0 \\end{bmatrix}$$
+
+$b=(1,0,1)$로 검산해보면, 외적으로 직접 계산한 $a\\times b = (-1,1,1)$과 행렬 곱 $[a]_\\times b$가 똑같이 $(-1,1,1)$로 나온다.
+
+## 아무 정방행렬이나 반대칭행렬로 쪼갤 수 있다
+
+임의의 정방행렬 $A$는 항상 대칭 부분과 반대칭 부분의 합으로 분해된다:
+
+$$A = \\underbrace{\\tfrac{1}{2}(A + A^T)}_{\\text{대칭}} + \\underbrace{\\tfrac{1}{2}(A - A^T)}_{\\text{반대칭}}$$
+
+**왜 되는지** — 대칭 부분 $S = \\tfrac{1}{2}(A+A^T)$은 $S^T = \\tfrac{1}{2}(A^T+A) = S$ 그대로라 대칭이고, 반대칭 부분 $K = \\tfrac{1}{2}(A-A^T)$은 $K^T = \\tfrac{1}{2}(A^T-A) = -K$라 반대칭이다. 둘을 더하면 $S+K = \\tfrac{1}{2}(A+A^T) + \\tfrac{1}{2}(A-A^T) = A$로 원래 행렬이 그대로 복원된다. 즉 대칭·반대칭이라는 두 성질이 각 원소를 $\\tfrac{1}{2}(a_{ij}+a_{ji})$와 $\\tfrac{1}{2}(a_{ij}-a_{ji})$로 쪼개는 것과 같다 — 짝수함수/홀수함수로 함수를 쪼개는 것과 똑같은 발상.
+
+**직접 계산해보기** — $A = \\begin{bmatrix} 1 & 4 \\\\ 2 & 3 \\end{bmatrix}$ 이라 하면:
+
+$$A^T = \\begin{bmatrix} 1 & 2 \\\\ 4 & 3 \\end{bmatrix}$$
+
+대칭 부분:
+
+$$S = \\tfrac{1}{2}(A+A^T) = \\tfrac{1}{2}\\begin{bmatrix} 2 & 6 \\\\ 6 & 6 \\end{bmatrix} = \\begin{bmatrix} 1 & 3 \\\\ 3 & 3 \\end{bmatrix}$$
+
+반대칭 부분:
+
+$$K = \\tfrac{1}{2}(A-A^T) = \\tfrac{1}{2}\\begin{bmatrix} 0 & 2 \\\\ -2 & 0 \\end{bmatrix} = \\begin{bmatrix} 0 & 1 \\\\ -1 & 0 \\end{bmatrix}$$
+
+검산 — 다시 더하면 $A$로 돌아온다:
+
+$$S+K = \\begin{bmatrix} 1 & 3 \\\\ 3 & 3 \\end{bmatrix} + \\begin{bmatrix} 0 & 1 \\\\ -1 & 0 \\end{bmatrix} = \\begin{bmatrix} 1 & 4 \\\\ 2 & 3 \\end{bmatrix} = A$$
+
+$K$의 대각선이 0이고 $k_{12} = -k_{21}$인 것도 확인된다 — 정의 그대로다.
+
+## 관련 노트
+
+- 17강 벡터·행렬 연산과 내적·외적 복습 — 외적·대칭/반대칭 분해를 처음 정리한 강의 복습 노트, 이 노트가 채워야 할 "모름" 문항이 여기서 나옴
+`,
+
+  'Math/symmetric-matrix': `---
+title: 대칭 행렬 - Symmetric Matrix
+date: 2026-08-24
+tags: matrix, eigenvalue
+order: 
+featured: false
+draft: false
+---
+
+# 대칭 행렬 - Symmetric Matrix
+
+$$A^T = A$$를 만족하는 **정사각행렬**.
+즉 $(i,j)$ 성분과 $(j,i)$ 성분이 항상 같아서, **대각선을 기준으로 좌우 대칭이다**.
+
+$$A = \\begin{pmatrix}2&5&1 \\\\ 5&3&4 \\\\ 1&4&7\\end{pmatrix}$$
+
+## 스펙 트럴 정리 - Spectral Theorem
+
+일반 정사각 행렬은 대각화가 [조건에 따라](../diagonalization/main.md) 안될 수도 있고, 되더라도 고유 벡터가 직교 하지 않을 수 있다. 하지만 실수 대칭 행렬은 항상 다음 두 성질을 보장한다.
+
+1. [모든 고유값이 실수다.](#1-모든-고유값이-실수다)(복소수 x)
+2. 2. 모든 고유 벡터들이 직교한다.
+덕분에 대각화가 훨씬 간단해진다.
+
+$$A = P D P^{-1}$$
+에서
+$$A = P D P^{T}$$
+이렇게 바뀔 수 있다.
+
+$P$ 는 직교 행렬 이기 때문에 $P^{-1}=P^T$ 를 만족한다
+
+## 1. 모든 고유값이 실수다.
+
+$$Ax = \\lambda x$$
+에서 양변의 왼쪽에서 $x^T$ 를 곱하면
+$$x^TAx=x^T\\lambda x$$
+$$x^TAx=\\lambda x^Tx$$
+실수 벡터 라면 $x^Tx$ 는 항상 양수이다.
+따라서
+$$\\lambda = \\frac{x^TAx}{x^Tx}$$
+가 된다.
+$A$ 는 대칭 행렬 이므로 $x^TAx$ 는 항상 실수가 된다.
+예를 들이 $A = \\begin{pmatrix} a&b \\\\ b&d \\end{pmatrix}$ , $x = \\begin{pmatrix} x_1 \\\\ x_2 \\end{pmatrix}$  이라면
+$$x^TAx = ax^2_1 + 2bx_1x_2 + dx^2_2$$
+가 된다.
+전부 실수니까 $\\lambda = \\frac{x^TAx}{x^Tx}$ 도 실수가 될수 밖에 없다.
+
+하지만 고유값이 복소수일 수도 있다. 때문에 좀더 정확한 증명에서는 $x^T$ 대신 $x^*$ 켤레전치(**conjugate transpose**) 를 쓴다.
+
+## 2. 모든 고유 벡터들이 직교한다.(실수 대칭 행렬)
+
+행렬($A^T = A$)이고, $\\lambda_1 \\ne \\lambda_2$가 서로 다른 두 고유값이라고 할때.
+각각에 대응하는 고유벡터를 $v_1, v_2$라 하면:
+
+$$ Av_1 = \\lambda_1 v_1 \\qquad (1)$$
+$$ Av_2 = \\lambda_2 v_2 \\qquad (2)$$
+
+
+1. 식 (1)의 양변에 왼쪽에서 $v_2^T$를 곱한다
+$$ v_2^T A v_1 = v_2^T (\\lambda_1 v_1) = \\lambda_1 (v_2^T v_1) \\qquad (3) $$
+
+2. 좌변 $v_2^T A v_1$을 전치 한다.
+스칼라는 전치해도 자기 자신과 같으므로:
+
+$$ v_2^T A v_1 = (v_2^T A v_1)^T = v_1^T A^T v_2 $$
+3. 대칭성 $A^T = A$를 대입
+$$= v_1^T A v_2 $$
+
+4. 식 (2)를 대입
+
+$$ v_1^T A v_2 = v_1^T (\\lambda_2 v_2) = \\lambda_2 (v_1^T v_2) $$
+1~4 를 합치면
+$$ v_2^T A v_1 = v_1^T A v_2 $$
+
+였으므로, (3)과 4단계 결과를 등호로 연결하면:
+
+$$ \\lambda_1 (v_2^T v_1) = \\lambda_2 (v_1^T v_2) $$
+
+$v_1^T v_2 = v_2^T v_1$ (둘 다 스칼라이므로):
+
+$$ \\lambda_1 (v_1^T v_2) = \\lambda_2 (v_1^T v_2) $$
+
+$$ (\\lambda_1 - \\lambda_2)(v_1^T v_2) = 0 $$
+가정에서 $\\lambda_1 \\ne \\lambda_2$이므로 $(\\lambda_1 - \\lambda_2) \\ne 0$. 따라서:
+
+$$ v_1^T v_2 = 0 $$
+
+즉 $v_1$과 $v_2$는 직교한다.`,
+
+  'Math/trig-addition-and-half-angle-formulas': `---
+title: 삼각함수 덧셈정리와 반각공식
+date: 2026-08-25
+tags: trigonometry
+order: 
+featured: false
+draft: false
+---
+
+# 삼각함수 덧셈정리와 반각공식
+
+정의와 특수각 값은 [삼각함수와 단위원](../삼각-함수/main.md), [삼각함수의 특수값](../trig-special-values/main.md) 참고.
+여기서는 공업수학에서 바로 쓰는 항등식들만 정리한다.
+
+## 피타고라스 항등식
+
+$$\\sin^2\\theta + \\cos^2\\theta = 1$$
+
+## 덧셈정리
+
+$$\\sin(A\\pm B) = \\sin A\\cos B \\pm \\cos A\\sin B$$
+$$\\cos(A\\pm B) = \\cos A\\cos B \\mp \\sin A\\sin B$$
+
+## 반각공식 (공업수학 1장 예비자료에 직접 등장)
+
+$$\\sin^2 x = \\frac{1-\\cos 2x}{2}, \\qquad \\cos^2 x = \\frac{1+\\cos 2x}{2}$$
+
+## 곱을 합으로 바꾸는 공식 (라플라스 변환 합성곱 파트에서 사용)
+
+$$\\sin A\\sin B = \\frac12(\\cos(A-B)-\\cos(A+B))$$
+$$\\sin A\\cos B = \\frac12(\\sin(A-B)+\\sin(A+B))$$
+$$\\cos A\\cos B = \\frac12(\\cos(A-B)+\\cos(A+B))$$
+`,
+
+  'Math/trig-special-values': `---
+title: 삼각함수의 특수값 (Special Values)
+date: 2026-08-20
+tags: trigonometry, cheat-sheet
+order: 
+featured: false
+draft: false
+---
+
+# 삼각함수의 특수값 (Special Values)
+
+0°, 30°, 45°, 60°, 90° — 값이 딱 떨어지는 다섯 각도의 $\\sin/\\cos/\\tan$. 외워두면 회전행렬·DH 파라미터 등에서 계산 없이 바로 꽂아 쓸 수 있다. 정의 자체는 [삼각함수와 단위원](../삼각-함수/main.md) 참고.
+
+## 표
+
+| $\\theta$ | 0 | 30° | 45° | 60° | 90° |
+|---|---|---|---|---|---|
+| **라디안** | $0$ | $\\dfrac{\\pi}{6}$ | $\\dfrac{\\pi}{4}$ | $\\dfrac{\\pi}{3}$ | $\\dfrac{\\pi}{2}$ |
+| $\\sin\\theta$ | $0$ | $\\dfrac{1}{2}$ | $\\dfrac{\\sqrt2}{2}$ | $\\dfrac{\\sqrt3}{2}$ | $1$ |
+| $\\cos\\theta$ | $1$ | $\\dfrac{\\sqrt3}{2}$ | $\\dfrac{\\sqrt2}{2}$ | $\\dfrac{1}{2}$ | $0$ |
+| $\\tan\\theta$ | $0$ | $\\dfrac{\\sqrt3}{3}$ | $1$ | $\\sqrt3$ | 정의 안 됨 |
+
+- $\\tan\\theta = \\dfrac{\\sin\\theta}{\\cos\\theta}$ 이므로, $\\cos 90°=0$에서 분모가 0 → $\\tan 90°$는 정의되지 않는다(단위원 위 점의 $x=0$).
+- $\\dfrac{\\sqrt2}{2} = \\dfrac{1}{\\sqrt2} \\approx 0.707$, $\\dfrac{\\sqrt3}{2} \\approx 0.866$, $\\dfrac{\\sqrt3}{3}=\\dfrac{1}{\\sqrt3}\\approx 0.577$. (분모의 무리수를 없앤 유리화 표기만 다를 뿐 같은 값)
+
+## 외우는 법 — $\\sqrt{\\ }/2$ 패턴
+
+$\\sin$을 왼쪽부터 $\\dfrac{\\sqrt0}{2},\\dfrac{\\sqrt1}{2},\\dfrac{\\sqrt2}{2},\\dfrac{\\sqrt3}{2},\\dfrac{\\sqrt4}{2}$ 로 쓰면 분자의 루트 안이 **0, 1, 2, 3, 4**로 딱 증가한다. 정리하면 $0,\\ \\tfrac12,\\ \\tfrac{\\sqrt2}{2},\\ \\tfrac{\\sqrt3}{2},\\ 1$. $\\cos$은 이걸 **거꾸로** 읽으면 되고($\\cos$은 각이 커질수록 감소), $\\tan$은 $\\sin\\div\\cos$.
+
+## 값이 어디서 오나 (기하로 유도)
+
+표를 통째로 외우기보다 삼각형 두 개에서 나온다는 걸 알면 언제든 복원된다.
+
+- **45°** — 정사각형을 대각선으로 자른 **직각이등변삼각형**. 두 변이 $1:1$, 빗변이 $\\sqrt2$ (피타고라스). 그래서 $\\sin 45°=\\cos 45°=\\dfrac{1}{\\sqrt2}=\\dfrac{\\sqrt2}{2}$.
+- **30°·60°** — 정삼각형을 반으로 자른 **직각삼각형**. 세 변이 $1:\\sqrt3:2$. 짧은 변(1)이 30° 맞은편, 긴 변($\\sqrt3$)이 60° 맞은편이므로 $\\sin 30°=\\dfrac12$, $\\sin 60°=\\dfrac{\\sqrt3}{2}$.
+- **0°·90°** — 단위원 위 점의 좌표 그 자체. $\\theta=0$이면 점 $(1,0)$ → $\\cos 0=1,\\ \\sin 0=0$. $\\theta=90°$면 점 $(0,1)$ → $\\cos 90°=0,\\ \\sin 90°=1$.
+
+## 120° ~ 360° 표
+
+90°를 넘는 각의 값은 위 다섯 개에서 **크기(절댓값)는 그대로 두고 부호만 바꿔** 얻는다. 단위원에서 그 각의 점이 어느 사분면에 있는지 보고 $x(\\cos)$·$y(\\sin)$의 부호를 붙이면 된다.
+
+| $\\theta$ | 라디안 | $\\sin\\theta$ | $\\cos\\theta$ | $\\tan\\theta$ |
+|---|---|---|---|---|
+| 120° | $\\dfrac{2\\pi}{3}$ | $\\dfrac{\\sqrt3}{2}$ | $-\\dfrac{1}{2}$ | $-\\sqrt3$ |
+| 135° | $\\dfrac{3\\pi}{4}$ | $\\dfrac{\\sqrt2}{2}$ | $-\\dfrac{\\sqrt2}{2}$ | $-1$ |
+| 150° | $\\dfrac{5\\pi}{6}$ | $\\dfrac{1}{2}$ | $-\\dfrac{\\sqrt3}{2}$ | $-\\dfrac{\\sqrt3}{3}$ |
+| 180° | $\\pi$ | $0$ | $-1$ | $0$ |
+| 210° | $\\dfrac{7\\pi}{6}$ | $-\\dfrac{1}{2}$ | $-\\dfrac{\\sqrt3}{2}$ | $\\dfrac{\\sqrt3}{3}$ |
+| 225° | $\\dfrac{5\\pi}{4}$ | $-\\dfrac{\\sqrt2}{2}$ | $-\\dfrac{\\sqrt2}{2}$ | $1$ |
+| 240° | $\\dfrac{4\\pi}{3}$ | $-\\dfrac{\\sqrt3}{2}$ | $-\\dfrac{1}{2}$ | $\\sqrt3$ |
+| 270° | $\\dfrac{3\\pi}{2}$ | $-1$ | $0$ | 정의 안 됨 |
+| 300° | $\\dfrac{5\\pi}{3}$ | $-\\dfrac{\\sqrt3}{2}$ | $\\dfrac{1}{2}$ | $-\\sqrt3$ |
+| 315° | $\\dfrac{7\\pi}{4}$ | $-\\dfrac{\\sqrt2}{2}$ | $\\dfrac{\\sqrt2}{2}$ | $-1$ |
+| 330° | $\\dfrac{11\\pi}{6}$ | $-\\dfrac{1}{2}$ | $\\dfrac{\\sqrt3}{2}$ | $-\\dfrac{\\sqrt3}{3}$ |
+| 360° | $2\\pi$ | $0$ | $1$ | $0$ |
+
+**사분면별 부호 (ASTC)** — 각 사분면에서 값이 양수인 함수만 기억하면 부호가 바로 나온다.
+
+| 사분면 | 각도 범위 | 양수인 함수 |
+|---|---|---|
+| 1 | 0°~90° | All (전부 +) |
+| 2 | 90°~180° | **S**in |
+| 3 | 180°~270° | **T**an |
+| 4 | 270°~360° | **C**os |
+
+머리글자 **A·S·T·C**를 1→2→3→4사분면 순으로 "**A**ll **S**tudents **T**ake **C**alculus"로 외운다. 예: 210°는 3사분면 → tan만 양수, sin·cos는 음수. $\\tan 210°=+\\dfrac{\\sqrt3}{3}$, 나머지는 −.
+
+## 로보틱스
+
+로봇 관절이 자주 취하는 각(0°, ±90° 등)에서는 회전행렬의 $\\sin/\\cos$ 항이 0 또는 1로 떨어져 식이 크게 단순해진다. DH 파라미터 표나 좌표계 변환을 손으로 검산할 때 이 값들을 바로 대입하면 계산이 빨라진다.
+
+관련: [삼각함수와 단위원](../삼각-함수/main.md), [오일러 공식](../euler-formula/main.md)
+`,
+
+  'Math/삼각-함수': `---
+title: 삼각함수와 단위원
+date: 2026-08-11
+tags: trigonometry
+order: 
+featured: false
+draft: false
+---
+
+# 삼각함수와 단위원
+
+참고: https://mathbang.net/509
+
+단위원(반지름 1인 원) 위의 점 P(x, y)와 각도 $\\theta$를 이용해 삼각함수를 정의하면 이해가 쉬워진다.
+
+## 정의
+
+직각삼각형에서 빗변을 $r$, 밑변을 $x$, 높이를 $y$라 하면
+
+- $\\cos\\theta = x/r$ — 빗변 대비 밑변의 비율
+- $\\sin\\theta = y/r$ — 빗변 대비 높이의 비율
+- $\\tan\\theta = y/x$ — 밑변 대비 높이의 비율
+
+단위원에서는 $r=1$이므로 식이 단순해진다.
+
+- $\\cos\\theta = x$ → 점 P의 x좌표
+- $\\sin\\theta = y$ → 점 P의 y좌표
+- $\\tan\\theta = y/x$, 단 $x=0$(=90°)일 때는 정의되지 않는다
+
+## 그래프와의 연결
+
+$\\theta$가 0부터 커지면서 P가 단위원을 따라 회전하면, 그때그때의 x좌표를 세로축에 옮긴 것이 $\\cos$ 그래프, y좌표를 옮긴 것이 $\\sin$ 그래프다. $\\theta=0$일 때 $\\cos(0)=1$, $\\sin(0)=0$인 이유가 여기서 나온다.
+
+## 활용
+
+각도(회전)를 주기적인 값이나 패턴, 파형으로 바꾸고 싶을 때 쓴다. 예를 들어 시간에 따라 변하는 회전각을 $\\sin/\\cos$에 넣으면 진동·순환 움직임이나 반복 패턴을 만들 수 있다. 각도 입력은 라디안 단위를 쓰는 경우가 많다.
+
+공업수학에서는 각도를 거의 항상 라디안으로 다룸 ($180^\\circ = \\pi$). $\\dfrac{d}{dx}\\sin x=\\cos x$
+같은 미분 공식도 $x$가 라디안일 때만 성립하므로 도(degree) 습관을 버릴 것.
+
+관련: [오일러 공식](../euler-formula/main.md), [삼각함수 덧셈정리와 반각공식](../trig-addition-and-half-angle-formulas/main.md)
 `,
 
   'Math/허수와-복소수': `---
-title: 허수와 복소수(imaginary number & complex number)
-date: 2021-02-17
+title: 허수와 복소수
+date: 2026-08-11
+tags: complex-number
+order: 
+featured: false
+draft: false
 ---
 
-> [!note] 👇
-> quarternion(사원수)의 계산 이해를 위한 허수와 복소수의 개념 정리
+# 허수와 복소수
 
-허수를 설명 하기 전에는 ==음수==와 ==곱셈==의 의의에 대해 재조명할 필요가 있다.
-
-아래 설명에는** 수는 방향성을 가진다는 사실**이 바탕이 되어 있음을 알고 있자.
-
-## 먼저 음수에 대한 이야기이다.
-
-17세기 전까지만 해도 음수의 존재를 사람들은 이해하지 못했으며, 필요성 또한 느끼지 못했다. 왜냐하면 0 이라는 '없음'을 의미하는 수보다 아래에 있는 보이지 않는 수 이기 때문이다.
-
-가령 사과 1개는 있어도 사과 -1개는 있을 수 없는 것 처럼 말이다.
-
-또한 음수는 수를 스칼라에서 **1차원의 벡터로 확장** 시켰다. 즉 전에는 양수만 존재하여 양의 방향만 표현할 수 있었지만, 음수의 등장으로 그 반대값을 가지게 하며 수는 양방향성을 띄게 된것이다. 예를 들어 4 이라는 양의 방향이 있다면, -4는 그만큼의 **반대 방향**을 의미 하게 된다.
-
-
-
-## 다음은 곱셈.
-
- 곱셈은 기본적으로 양수의 배를 의미한다. 즉 1 * 3 은 1만큼의 수를 가진 양의 방향을 3배 만큼 커지게 한다는 의미를 가진다.
-
-
-## 허수 ( i^ = -1 )
-
-- **허수는 존재하지 않는 값이다.**
-
-허수는 제곱을 해서 -1이 되는 값을 뜻한다. 허나 이러한 성질을 가진 수는 존재하지 않으므로 $i$를 통해 실수 체계를 복소수 체계로 확장 시킬 수 있다.
-
-- **수는 회전한다.**
-
-제곱의 의미를 다시 보자. "제곱 = 같은 값을 두번 곱하는 식." 이라고 했을 때,  2^ = 2 * 2 = 4 와같은 식을 가진다. 그렇다면 이식은 어떨까 :  2^ = 1 * 2 * 2 = 4 (1의 존재는 방향의 이해를 돕기 위한 것이며 1의 방향으로 4배가 커지게 된다는 의미이다.) 이또한 같은 값이 나온다. 우리는 이것으로 한 제곱에 음수가 있을 수도 양수가 있을 수도 있다는 것을 알게된다.  그리고 우리는 실수를 가지고는 허수의 식을 풀 수 없다는걸 알 수 있다.
-
-그렇다면 x^ = 1 * x * x = -1이 될려면 어떻게 해야할까? 실수의 체계에서는 불가능 하다. 이부분에서 수는 2차원의 벡터로 확장하게 된다. 1을 -1로 만들기 위해선 수가 회전을 해야 한다는 이론이다.
-
-### 1의 값이 ==가상의 축 i==를 통해 2차원 까지 확장되어 회전하게 된다면...
-
-i^ = -1의 식이 성립되기 위해서는 가상의 i 축이 필요 하다.
-
-2^ = 4를 다시보자, 4의 값을 가지기 위해서는 +1이 2만큼의 움직이고, 다시 2만큼 움직이게 되면 4의 값을 가지게 된다.
-
-즉 허수의 식도 마찬가지이다.  +1이 i 만큼 움직이고 또다시 i 만큼 움직인다면, -1로 갈 수 있다는 것이다.
-
-이것은 아까의 제곱으로 다시 풀 수 있다. +1 * i * i = -1 즉, i^ = -1이 되는 것이다.
+곱셈을 "방향의 반복"이 아니라 "회전"으로 보면, 실수만으로는 표현할 수 없는 회전을 다루려고 차원을 하나 늘린 게 허수·복소평면이라는 이야기.
 
 ---
 
-> [!note]+ 참고 링크
-> [https://www.youtube.com/watch?v=INxpcSwbKMo](https://www.youtube.com/watch?v=INxpcSwbKMo)
->
-> [https://angeloyeo.github.io/2019/06/15/imaginary_number.html#1-수의-발견](https://angeloyeo.github.io/2019/06/15/imaginary_number.html#1-%EC%88%98%EC%9D%98-%EB%B0%9C%EA%B2%AC)
+참고: https://angeloyeo.github.io/2019/06/15/imaginary_number.html
+
+사원수(quaternion) 계산을 이해하기 위한 사전 지식으로 정리. 핵심은 "수는 방향성을 가진다"는 관점이다.
+
+## 음수 — 스칼라에서 1차원 벡터로
+
+17세기 이전에는 음수를 수로 인정하지 않았다. 사과 1개는 있어도 사과 -1개는 없다는 직관 때문이다. 하지만 음수를 도입하면 수직선 위에서 양의 방향과 반대 방향(음의 방향)을 동시에 표현할 수 있게 된다. 즉 수가 "크기만 있는 스칼라"에서 "방향을 가진 1차원 벡터"로 확장된 것.
+
+## 곱셈 = 방향의 유지, 제곱 = 반복
+
+$1 \\times 3$은 "1만큼의 크기를 가진 (양의) 방향을 3배로 키운다"는 뜻으로 볼 수 있다. 제곱 $2^2 = 1 \\times 2 \\times 2$도 같은 방식으로, 1을 기준으로 같은 배율을 두 번 적용한 것이다.
+
+## 허수 — 실수로는 풀 수 없는 회전
+
+$x^2 = -1$을 만족하는 실수 $x$는 없다. 실수는 1차원 수직선 위에서 양/음 방향만 가지므로, 아무리 곱해도 방향이 뒤집히는(즉 부호가 바뀌는) 것 이상의 변화를 줄 수 없기 때문이다.
+
+여기서 관점을 "곱셈 = 회전"으로 바꿔보면 실마리가 보인다. $1 \\to -1$로 가려면 180° 회전이 필요한데, 이를 "같은 회전을 두 번 적용해서 180°에 도달한다"고 생각하면 한 번의 회전은 90°가 된다. 즉 실수축과 수직인 가상의 축(허수축, $i$)을 도입해서, $1$에 $i$를 두 번 곱하면($1 \\times i \\times i$) 90°씩 두 번 회전해 $-1$에 도달하도록 정의한 것이 허수다.
+
+$$i^2 = -1$$
+
+이렇게 실수축(가로)과 허수축(세로)이 만나는 2차원 평면이 복소평면이고, 그 위의 점 $z = a + bi$가 복소수다. 실수만으로는 표현할 수 없었던 "회전"이라는 연산을 다루기 위해 차원을 하나 늘린 셈이다.
+
+이 "곱셈 = 회전"이라는 관점은 오일러 공식 $e^{i\\theta} = \\cos\\theta + i\\sin\\theta$로 이어진다 → [오일러 공식](../euler-formula/main.md)
+`,
+
+  'Network/bandwidth-units': `---
+title: 통신 속도 단위
+date: 2026-08-24
+tags: bandwidth, latency, cheat-sheet
+order: 
+featured: false
+draft: false
+---
+
+# 통신 속도 단위
+
+**bps(bit per second)와 KB/MB의 근본적 차이**
+- 저장 용량(KB/MB/GB)은 **byte** 기준
+- 통신 속도(bps/Kbps/Mbps)는 **bit** 기준 
+	- 1byte = 8bit이니, byte 기준 값을 bit 기준으로 바꾸려면 ×8이 항상 끼어든다. 
+		- 800byte/s → **(×8)** → 6,400bit/s → (÷1,000) → 6.4Kbps.
+
+- 접두어 배수도 관례가 다르다. [메모리 단위](../../C++/memory-units/main.md)에서 다뤘듯 저장 용량 쪽 KB/MB는 관행적으로 **1024(2^10)** 배수를 쓰지만, 통신 속도 쪽 Kbps/Mbps는 **1000(10^3)** 배수(순수 SI 십진 접두어)를 그대로 쓴다. 그래서 "1KB=1024byte"와 "1Kbps=1000bit/s"가 동시에 참이다 — 헷갈리기 딱 좋은 지점.
+- 표기 관례: 대문자 B = byte, 소문자 b = bit. \`MB\`(메가바이트)와 \`Mb\`(메가비트)는 8배 차이가 나니 **대소문자를 반드시 구분**해서 읽어야 한다.
+
+\`\`\`
+10Mbps = 1.25MB = 1,250KB = 10,000Kbps
+\`\`\`
+
+
+## 대역폭
+
+- 초당 얼마나 많은 데이터를 흘려보낼 수 있는가.
+- 전송시간 = **데이터크기 ÷ 대역폭.**
+
+## 지연시간
+
+실제로 뭔가를 주고받는 총 시간 = **지연시간 + 전송시간**
+
+- 파이프의 길이(데이터 하나가 들어가서 반대쪽에 나오기까지 걸리는 시간, 왕복이면 RTT). 대역폭이 커도 지연시간이 길면 도착까지는 오래 걸린다.
+ 
+지연시간은 매번 달라지는 **환경 의존적 값**이라 실측하거나(\`ping\`) 공개된 벤치마크 값을 인용해야 한다.
+
+## 지터(jitter)
+
+- 지연시간의 편차. "평균 지연시간 50ms"만으로는 부족하고, 최악값이 얼마나 튀는지(예: 표준편차 130ms대)까지 봐야 실시간 시스템에서 이 통신을 Hard/Firm/Soft 중 어디로 분류할지 판단할 수 있다.
+
+**상향(uplink) / 하향(downlink)**
+- 하향 = 다운로드. 상향 = 업로드
+- 대부분의 통신 모듈은 하향이 상향보다 몇 배 빠르게 비대칭 설계된다 — 사람들이 받는 트래픽을 보내는 트래픽보다 훨씬 많이 쓰기 때문.
+
+---
+관련: [메모리 단위](../../C++/memory-units/main.md)
+`,
+
+  'Network/protocol': `---
+title: 프로토콜
+date: 2026-08-12
+tags: protocol
+order: 
+featured: false
+draft: false
+---
+
+# 프로토콜
+
+컴퓨터·전자기기 간 통신이 어긋나지 않도록 미리 정해둔 규약이다 — 신호 처리 방식, 오류 처리, 암호화, 인증, 주소 지정 방식 등을 포함한다. 한마디로 **"이렇게 말하면 이렇게 알아듣기로 미리 합의한 형식"** 이다.
+
+**protocol**(프로토콜)은 그리스어 *protokollon*(πρωτόκολλον)에서 왔다. *protos*(첫 번째) + *kollon*(풀, glue) — 파피루스 두루마리 맨 앞장에 "이 문서가 진짜다, 내용 요약은 이거다"를 적어 풀로 붙여놓던 것이 어원이다. 외교 문서의 정본 확인용 표지였던 게 나중엔 의전(누가 먼저 인사하고 어떤 순서로 말하는지의 규약)을 뜻하게 됐고, 컴퓨터 통신은 그 "정해진 규약"이라는 의미만 가져다 썼다.
+
+다만 이 합의가 "메시지를 어떻게 자를지"(패킷 형식) 하나로 끝나지 않는다는 게 핵심이다. 실제로는 여러 층위의 약속이 겹쳐 있다.
+
+## 계층화
+
+통신 하나를 성사시키려면 "전기 신호를 어떻게 보낼지", "여러 기기 중 누구한테 갈지", "순서대로 잘 도착했는지" 같은 서로 다른 성격의 문제들이 동시에 풀려야 한다. 프로토콜은 이걸 한 규칙으로 뭉뚱그리지 않고 층(layer)으로 나눠서 각 층이 자기 몫만 책임지게 짠다 — 인터넷의 OSI 7계층·TCP/IP 4계층이 이 나눔의 표준 사례다. 서보 버스로 치면, 헤더·ID·체크섬으로 짜인 패킷 형식은 이 중 딱 한 층(패킷을 정하는 층)만 다룬 것이고, 그 아래엔 "전압을 몇 볼트로 몇 비트/초로 흘릴지" 정하는 물리 계층([시리얼/UART](../../Linux/serial-communication-uart/main.md))이 따로 있다.
+
+## 핸드셰이크
+
+프로토콜이 정하는 게 메시지 형식만은 아니다. 본 데이터를 보내기 전에 "서로 준비됐는지"부터 확인하는 절차 자체를 규정하기도 한다. TCP의 3-way handshake(SYN → SYN-ACK → ACK)가 대표적 — 낯선 사람과 통화를 시작할 때 "여보세요" "네 말씀하세요"부터 주고받는 것과 같은 자리다.
+
+## 에러 처리
+
+체크섬이 안 맞으면 어떻게 할지, 응답이 일정 시간 안에 안 오면 어떻게 할지도 프로토콜 몫이다. **재전송(retransmission)**을 요청할지, 그냥 그 패킷을 버릴지 — 이 결정 규칙까지 미리 합의해둬야 통신 중간에 뭔가 깨졌을 때 양쪽이 같은 방식으로 반응한다.
+
+## 주소지정
+
+여러 기기가 선 하나를 공유하는 상황(버스)에서는 "지금 누가 말할 차례인가"를 정하는 규칙도 필요하다. 서보 버스에서 ID로 특정 서보를 지목하는 것도 이 문제의 한 해법이고, 이더넷의 MAC 주소, IP 주소도 같은 자리에 있는 답이다.
+
+## 버전 협상
+
+프로토콜도 시간이 지나며 개정된다. HTTP/1.1과 HTTP/2가 다른 것처럼 — 그래서 실제 통신 초반엔 "어떤 버전으로 대화할지" 서로 맞추는 절차가 따로 들어가기도 한다.
+
+## 구현체 — DDS
+
+[DDS](../../ROS2/dds/main.md)는 이 프로토콜 개념 위에서 동작하는 통신 계층이다 — ROS2가 노드 간 통신을 표준화하기 위해 채택한 구체적인 구현체다. 위에서 나눈 계층·에러 처리·주소지정 같은 문제를 pub-sub 모델로 실제 구현해 놓은 것이 DDS인 셈이다.
+
+---
+
+> [!NOTE]
+> **⚙️**
+> 처음엔 "패킷" 노트에 프로토콜 정의를 곁들여 하나로 남겼다가, 프로토콜이 패킷 형식(그 중 한 층위)보다 훨씬 넓은 개념이라는 걸 되짚고 분리함. 서보 버스 통신은 이 다섯 층위 중 딱 하나(패킷 형식 + 최소한의 체크섬 에러처리)만 쓰는 단순한 사례라는 게 포인트.
+`,
+
+  'Network/ssh-public-key-authentication': `---
+title: SSH 공개키 인증 방식
+date: 2026-08-26
+tags: ssh, 암호화
+order: 
+featured: false
+draft: false
+---
+
+# SSH 공개키 인증 방식
+
+SSH는 비밀번호 대신 **공개키/개인키 쌍**으로 로그인을 인증한다. 서버에는 **공개키**만 등록해두고, 실제 인증은 서버가 던진 임의의 값(challenge)을 클라이언트가 **개인키로 서명**해 돌려주는 방식(challenge-response)으로 이뤄진다.
+
+- 서버: \`~/.ssh/authorized_keys\`에 클라이언트의 공개키를 미리 등록해둔다.
+- 로그인 시도: 서버가 랜덤 challenge를 생성해 클라이언트에 전달한다.
+- 클라이언트: 개인키로 그 challenge에 서명해 응답한다.
+- 서버: 등록된 공개키로 서명을 검증한다 — 개인키를 직접 보지 않고도 소유 여부를 확인할 수 있다.
+
+**핵심:** 개인키는 이 과정에서 네트워크로 전송되지 않는다. 서버에 올라가는 공개키는 유출돼도 그것만으로는 로그인이 불가능해 안전하다.
+
+**예시:**
+\`\`\`
+ssh-copy-id user@host   # 로컬 공개키(~/.ssh/id_ed25519.pub)를 서버 authorized_keys에 등록
+ssh user@host           # 이후 접속 시 challenge-response로 자동 인증
+\`\`\`
+
+이 원리를 실제 원격 접속 셋업에 적용한 기록은 [원격 머신 셋업](../../Linux/claude-remote-control-setup/main.md)에 있다.
+
+## authorized_keys와 known_hosts의 차이
+
+SSH가 쓰는 두 등록 파일은 **인증 방향이 반대**다.
+
+| 파일 | 위치 | 저장하는 키 | 역할 |
+|---|---|---|---|
+| \`authorized_keys\` | 서버 쪽 (\`~/.ssh/\`) | 클라이언트의 공개키 | 서버가 "이 사용자"를 인증 |
+| \`known_hosts\` | 클라이언트 쪽 (\`~/.ssh/\`) | 서버의 공개키 | 클라이언트가 "이 서버"를 인증 (중간자 공격 방지) |
+
+**예시:** 처음 접속하는 서버에서 뜨는 \`Are you sure you want to continue connecting?\` 메시지는 그 서버의 공개키가 아직 \`known_hosts\`에 없다는 뜻이다.
+
+## 비대칭키 암호의 기원
+
+**공개키-개인키 쌍(비대칭키 암호)** 개념은 1976년 Diffie–Hellman 논문에서 처음 제안됐고, 실제로 널리 쓰인 구현체는 1977년 **RSA**(발명자 Rivest, Shamir, Adleman 이니셜을 딴 이름)다. 그 이전 암호는 잠그는 키와 여는 키가 같은 **대칭키** 방식뿐이었다.
+
+- 비대칭키 이전: 통신 양쪽이 같은 비밀키를 미리 공유해야 했다 (키 배송 문제).
+- 비대칭키 이후: 공개키는 누구에게나 공개해도 되고, 개인키만 비밀로 유지하면 된다.
+- SSH·HTTPS(TLS)·Git 커밋 서명 등 현재 인터넷 보안 인프라 대부분이 이 개념 위에 세워졌다.
 `,
 
   'Python/class-str': `---

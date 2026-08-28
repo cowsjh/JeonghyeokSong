@@ -48,4 +48,4 @@ draft: false
 - 왜 신경 써야 하나: 서로 다른 엔디안을 쓰는 두 시스템이 바이트 스트림을 그대로 주고받으면(네트워크 통신, 파일 포맷, ROS2 메시지 직렬화 등) 같은 바이트열이 다른 숫자로 읽힌다. 그래서 통신 규약은 보통 엔디안을 고정해서 명시한다(예: 네트워크 프로토콜은 관례적으로 빅 엔디안="네트워크 바이트 순서").
 
 ---
-관련: [04_Fundamental Data Types (기본 데이터 타입)](../chapter04FundamentalDataTypes/main.md) · [12_Compound Types - References and Pointers (참조와 포인터)](../chapter12ReferencesAndPointers/main.md) · 통신 속도 단위(byte→bit 변환, KB/MB의 1024배수 관례가 통신 속도 쪽 1000배수 관례와 어떻게 다른지)
+관련: [04_Fundamental Data Types (기본 데이터 타입)](../chapter04FundamentalDataTypes/main.md) · [12_Compound Types - References and Pointers (참조와 포인터)](../chapter12ReferencesAndPointers/main.md) · [통신 속도 단위](../../Network/bandwidth-units/main.md)(byte→bit 변환, KB/MB의 1024배수 관례가 통신 속도 쪽 1000배수 관례와 어떻게 다른지)
